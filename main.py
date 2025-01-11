@@ -41,7 +41,7 @@ def getRandomUserAgent():
 
 class InvidiousAPI:
     def __init__(self):
-        self.all = ast.literal_eval(requests.get('video': ['https://invidious.f5.si/','https://inv.tux.pizza/', 'https://inv5.nadeko.net/'], 'search': ['https://invidious.f5.si/','https://inv.tux.pizza/', 'https://invidious.0011.lt/', 'https://invidious.nietzospannend.nl/', 'https://rust.oskamp.nl/', 'https://yt.yoc.ovh/'], 'channel': ['https://invidious.f5.si/','https://inv.tux.pizza/', 'https://invidious.0011.lt/', 'https://invidious.nietzospannend.nl/', 'https://rust.oskamp.nl/', 'https://yt.yoc.ovh/'], 'playlist': ['https://invidious.f5.si/','https://inv.tux.pizza/', 'https://invidious.0011.lt/', 'https://invidious.nietzospannend.nl/', 'https://rust.oskamp.nl/', 'https://yt.yoc.ovh/'], 'comments': ['https://invidious.f5.si/','https://inv.tux.pizza/', 'https://invidious.0011.lt/', 'https://invidious.nietzospannend.nl/', 'https://rust.oskamp.nl/', 'https://yt.yoc.ovh/']}', headers=getRandomUserAgent(), timeout=(1.0, 0.5)).text)
+        self.all = ast.literal_eval(requests.get(', headers=getRandomUserAgent(), timeout=(1.0, 0.5)).text)
         
         self.video = self.all['video']
         self.playlist = self.all['playlist']
