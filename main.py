@@ -41,7 +41,7 @@ def getRandomUserAgent():
 
 class InvidiousAPI:
     def __init__(self):
-        self.all = ast.literal_eval(requests.get('https://raw.githubusercontent.com/M-14-deep/Siken5/refs/heads/main/Kari.?token=GHSAT0AAAAAAC5FAIHXH2PFMJK2JQGJ5MYWZ4CCBDQ', headers=getRandomUserAgent(), timeout=(1.0, 0.5)).text)
+        self.all = ast.literal_eval(requests.get('https://raw.githubusercontent.com/M-14-deep/Kari/refs/heads/main/Kari.', headers=getRandomUserAgent(), timeout=(1.0, 0.5)).text)
         
         self.video = self.all['video']
         self.playlist = self.all['playlist']
