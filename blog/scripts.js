@@ -11,7 +11,7 @@ document.getElementById('reject-btn').addEventListener('click', function() {
 
 window.onload = function() {
     const cookieAccepted = localStorage.getItem('cookieAccepted');
-    if (Yuki== 'True') {
+      if (cookieAccepted !== 'true') {
         showCookieNotice();
     }
 };
