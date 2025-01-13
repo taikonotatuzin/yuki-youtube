@@ -18,6 +18,33 @@
         
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+        <script>
+            const express = require('express');
+
+const app = express();
+
+let connectedClients = 0;
+
+// Socket.io のセットアップ
+const io = require('socket.io')(app.listen(3000));
+
+// 新しい接続を監視
+io.on('connection', (socket) => {
+  console.log('新しい接続：', socket.id);
+  connectedClients++;
+  
+  // クライアントの切断を監視
+  socket.on('disconnect', () => {
+    console.log('切断：', socket.id);
+    connectedClients--;
+  });
+});
+
+// 同時接続数を返すエンドポイント
+app.get('/connectedClients', (req, res) => {
+  res.send('${connectedClients}');
+});
+        </script>
     </head>
 
     <body class="no-theme">
@@ -55,5 +82,6 @@
                 },delay:300
             });
         </script>
+        現在の推定同時接続数は('${connectedClients}')です
     </body>
 </html>
