@@ -2,6 +2,184 @@
 <html lang="ja">
 
     <head>
+        <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('https://tse4.mm.bing.net/th?id=OIG4.gDAHAlmQD0nqjGKj5ehr&pid=ImgGn');
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        h1 {
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 3rem; 
+            color: #fff;
+        }
+
+        .slide-in-left {
+            opacity: 0;
+            transform: translateX(-100px); 
+            animation: slideInLeft 2s forwards, glow 1.5s infinite alternate; 
+        }
+
+        .slide-in-right {
+            opacity: 0;
+            transform: translateX(100px); 
+            animation: slideInRight 2s forwards, glow 1.5s infinite alternate; 
+        }
+
+        @keyframes slideInLeft {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 5px rgba(255, 255, 255, 0.8), 0 0 10px rgba(255, 255, 0, 0.7);
+            }
+            100% {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 0, 1);
+            }
+        }
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 20;
+        }
+        .top-bar button {
+            padding: 5px 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .counter-card {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: black;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            z-index: 30;
+            width: 200px;
+            cursor: move;
+        }
+        input[type="text"] {
+            width: 60%;
+            padding: 10px;
+            font-size: 1.5rem;
+            margin-top: 20px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        .icon-container {
+            display: flex;
+            margin-top: 20px;
+        }
+        .icon {
+            margin: 0 10px;
+            cursor: pointer;
+        }
+        .icon img {
+            width: 60px;
+            height: 60px;
+        }
+        .cookie-notice {
+            display: none;
+        }
+        .toggle-proxy, .launch-rammerhead, .deploy-button {
+            padding: 5px 10px;
+            font-size: 1.5rem;
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+            display: none;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .overlay-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            color: black;
+        }
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            z-index: 20;
+        }
+        .bottom-bar button {
+            padding: 5px 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            margin: 0 10px;
+        }
+    </style>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="robots" content="noindex,nofollow">
 
@@ -70,18 +248,13 @@ alert('アクセスカウンター、または同時接続数が表示されて�
 }
 }
 ‎</script>
-  <div class="container">
-        埋め込みで視聴する
-        <p class="description">YouTube動画の再生を埋め込みで行います。もしも使えるなら使った方が良いです。ほとんどの人は使えないと思いますが。<br>
-          簡単に言うと、下のURLに入れる人は使えるし、入れない人は使えません()<br>
-          <a href="https://www.youtube-nocookie.com/embed/h4HkXR3NSI4" target="_blank">https://www.youtube-nocookie.com/embed/h4HkXR3NSI4</a></p>
-        <form action="/setting" method="post">
-            <div class="switch">
-                <input type="checkbox" id="wakametubeumekomi" name="wakametubeumekomi" <%= wakametubeumekomi ? 'checked' : '' %>>
-                <label for="wakametubeumekomi" class="slider"></label>
-            </div>
-            <button type="submit" class="save-button">設定を保存</button>
-        </form>
+   <div class="top-bar">
+        <button id="urlListButton" onclick="window.location.href='instance.html'">URLリスト</button>
+        <button id="openChatButton">オープンチャット</button>
+        <button id="shadowButton">New Shadow proxy</button>
+        <button id="uvproxyButton">New Croxy proxy</button>
+        <button id="proxyButton">New rammer proxy</button>
+        <button class="deploy-button" id="deployButton">デプロイ</button>
     </div>
     </body>
 </html>
