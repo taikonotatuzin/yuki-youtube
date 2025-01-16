@@ -255,6 +255,45 @@ alert('アクセスカウンター、または同時接続数が表示されて�
                 document.getElementById('urlListButton').onclick = function() {
             window.location.href = 'instance.html';
         };
+   <script>
+        
+        let isProxyMode = false;
+        const canvas = document.getElementById('sandstormCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        function drawSandstorm() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(222, 184, 135, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < 100; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const size = Math.random() * 5 + 1;
+                ctx.fillStyle = 'rgba(222, 184, 135, 0.1)';
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            requestAnimationFrame(drawSandstorm);
+        }
+
+        drawSandstorm();
+
+        document.getElementById('deployButton').onclick = function() {
+            document.getElementById('deployOverlay').style.display = 'flex';
+        };
+
+        function closeOverlay() {
+            document.getElementById('deployOverlay').style.display = 'none';
+        }
+
+        document.getElementById('urlListButton').onclick = function() {
+            window.location.href = 'instance.html';
+        };
 
         document.getElementById('proxyButton').onclick = function() {
             window.location.href = '/byeschool';
@@ -287,5 +326,37 @@ alert('アクセスカウンター、または同時接続数が表示されて�
         document.getElementById('instanceButton').onclick = function() {
             window.location.href = '/instance';
         };
+
+        const counterCard = document.getElementById('counterCard');
+        let offsetX, offsetY;
+
+        counterCard.addEventListener('mousedown', function(e) {
+            offsetX = e.clientX - counterCard.getBoundingClientRect().left;
+            offsetY = e.clientY - counterCard.getBoundingClientRect().top;
+            document.addEventListener('mousemove', mouseMoveHandler);
+            document.addEventListener('mouseup', mouseUpHandler);
+        });
+
+        function mouseMoveHandler(e) {
+            counterCard.style.left = (e.clientX - offsetX) + 'px';
+            counterCard.style.top = (e.clientY - offsetY) + 'px';
+        }
+
+        function mouseUpHandler() {
+            document.removeEventListener('mousemove', mouseMoveHandler);
+            document.removeEventListener('mouseup', mouseUpHandler);
+        }
+
+        counterCard.style.position = 'fixed';
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'p') {
+                const proxyButton = document.getElementById('proxyToggle');
+                const rammerheadButton = document.getElementById('rammerheadButton');
+                proxyButton.style.display = proxyButton.style.display === 'none' ? 'inline-block' : 'none';
+                rammerheadButton.style.display = rammerheadButton.style.display === 'none' ? 'inline-block' : 'none';
+            }
+        });
+   </script>
     </body>
 </html>
