@@ -240,8 +240,8 @@ alert('アクセスカウンター、または同時接続数が表示されて�
    <div class="top-bar">
         <button id="urlListButton" onclick="window.location.href='/instance.html'">URLリスト</button>
         <button id="openChatButton">オープンチャット</button>
-        <button id="shadowButton" onclick="window.location.href='/Iframe.html'">New Shadow proxy</button>
-        <button id="uvproxyButton" onclick="window.location.href='/Iframe'">New Croxy proxy</button>
+        <button id="shadowButton">New Shadow proxy</button>
+        <button id="uvproxyButton"'">New Croxy proxy</button>
         <button id="proxyButton">New rammer proxy</button>
         <button class="deploy-button" id="deployButton">デプロイ</button>
     </div>
@@ -252,5 +252,40 @@ alert('アクセスカウンター、または同時接続数が表示されて�
         <button id="tellButton">運営からのお知らせ</button>
         <button id="instanceButton">公式instance</button>
     </div>
+                document.getElementById('urlListButton').onclick = function() {
+            window.location.href = 'instance.html';
+        };
+
+        document.getElementById('proxyButton').onclick = function() {
+            window.location.href = '/byeschool';
+        };
+
+        document.getElementById('uvproxyButton').onclick = function() {
+            window.location.href = '/ultra';
+        };
+
+        document.getElementById('shadowButton').onclick = function() {
+            window.location.href = '/shadow';
+        };
+
+        document.getElementById('aiButton').onclick = function() {
+            window.location.href = '/ai';
+        };
+
+        document.getElementById('healthButton').onclick = function() {
+            window.location.href = '/health';
+        };
+
+        document.getElementById('tellButton').onclick = function() {
+            window.location.href = '/tell';
+        };
+
+        document.getElementById('googleButton').onclick = function() {
+            window.location.href = '/youtube';
+        };
+
+        document.getElementById('instanceButton').onclick = function() {
+            window.location.href = '/instance';
+        };
     </body>
 </html>
