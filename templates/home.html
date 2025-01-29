@@ -150,6 +150,49 @@ alert('アクセスカウンター、または同時接続数が表示されて�
 }
 }
 ‎</script>
- <div style="width:100%;height:261.5px;margin:1px;background:#4db6ac;"><script src="//accaii.com/myproxy/widget.js" async></script></div>
-    <a href='./shadow.htm'>shadow tabbed</a> </body>
+<div id="overlay" class="overlay"></div>
+  <div class="results">
+    <% if (tracks && tracks.length > 0) { %>
+      <% tracks.reverse().forEach(track => { %>
+        <div class="result-item">
+          <a href="/w/<%= track.videoId %>">
+            <img loading="lazy" src="/vi/<%= track.videoId %>/mqdefault.jpg">
+          </a>
+          <p class="channel-name"><a href="/c/<%= track.channelId %>"><%= track.channelName %></a></p>
+          <p class="video-title"><%= track.videoTitle %></p>
+          <p class="video-description"></p>
+          <p class="video-meta"></p>
+          </div>
+            <% }) %>
+    <% } else { %>
+        <p>お気に入り登録された動画はありません</p>
+    <% } %>
+  </div>
+  <style>
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    a {
+      color: #ff8181;
+    }
+  </style>
+<script>
+const menuBtn = document.getElementById('menu-btn');
+const sideMenu = document.getElementById('side-menu');
+const overlay = document.getElementById('overlay');
+
+function toggleMenu() {
+    sideMenu.classList.toggle('open');
+    overlay.classList.toggle('active');
+}
+
+menuBtn.addEventListener('click', toggleMenu);
+
+overlay.addEventListener('click', toggleMenu);</script>
+</body>
+
+</html></body>
 </html>
