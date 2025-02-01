@@ -323,7 +323,7 @@ def home(response: Response, request: Request, yuki: Union[str] = Cookie(None)):
         response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
         return template("home.html", {"request": request})
     print(checkCookie(yuki))
-    return redirect("/genesis")
+    return redirect("/home")
 
 
 @app.get('/watch', response_class=HTMLResponse)
