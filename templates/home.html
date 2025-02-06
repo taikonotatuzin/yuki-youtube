@@ -35,7 +35,7 @@
             padding: 10px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            text-align: right;
             z-index: 20;
         }
         #top-bar button {
@@ -80,7 +80,7 @@
       let nowHour = twoDigit( nowTime.getHours() );
       let nowMin  = twoDigit( nowTime.getMinutes() );
       let nowSec  = twoDigit( nowTime.getSeconds() );
-      let msg = "現在時刻：" + nowHour + ":" + nowMin + ":" + nowSec;
+      let msg = "現在時刻：" + nowHour + ":" + nowMin + ":" + nowSec + day= new Date();gety(day.getDay());;
       document.getElementById("top-bar").innerHTML = msg;
     }
     setInterval('showClock()',1000);
@@ -109,7 +109,8 @@
     </head>
 
     <body class="no-theme">
-        <p id="top-bar">	<script>
+        <p id="top-bar">
+	<script>
 	<!--
 		day= new Date();
 		gety(day.getDay());
