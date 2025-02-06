@@ -85,12 +85,38 @@
     }
     setInterval('showClock()',1000);
   </script>
+<script>
+	<!--
+	var y0 = "日";
+	var y1 = "月";
+	var y2 = "火";
+	var y3 = "水";
+	var y4 = "木";
+	var y5 = "金";
+	var y6 = "土";
+	function gety(y){
+		if (y==0) {document.write( y0.fontcolor("red") ) }
+		if (y==1) {document.write( y1 ) }
+		if (y==2) {document.write( y2 ) }
+		if (y==3) {document.write( y3 ) }
+		if (y==4) {document.write( y4 ) }
+		if (y==5) {document.write( y5 ) }
+		if (y==6) {document.write( y6.fontcolor("blue")  ) }
+	}
+	//-->
+	</script>
      
     </head>
 
     <body class="no-theme">
-        <p id="top-bar"></p>
-        <div id="search-widget" class="pure-g h-box">
+        <p id="top-bar">	<script>
+	<!--
+		day= new Date();
+		gety(day.getDay());
+	//-->
+	</script>
+	</p>
+<div id="search-widget" class="pure-g h-box">
             
             <div id="logo" class="pure-u-1">
                 <h1 href="javascript:location.replace('/')" class="pure-menu-heading">Yuki-Youtube</h1>
