@@ -107,7 +107,31 @@
 </head>
 
     <body class="no-theme">
-        <p id="top-bar"></p>
+       <div id="date"></div>
+
+<script>
+const showClock = () => {
+	const date = new Date(); //  現在の日時を取得
+	const year = date.getFullYear();// 年(4桁)
+	let month = date.getMonth() + 1;// 月(0–11)
+	let day = date.getDate();// 日(1–31)
+	const weeks = ["日","月","火","水","木","金","土"];// 曜日用の配列
+	const week = weeks[date.getDay()];// 曜日(0-6)
+	let hour = date.getHours(); // 時(0–23)
+	let minute  = date.getMinutes(); // 分(0–59)
+	let second  = date.getSeconds(); // 秒(0–59)
+
+	// 桁数が一つの時に先頭に「0」追加
+	day = ("00" + day).slice(-2);
+	hour = ("00" + hour).slice(-2);
+	minute = ("00" + minute).slice(-2);
+	second = ("00" + second).slice(-2);
+
+	const text = year + "年" + month + "月" + day + "日" + week + "曜日" + hour + "時" + minute + "分" + second + "秒";
+	document.getElementById("date").innerHTML = text;
+}
+setInterval('showClock()',1000);
+</script>
 <div id="search-widget" class="pure-g h-box">
             
             <div id="logo" class="pure-u-1">
