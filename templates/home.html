@@ -54,45 +54,34 @@
 
 /* 全体を囲うコンテナー */
 .container {
-              position: fixed;
+        　　position: fixed;
             top: 0;
             left: 0;
             right: 0;
             background-color: rgba(0, 0, 0, 0.7);
             padding: 10px;
             display: flex;
-            justify-content: space-between;
             text-align: right;
-            z-index: 6px;
+            z-index: 15px;
 }
 
 /* 時計の共通スタイル */
 .clock {
   font-family: 'Share Tech Mono', monospace;
   color: #daf6ff;
-  text-shadow: 0 0 20px #0aafe6;
+  text-shadow: 0 0 2px #0aafe6;
   line-height: 1.2;
   text-align: center;
 }
 
 /* 日付のスタイル */
 .clock-date {
-  font-size: 25px;
+  font-size: 5px;
 }
 
 /* 時間のスタイル */
 .clock-time {
-  font-size: 100px;
-}
-
-/* 文字サイズ調整 */
-@media screen and (max-width: 500px) {
-  .clock-date {
-    font-size: 5vw;
-  }
-  .clock-time {
-    font-size: 20vw;
-  }
+  font-size: 15px;
 }
     </style>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
