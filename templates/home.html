@@ -37,6 +37,7 @@
             justify-content: space-between;
             text-align: right;
             z-index: 20;
+	　　 color: #fffff;
         }
         #top-bar button {
             padding: 5px 10px;
@@ -67,26 +68,7 @@
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="./scripts.js"></script>
   <script>
-    function twoDigit(num) {
-      let ret;
-      if( num < 10 ) 
-	    ret = "0" + num; 
-      else 
-   	    ret = num; 
-      return ret;
-    }
-    function showClock() {
-      let nowTime = new Date();
-      let nowHour = twoDigit( nowTime.getHours() );
-      let nowMin  = twoDigit( nowTime.getMinutes() );
-      let nowSec  = twoDigit( nowTime.getSeconds() );
-      let msg = "現在時刻：" + nowHour + ":" + nowMin + ":" + nowSec + day= new Date();gety(day.getDay());;
-      document.getElementById("top-bar").innerHTML = msg;
-    }
-    setInterval('showClock()',1000);
-  </script>
-<script>
-	<!--
+	 <!--
 	var y0 = "日";
 	var y1 = "月";
 	var y2 = "火";
@@ -104,19 +86,28 @@
 		if (y==6) {document.write( y6.fontcolor("blue")  ) }
 	}
 	//-->
-	</script>
-     
-    </head>
+    function twoDigit(num) {
+      let ret;
+      if( num < 10 ) 
+	    ret = "0" + num; 
+      else 
+   	    ret = num; 
+      return ret;
+    }
+    function showClock() {
+      let nowTime = new Date();
+      let nowHour = twoDigit( nowTime.getHours() );
+      let nowMin  = twoDigit( nowTime.getMinutes() );
+      let nowSec  = twoDigit( nowTime.getSeconds() );
+      let msg = "現在時刻：" + nowHour + ":" + nowMin + ":" + nowSec;
+      document.getElementById("top-bar").innerHTML = msg;
+    }
+    setInterval('showClock()',1000);
+  </script>
+</head>
 
     <body class="no-theme">
-        <p id="top-bar">
-	<script>
-	<!--
-		day= new Date();
-		gety(day.getDay());
-	//-->
-	</script>
-	</p>
+        <p id="top-bar"></p>
 <div id="search-widget" class="pure-g h-box">
             
             <div id="logo" class="pure-u-1">
