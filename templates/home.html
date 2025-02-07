@@ -49,40 +49,6 @@
             border-radius: 5px;
             margin-right: 10px;
         }
-	    /* Google Fonts 読み込み */
-@import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap");
-
-/* 全体を囲うコンテナー */
-.container {
-        　　position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            display: flex;
-            text-align: right;
-            z-index: 15px;
-}
-
-/* 時計の共通スタイル */
-.clock {
-  font-family: 'Share Tech Mono', monospace;
-  color: #daf6ff;
-  text-shadow: 0 0 2px #0aafe6;
-  line-height: 1.2;
-  text-align: center;
-}
-
-/* 日付のスタイル */
-.clock-date {
-  font-size: 5px;
-}
-
-/* 時間のスタイル */
-.clock-time {
-  font-size: 15px;
-}
     </style>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="robots" content="noindex,nofollow">
@@ -101,7 +67,43 @@
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="./scripts.js"></script>
-  
+  <script>
+	 <!--
+	var y0 = "日";
+	var y1 = "月";
+	var y2 = "火";
+	var y3 = "水";
+	var y4 = "木";
+	var y5 = "金";
+	var y6 = "土";
+	function gety(y){
+		if (y==0) {document.write( y0.fontcolor("red") ) }
+		if (y==1) {document.write( y1 ) }
+		if (y==2) {document.write( y2 ) }
+		if (y==3) {document.write( y3 ) }
+		if (y==4) {document.write( y4 ) }
+		if (y==5) {document.write( y5 ) }
+		if (y==6) {document.write( y6.fontcolor("blue")  ) }
+	}
+	//-->
+    function twoDigit(num) {
+      let ret;
+      if( num < 10 ) 
+	    ret = "0" + num; 
+      else 
+   	    ret = num; 
+      return ret;
+    }
+    function showClock() {
+      let nowTime = new Date();
+      let nowHour = twoDigit( nowTime.getHours() );
+      let nowMin  = twoDigit( nowTime.getMinutes() );
+      let nowSec  = twoDigit( nowTime.getSeconds() );
+      let msg = "現在時刻：" + nowHour + ":" + nowMin + ":" + nowSec;
+      document.getElementById("top-bar").innerHTML = msg;
+    }
+    setInterval('showClock()',1000);
+  </script>
 </head>
 
     <body class="no-theme">
@@ -154,52 +156,5 @@ alert('アクセスカウンター、または同時接続数が表示されて�
     <script src="//accaii.com/siken1/script.js" async></script><noscript><img src="//accaii.com/siken1/script?guid=on"></noscript>
     
 ‎</script>
- <div class="container">
-    <div class="clock">
-      <p class="clock-date"></p>
-      <p class="clock-time"></p>
-    </div>
-  </div>
-<script>
-	const clock = () => {
-  // 現在の日時・時刻の情報を取得
-  const d = new Date();
-
-  // 年を取得
-  let year = d.getFullYear();
-  // 月を取得
-  let month = d.getMonth() + 1;
-  // 日を取得
-  let date = d.getDate();
-  // 曜日を取得
-  let dayNum = d.getDay();
-  const weekday = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-  let day = weekday[dayNum];
-  // 時を取得
-  let hour = d.getHours();
-  // 分を取得
-  let min = d.getMinutes();
-  // 秒を取得
-  let sec = d.getSeconds();
-
-  // 1桁の場合は0を足して2桁に
-  month = month < 10 ? "0" + month : month;
-  date = date < 10 ? "0" + date : date;
-  hour = hour < 10 ? "0" + hour : hour;
-  min = min < 10 ? "0" + min : min;
-  sec = sec < 10 ? "0" + sec : sec;
-
-  // 日付・時刻の文字列を作成
-  let today = `${year}.${month}.${date} ${day}`;
-  let time = `${hour}:${min}:${sec}`;
-
-  // 文字列を出力
-  document.querySelector(".clock-date").innerText = today;
-  document.querySelector(".clock-time").innerText = time;
-};
-
-// 1秒ごとにclock関数を呼び出す
-setInterval(clock, 1000);
-  </script>
 </body>
 </html>
