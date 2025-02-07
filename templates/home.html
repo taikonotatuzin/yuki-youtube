@@ -54,12 +54,16 @@
 
 /* 全体を囲うコンテナー */
 .container {
-  width: 100%;
-  height: 100vh;
-  background-color: #15151e;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+              position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            text-align: right;
+            z-index: 20;
 }
 
 /* 時計の共通スタイル */
