@@ -33,9 +33,9 @@
             right: 0;
             background-color: rgba(0, 0, 0, 0.7);
             padding: 10px;
-            display: flex;
             justify-content: space-between;
             text-align: right;
+	   font-size: 1.2rem;
             z-index: 20;
 	　　 color: white;
         }
@@ -67,25 +67,7 @@
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="./scripts.js"></script>
-  <script>
-	 <!--
-	var y0 = "日";
-	var y1 = "月";
-	var y2 = "火";
-	var y3 = "水";
-	var y4 = "木";
-	var y5 = "金";
-	var y6 = "土";
-	function gety(y){
-		if (y==0) {document.write( y0.fontcolor("red") ) }
-		if (y==1) {document.write( y1 ) }
-		if (y==2) {document.write( y2 ) }
-		if (y==3) {document.write( y3 ) }
-		if (y==4) {document.write( y4 ) }
-		if (y==5) {document.write( y5 ) }
-		if (y==6) {document.write( y6.fontcolor("blue")  ) }
-	}
-	//-->
+<script>
     function twoDigit(num) {
       let ret;
       if( num < 10 ) 
@@ -103,35 +85,11 @@
       document.getElementById("top-bar").innerHTML = msg;
     }
     setInterval('showClock()',1000);
-	  
   </script>
-	    <script>
-const showClock = () => {
-	const date = new Date(); //  現在の日時を取得
-	const year = date.getFullYear();// 年(4桁)
-	let month = date.getMonth() + 1;// 月(0–11)
-	let day = date.getDate();// 日(1–31)
-	const weeks = ["日","月","火","水","木","金","土"];// 曜日用の配列
-	const week = weeks[date.getDay()];// 曜日(0-6)
-	let hour = date.getHours(); // 時(0–23)
-	let minute  = date.getMinutes(); // 分(0–59)
-	let second  = date.getSeconds(); // 秒(0–59)
-
-	// 桁数が一つの時に先頭に「0」追加
-	day = ("00" + day).slice(-2);
-	hour = ("00" + hour).slice(-2);
-	minute = ("00" + minute).slice(-2);
-	second = ("00" + second).slice(-2);
-
-	const text = year + "年" + month + "月" + day + "日" + week + "曜日" + hour + ":" + minute + ":" + second ;
-	document.getElementById("date").innerHTML = text;
-}
-setInterval('showClock()',1000);
-</script>
 </head>
 
     <body class="no-theme">
-       <p id="date"></p>
+       <p id="top-bar></p>
 <div id="search-widget" class="pure-g h-box">
             
             <div id="logo" class="pure-u-1">
