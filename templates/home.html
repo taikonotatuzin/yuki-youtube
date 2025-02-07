@@ -127,7 +127,7 @@ const showClock = () => {
 	minute = ("00" + minute).slice(-2);
 	second = ("00" + second).slice(-2);
 
-	const text = year + "年" + month + "月" + day + "日" + week + "曜日" + hour + "時" + minute + "分" + second + "秒";
+	const text = year + "年" + month + "月" + day + "日" + week + "曜日" + hour + ":" + minute + ":" + second ;
 	document.getElementById("date").innerHTML = text;
 }
 setInterval('showClock()',1000);
