@@ -103,13 +103,9 @@
       document.getElementById("top-bar").innerHTML = msg;
     }
     setInterval('showClock()',1000);
+	  
   </script>
-</head>
-
-    <body class="no-theme">
-       <div id="date"></div>
-
-<script>
+	    <script>
 const showClock = () => {
 	const date = new Date(); //  現在の日時を取得
 	const year = date.getFullYear();// 年(4桁)
@@ -132,6 +128,10 @@ const showClock = () => {
 }
 setInterval('showClock()',1000);
 </script>
+</head>
+
+    <body class="no-theme">
+       <div id="date"></div>
 <div id="search-widget" class="pure-g h-box">
             
             <div id="logo" class="pure-u-1">
