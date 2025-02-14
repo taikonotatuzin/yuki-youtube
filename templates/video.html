@@ -18,6 +18,25 @@
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="/js/utils/utils.js"></script>
+        <script>
+    function twoDigit(num) {
+      let ret;
+      if( num < 10 ) 
+	    ret = "0" + num; 
+      else 
+   	    ret = num; 
+      return ret;
+    }
+    function showClock() {
+      let nowTime = new Date();
+      let nowHour = twoDigit( nowTime.getHours() );
+      let nowMin  = twoDigit( nowTime.getMinutes() );
+      let nowSec  = twoDigit( nowTime.getSeconds() );
+      let msg = "現在時刻：" + nowHour + ":" + nowMin + ":" + nowSec;
+      document.getElementById("top-bar").innerHTML = msg;
+    }
+    setInterval('showClock()',1000);
+  </script>
     </head>
     <body class="no-theme">
         <span id="dark_mode_pref" style="display:none"></span>
