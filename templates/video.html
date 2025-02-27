@@ -264,230 +264,311 @@
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="/js/utils/utils.js"></script>
     </head>
-    <body class="no-theme">
-        <span id="dark_mode_pref" style="display:none"></span>
-        <div class="pure-g">
-            <div class="pure-u-1 pure-u-md-2-24"></div>
-            <div id="contents" class="pure-u-1 pure-u-md-20-24">
-                <div class="pure-g navbar h-box">
-                    <div class="pure-u-1 pure-u-md-12-24 searchbar">
-                        <a href="javascript:location.replace('/')">ホーム</a><br>
-                        <a href="javascript:location.replace('/bbs')">掲示板</a>
-                    
-                        <form class="pure-form" action="/search" method="get">
-                            <fieldset>
-                                <input id="searchbox" name="q" type="search" placeholder="検索" value="" title="検索" autocomplete="on" autocorrect="on" autocapitalize="none" spellcheck="false" >
-                            </fieldset>
-                        </form>
-                    </div>
-                </div>
-                <div id="player-container" class="h-box">
-                    <video id="player" class="on-video_player video-js player-style-invidious" loadedmetadata="settime()" controls="" playsinline="" loop="" style="outline:none;width:100%;background-color:#000;" poster="{% if proxy == "True" %}/thumbnail?v={{ videoid }}{% else %}https://img.youtube.com/vi/{{ videoid }}/0.jpg{% endif %}">
-                        {% for videourl in videourls%}
-                        <source class="player-source" src="{{ videourl }}">
-                        {% endfor %}
-                        <p id="video_info">お使いのブラウザは動画の再生に対応していません。</p>
-                    </video>
-                </div>
-                <div class="h-box">
-                    <h1>{{ video_title }}</h1>
-                    <p style="display: inline-block; margin-right: 10px; vertical-align: super;">{{ view_count }}回視聴</p>
-                    <div style="display: inline-block;"><span class="material-symbols-outlined" style="display: inline-block; padding-right: 5px;">thumb_up</span><p style="display: inline-block; vertical-align: super; ">{{ like_count }}</p></div>
+      <body>
+    <div class="navbar">
+      <div class="navbar-logo">
+        <a href="/">
+          <img
+            src="https://gitlab.com/mpdpa/icon/-/raw/main/IMG_0942.png"
+            alt="YouTube Icon"
+          />
+        </a>
+      </div>
 
-                    <p id="player_current_time" style="display: inline-block; margin-left: 10px; vertical-align: super;"></p>
-                    <p style="display: inline-block; vertical-align: super;">/ {{ length_text }}</p>
-                </div><br>
-                <div class="pure-g">
-                    <div class="pure-u-1 pure-u-lg-1-5">
-                        <a href="{{ videourls[0] }}" download="{{ video_title }}">ダウンロード</a><br>
-                        <a href="javascript:{navigator.share({title: '現時点の動画を共有', text: '{{ video_title }}', url: location.origin + '/watch?v={{ videoid }}' + '&t=' + Math.floor(document.getElementById('player').currentTime)})}">現時点の動画を共有</a><br>
-                        <a href="javascript:{navigator.share({title: '動画を共有', text: '{{ video_title }}', url: location.href})}">動画を共有</a><br>
-                        <hr>
-                        <button onclick="location.replace(location.href)">Reload</button>
-                        <a href="https://google.com">緊急ボタン</a>
-                    </div>
-                    <div class="pure-u-1 pure-u-lg-3-5">
-                        <div class="h-box">
-                                <a href="/channel/{{ author_id }}" style="display: inline-block; width: fit-content; width: -moz-fit-content">
-                                    <div class="channel-profile">
+      <form class="navbar-search pure-form" action="/search" method="get">
+        <fieldset>
+          <input
+            type="search"
+            id="searchbox"
+            autocomplete="off"
+            autocorrect="on"
+            autocapitalize="none"
+            spellcheck="false"
+            name="q"
+            placeholder="検索"
+            title="検索"
+            value=""
+            class="ui-autocomplete-input"
+          />
+        </fieldset>
+      </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+      $("#searchbox").autocomplete({
+        source: function (request, response) {
+          var url = "/suggest?keyword=" + encodeURIComponent(request.term);
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", url);
 
-                                        <img src="{{ author_icon }}">
+          xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                var results = JSON.parse(xhr.responseText);
+                response(results.slice(0, 14));
+              } catch (error) {
+                console.error("Parsing error:", error);
+                response([]);
+              }
+            } else {
+              console.error("Request failed:", xhr.statusText);
+              response([]);
+            }
+          };
 
-                                        <span id="channel-name">{{ author }}</span>
-                                    </div>
-                                </a>
-                                <p>チャンネル登録者数: {{ subscribers_count }}人</p>
-                            <div id="description-box">
-                                <div id="descriptionWrapper">{{ description | safe}}</div>
-                            </div>
-                            <hr>
-                            <div id="comments"></div>
-                        </div>
-                    </div>
-                    <div class="pure-u-1 pure-u-lg-1-5">
-                        <label for="autonextpage">自動で次の動画に遷移<input id="autonextpage" type="checkbox" onchange="changeAutoNextPage(this)"></label><br>
-                        <label for="loop">ループ再生<input id="loop" type="checkbox" onchange="changeLoop(this)"></label>
-                    
-                        {% for rec_video in recommended_videos %}
-                        <a href="/watch?v={{ rec_video['video_id'] }}">
-                            <div class="thumbnail">
-                                <img loading="lazy" class="thumbnail" src="{% if proxy == 'True' %}/thumbnail?v={{ rec_video['video_id'] }}{% else %}https://img.youtube.com/vi/{{ rec_video['video_id'] }}/0.jpg{% endif %}">
-                                <p class="length">{{ rec_video["length_text"] }}</p>
-                            </div>
-                            <p style="width:100%;">{{ rec_video["title"] }}</p>
-                        </a>
-                        <p>{{ rec_video["view_count_text"] }}回視聴</p>
-                        <a href="/channel/{{ rec_video['authorId'] }}">{{ rec_video["author"] }}</a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+          xhr.onerror = function () {
+            console.error("Network error");
+            response([]);
+          };
+
+          xhr.send();
+        },
+        delay: 300,
+        minLength: 1,
+        open: function (event, ui) {
+          var navbarHeight = $(".navbar").outerHeight(); // navbarの高さを取得
+          var navbarOffset = $(".navbar").offset().top; // navbarの上部位置を取得
+
+          $(".ui-autocomplete").css({
+            top: navbarOffset + navbarHeight + "px", // navbarの下に配置
+            left: $("#searchbox").offset().left + "px", // 検索ボックスの左に合わせる
+            width: $("#searchbox").outerWidth() + "px", // 検索ボックスの幅に合わせる
+          });
+        },
+      });
+    </script>
+
+    <div id="contents">
+      <div id="player-container">
+        <span class="video-player-area-a">
+          <video
+            playsinline=""
+            poster="https://img.youtube.com/vi/{{ g_videoid }}/0.jpg"
+            id="player"
+            controls=""
+          >
+            <source src="{{ videourls[0] }}" />
+          </video>
+        </span>
+        <h2 id="video-title">{{ videotitle }}</h2>
+        <img id="author-icon" src="{{authoricon}}" /><span id="channel-name"
+          >{{ author }}</span
+        >
+        <p>
+          投稿日: <span id="published-date"></span> ・再生回数:
+          <span class="view-count" id="view-count"></span> ・ 高評価数:
+          <span class="like-count" id="like-count"></span>
+        </p>
+
+        <style>
+          /* 概要欄のテキスト */
+          .text-container-gaiyou {
+            max-height: 96px; /* 4行分の高さ */
+            overflow: hidden;
+            position: relative;
+            font-size: 16px; /* 文字サイズを16pxに設定 */
+            line-height: 1.5; /* 行間 */
+          }
+
+          /* もっと見るボタン */
+          .more-button-gaiyou {
+            color: rgb(91, 91, 91);
+            cursor: pointer;
+            text-decoration: underline;
+            display: none; /* 初期状態では非表示 */
+          }
+        </style>
+
+        説明
+        <div class="text-container-gaiyou" id="textContainerGaiyou">
+          <p id="textContentGaiyou">
+            <span class="video-description" id="video-description"></span>
+          </p>
         </div>
-        <div class="pure-u-1 pure-u-md-2-24"></div>
-        
+        <span
+          class="more-button-gaiyou"
+          id="moreButtonGaiyou"
+          onclick="toggleTextGaiyou()"
+        >
+          もっと見る
+        </span>
+
         <script>
-            const xhr = new XMLHttpRequest();
-            xhr.open("GET", "/comments?v=" + getQueryValue('v'));
-            xhr.onload = function () {      
-                if (xhr.status == 200) {
-                    const comments_div = document.getElementById('comments');
-                    comments_div.innerHTML = xhr.responseText;
+          function toggleTextGaiyou() {
+            const textContainer = document.getElementById(
+              "textContainerGaiyou"
+            );
+            const moreButton = document.getElementById("moreButtonGaiyou");
 
-                    const comments_a_tags = comments_div.getElementsByTagName('a');
-
-                    for(let i = 0; i < comments_a_tags.length; i++) {
-                        const jump_time = comments_a_tags[i].getAttribute('data-jump-time')
-
-                        if(jump_time) {
-                            comments_a_tags[i].addEventListener('click', function(e) {
-                                e.preventDefault()
-                                player.currentTime = jump_time;
-                            })
-                        }
-                    }
-                } else { 
-                    document.getElementById('comments').innerHTML = "コメントの読み込みに失敗しました。再読み込み等をお試し下さい。"; 
-                }
-            };
-            xhr.send();
-
-            let player = document.getElementById("player");
-
-            document.cookie = "yuki=True; path=/; max-age=10800;";
-        
-
-            const haveLoopCookie = getCookie("loop") === 'true' ? true : false;
-            player.loop = haveLoopCookie;
-            document.getElementById("loop").checked = haveLoopCookie;
-
-            document.getElementById("autonextpage").checked = getCookie("autonextpage") === 'true' ? true : false;
-            
-
-            function changeAutoNextPage(checkbox) {      
-                document.cookie =  `autonextpage=${checkbox.checked}; path=/; max-age=10800;`;
+            if (textContainer.style.maxHeight === "none") {
+              textContainer.style.maxHeight = "96px"; // 折りたたむ際の最大高さ
+              moreButton.textContent = "もっと見る";
+            } else {
+              textContainer.style.maxHeight = "none"; // 展開する際に制限を解除
+              moreButton.textContent = "折りたたむ";
             }
-            
-            function autoNextPage() {
-                const enable_autoNextPage = document.getElementById('autonextpage').checked;
-                document.cookie = `autonextpage=${enable_autoNextPage}; max-age=10800;`;
-                if (enable_autoNextPage) {
-                    setTimeout(() => {
-                        location.replace("/watch?v={{ recommended_videos[0]['video_id'] }}");
-                    }, 5000)
-                }
+          }
+
+          function checkTextLengthGaiyou() {
+            const textContainer = document.getElementById(
+              "textContainerGaiyou"
+            );
+            const moreButton = document.getElementById("moreButtonGaiyou");
+
+            // 設定されている最大高さ（4行分の高さ）を取得
+            const maxHeight = parseFloat(
+              getComputedStyle(textContainer).maxHeight
+            );
+
+            // テキストが最大高さを超える場合、ボタンを表示
+            if (textContainer.scrollHeight > maxHeight) {
+              moreButton.style.display = "inline"; // ボタンを表示
+            } else {
+              moreButton.style.display = "none"; // ボタンを非表示
             }
+          }
 
-            player.addEventListener('ended', autoNextPage)
-            
-            function changeLoop(checkbox) {      
-                const enable_loop = checkbox.checked;
-                document.getElementById("player").loop = enable_loop;
-                document.cookie = `loop=${enable_loop}; path=/; max-age=10800;`;
-            }
-            
-            /* function sleep(waitMsec) {      var startMsec = new Date();while (new Date() - startMsec < waitMsec);} */
+          // テキストの変更を検知してボタンの表示を更新
+          document.addEventListener("DOMContentLoaded", function () {
+            const videoDescription =
+              document.getElementById("video-description");
 
-            
-
-            document.getElementById("player").currentTime = getQueryValue('t') || 0;
-            
-            function keydown(key) {                  
-                if (key.keyCode == 32 || key.keyCode == 75) {
-                    const v = document.getElementById("player");
-
-                    if (v.paused === true) {
-                        v.play();
-                    } else {
-                        v.pause();
-                    }
-                }
-            }
-        
-            window.addEventListener('keydown', keydown);
-        
-
-            const description_a_tags = document.getElementById('descriptionWrapper').getElementsByTagName('a');
-            for(let i = 0; i < description_a_tags.length; i++) {
-                const jump_time = description_a_tags[i].getAttribute('data-jump-time')
-
-                if(jump_time) {
-                    description_a_tags[i].addEventListener('click', function(e) {
-                        e.preventDefault()
-                        player.currentTime = jump_time;
-                    })
-                }
-            }
-
-            player.style.maxHeight = document.documentElement.clientHeight * 0.8 + "px";
-
-            let info = document.getElementById('video_info');
-
-            let reload_button_elm = document.createElement('button');
-            reload_button_elm.setAttribute('onclick', 'location.replace(location.href);');
-            reload_button_elm.innerHTML = 'リロード';
-            
-            
-            setTimeout(() => {
-                if(player.networkState === 3){
-                    let update_api_xhr = new XMLHttpRequest();
-                    update_api_xhr.open("GET", "/api/video/next"); 
-                    update_api_xhr.send();
-                    
-                    info.innerHTML = '動画の読み込みに失敗しました。再読み込み等をお試し下さい。<br>';
-                    info.innerHTML += '過度な再読み込みはインスタンスに負荷がかかり、短期間で使用不能に陥ることや、動画等の読み込みが出来なくなることが考えられますのでご遠慮下さい。'
-                    player.after(reload_button_elm)
-                    player.after(info)
-                    player.remove()
-                }
-            }, 1000);
-            
-            (function updateDisplayCurrentTime() {
-                setTimeout(() => {
-                    const player = document.getElementById('player');
-                    const current_time_elem = document.getElementById('player_current_time')
-                    if(player) {
-                        current_time_elem.textContent = secToHMS(player.currentTime | 0);
-                    } else {
-                        current_time_elem.textContent = 'Error';
-                    }
-                    updateDisplayCurrentTime();
-                }, 100);
-            })();
-        </script>
-        <script>
-            $('#searchbox').autocomplete({
-                source: function (request, response) {      
-                    {
-                        const url = "/suggest?keyword=" + request.term;
-                        const xhr = new XMLHttpRequest();
-                        xhr.open("GET", url);
-                        xhr.onload = function () {      
-                            response(JSON.parse(xhr.responseText));
-                        }
-                        xhr.send();
-                    }
-                }, delay: 300
+            // MutationObserverを使ってテキスト変更を監視
+            const observer = new MutationObserver(checkTextLengthGaiyou);
+            observer.observe(videoDescription, {
+              childList: true,
+              subtree: true,
             });
+          });
         </script>
-    </body>
+
+        <div id="comments"></div>
+
+        <script>
+          const videoData = JSON.parse('{{ video_data | tojson }}');
+        const relatedVideos = {{ related_videos | tojson }};
+        
+        // 投稿日を日本語形式に変換
+        function formatDate(dateString) {
+            if (dateString.includes("months ago")) {
+                return dateString.replace("months ago", "ヶ月前");
+            } else if (dateString.includes("years ago")) {
+                return dateString.replace("years ago", "年前");
+            } else if (dateString.includes("minutes ago")) {
+                return dateString.replace("minutes ago", "分前");
+            } else if (dateString.includes("hours ago")) {
+                return dateString.replace("hours ago", "時間前");
+            } else if (dateString.includes("seconds ago")) {
+                return dateString.replace("seconds ago", "秒前");
+            } else if (dateString.includes("month ago")) {
+                return dateString.replace("month ago", "ヶ月前");
+            } else if (dateString.includes("year ago")) {
+                return dateString.replace("year ago", "年前");
+            } else if (dateString.includes("minute ago")) {
+                return dateString.replace("minute ago", "分前");
+            } else if (dateString.includes("hour ago")) {
+                return dateString.replace("hour ago", "時間前");
+            } else if (dateString.includes("second ago")) {
+                return dateString.replace("second ago", "秒前");
+            } else {
+                return dateString; // 変換対象外の文字列
+            }
+        }
+
+        // 再生回数や高評価数を表示フォーマットに変換
+        function formatCount(count) {
+            const number = Number(count);
+            if (number >= 1e8) {
+                return (number / 1e8).toFixed(1) + "億";
+            } else if (number >= 1e4) {
+                return (number / 1e4).toFixed(1) + "万";
+            }
+            return number; // 1万未満の場合はそのまま表示
+        }
+
+        // 動画情報をHTMLに表示
+        document.getElementById("video-title").innerText = videoData.title;
+        const publishedDate = formatDate(videoData.publishedText); // 日付をフォーマット
+        document.getElementById("published-date").innerText = publishedDate;
+        document.getElementById("view-count").innerText = formatCount(videoData.viewCount);
+        document.getElementById("video-description").innerHTML = videoData.description.replace("\n", "<br>");
+        
+          // コメント取得のためのXMLHttpRequest
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", "/comments?v=" + videoId);
+          xhr.onload = function () {
+            if (xhr.status != 500) {
+              document.getElementById("comments").innerHTML = xhr.responseText;
+            } else {
+              document.getElementById("comments").innerHTML =
+                "エラーが発生しました。再読み込みを試してください";
+            }
+          };
+          xhr.send();
+        </script>
+      </div>
+
+      <div class="sidebar">
+        <h3>関連動画</h3>
+        {% for re in res %}
+        <a href="/watch?v={{ re['id'] }}" class="thumbnail">
+          <img
+            src="https://img.youtube.com/vi/{{ re['id'] }}/0.jpg"
+            alt="関連動画"
+          />
+          <div class="thumbnail-text">
+            <p class="title Padding">{{ re["title"] }}</p>
+            <p class="related-videos-title" class="channel-name">{{ re["author"] }}</p>
+            <p class="video-info view-count">{{ re["viewCount"] }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <script>
+      function formatViews(views) {
+        const numberOfViews = Number(views);
+        let formattedViews;
+
+        if (numberOfViews >= 1e8) {
+          formattedViews = (numberOfViews / 1e8).toFixed(1) + "億";
+        } else if (numberOfViews >= 1e4) {
+          formattedViews = (numberOfViews / 1e4).toFixed(1) + "万";
+        } else {
+          formattedViews = numberOfViews + "";
+        }
+
+        return formattedViews;
+      }
+
+      const playerViewCountElement = document.querySelector(".view-count");
+      const playerCurrentViews =
+        playerViewCountElement.textContent.split(" ")[0];
+      playerViewCountElement.textContent = formatViews(playerCurrentViews);
+
+      document
+        .querySelectorAll(".video-info")
+        .forEach(function (viewCountElement) {
+          const currentViews = viewCountElement.textContent.split("回視聴")[0];
+          viewCountElement.textContent = formatViews(currentViews) + "回視聴";
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+    // クラス属性 'related-videos-title' を持つ全ての要素を取得
+    document.querySelectorAll(".related-videos-title").forEach(function (titleElement) {
+      const maxLength = 16; // 最大文字数
+      const originalText = titleElement.textContent || ""; // 元のテキストを取得、nullの場合は空文字に
+
+      // テキストが最大文字数を超える場合のみ切り詰める
+      if (originalText.length > maxLength) {
+        titleElement.textContent = originalText.substring(0, maxLength) + "…";
+      }
+
+      // デバッグ: コンソールに各要素のテキストを出力
+      console.log("Element Text:", titleElement.textContent);
+    });
+  });
+    </script>
+  </body>
 </html>
