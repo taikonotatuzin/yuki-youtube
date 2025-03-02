@@ -168,13 +168,20 @@ img.thumbnail {
  * Navbar
  */
 
-.navbar {
-  margin: 1em 0;
-  display: flex; /* this is also defined in framework, but in case of future changes */
-  align-items: center;
-  justify-content: space-between;
 }
-
+.navbar {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 5%;
+        background-color: #ffffff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .navbar-logo img {
+        width: 50px;
+        height: auto;
+      }
 .navbar > div {
   flex: 1;
 }
