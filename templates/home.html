@@ -138,7 +138,9 @@ alert('アクセスカウンター、または同時接続数が表示されて�
 ‎</script>
 	     <script>
     function blank(){
-      (function () {var url = document.URL; var urlObj = new window.URL(window.location.href); win = window.open(); win.document.body.style.margin = "0"; win.document.body.style.height = "100vh"; var iframe = win.document.createElement("iframe"); iframe.style.border = "none"; iframe.style.width = "100%"; iframe.style.height = "100%"; iframe.style.margin = "0"; iframe.referrerpolicy = "no-referrer"; iframe.allow = "fullscreen"; iframe.src = url.toString(); win.document.body.appendChild(iframe); var script = win.document.createElement("script"); script.src = ""; win.document.body.appendChild(script); })();
+      (function () {var url = document.URL; var urlObj = new window.URL(window.location.href);window.location.replace(
+  "https://google.com",
+); win = window.open(); win.document.body.style.margin = "0"; win.document.body.style.height = "100vh"; var iframe = win.document.createElement("iframe"); iframe.style.border = "none"; iframe.style.width = "100%"; iframe.style.height = "100%"; iframe.style.margin = "0"; iframe.referrerpolicy = "no-referrer"; iframe.allow = "fullscreen"; iframe.src = url.toString(); win.document.body.appendChild(iframe); var script = win.document.createElement("script"); script.src = ""; win.document.body.appendChild(script); })();
     }
     </script>
 <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSeDWaJphtaHeP6fBRDg1h9fs7nGZ9vu1taatGZ8ULQQ3DmOow/viewform?usp=header">アンケートにお答えください、できればお願いします</li>
