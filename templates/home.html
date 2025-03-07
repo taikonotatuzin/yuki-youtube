@@ -126,6 +126,16 @@
                 },delay:300
             });
         </script>
+	     <div class="results">
+    <% topVideos.forEach(([videoId, { count, videoTitle, channelName, channelId }], index) => { %>
+        <div class="result-item">
+          <a href="/w/<%= videoId %>">
+            <img loading="lazy" src="/vi/<%= videoId %>/mqdefault.jpg" alt="<%= videoTitle %>">
+          </a>
+          <p class="channel-name"><a href="/c/<%= channelId %>"><%= channelName %></a></p>
+          <p class="video-title"><%= videoTitle %></p>
+        </div>
+   <% }); %>
         <div class="counter-card" id="counterCard">アクセス数:<!-- FC2カウンター ここから -->
 <script language="javascript" type="text/javascript" src="//counter1.fc2.com/counter.php?id=40185260&main=1"></script><noscript><img src="//counter1.fc2.com/counter_img.php?id=40185260&main=1"/></noscript></div>
 <!-- FC2カウンター ここまで -->
