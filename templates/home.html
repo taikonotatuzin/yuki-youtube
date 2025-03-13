@@ -4,44 +4,147 @@
     <head>
         <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>navs{
-border-bottom: 5px solid #ccc;
-position: relative;
+    <style>/* Navbar & Navmenu color */
+:root {
+  --background-navbar: rgba(55, 55, 55, 0.98);
 }
-navs ul{
-position: absolute;
-left:10%;
-display: table;
-margin: 0 auto;
-padding: 0;
-width: 80%;
-text-align: center;
+
+.header {
+  background: var(--background-navbar);
+  position: fixed;
+  width: 100%;
+  height: 52px;
 }
-navs ul li{
-display: table-cell;
-min-width: 50px;
+
+/* Nav items */
+.menu {
+  list-style: none;
+  position: absolute;
+  width: 100%;
+  height: auto;
+  top: 0;
+  margin-top: 52px;
+  padding: 0 0 10px 0;
+  clear: both;
+  background: var(--background-navbar);
+  transition: 0.3192s cubic-bezier(0.04, 0.04, 0.12, 0.96) 0.1008s;
+  transform: scale(1, 0);
+  transform-origin: top;
 }
-navs ul li a{
-display: block;
-width: 100%;
-height: 100%;
-padding: 10px 0;
-text-decoration: none;
-color: #aaa;
+
+/* Hamburger menu button */
+.menu-btn:checked ~ .menu {
+  transform: scale(1, 1);
+  transform-origin: top;
+  transition: 0.3192s cubic-bezier(0.04, 0.04, 0.12, 0.96) 0.1008s;
 }
-navs ul li.current{
-font-weight: bold;
-border-top: 5px solid #00B0F0;
+
+/* Hamburger menbu text */
+.menu a {
+  text-decoration: none;
+  font-weight: 500;
+  letter-spacing: 2px;
+  font-size: 16px;
+  text-transform: capitalize;
+  color: #ddd;
+  opacity: 0;
+  transition: 0.5s;
 }
-navs ul li.current a{
-color: #00B0F0;
+
+.menu li {
+  border-top: 1px solid rgb(75, 75, 75);
+  padding: 15px 0;
+  margin: 0 54px;
+  opacity: 0;
+  transition: 0.5s;
 }
-navs ul li a:hover{
-color: #0089BB;
-background-color: #FBFBDD;
+
+.menu-btn:checked ~ .menu a,
+.menu-btn:checked ~ .menu li {
+  opacity: 1;
+  transition: 0.3192s cubic-bezier(0.04, 0.04, 0.12, 0.96) 0.2s;
 }
-navs ul li:hover{
-border-top: 5px solid #F8E750;
+
+.menu-btn {
+  display: none;
+}
+
+.menu-icon {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  padding: 24px 14px;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.navicon {
+  background: #ddd;
+  display: block;
+  height: 3px;
+  width: 26px;
+  position: relative;
+  transition: 0.3192s cubic-bezier(0.04, 0.04, 0.12, 0.96) 0.1008s;
+}
+
+.navicon:before,
+.navicon:after {
+  content: "";
+  display: block;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background: #ddd;
+  transition: 0.3192s cubic-bezier(0.04, 0.04, 0.12, 0.96) 0.1008s;
+}
+
+.navicon:before {
+  top: 9px;
+}
+
+.navicon:after {
+  bottom: 9px;
+}
+
+/* Hamburger Menu Animation Start */
+.menu-btn:checked ~ .menu-icon .navicon:before {
+  transform: rotate(-45deg);
+}
+
+.menu-btn:checked ~ .menu-icon .navicon:after {
+  transform: rotate(45deg);
+}
+
+.menu-btn:checked ~ .menu-icon:not(.steps) .navicon:before {
+  top: 0;
+}
+.menu-btn:checked ~ .menu-icon:not(.steps) .navicon:after {
+  bottom: 0;
+}
+
+.menu-btn:checked ~ .menu-icon .navicon {
+  background: rgba(0, 0, 0, 0);
+  transition: 0.2192s cubic-bezier(0.04, 0.04, 0.12, 0.96) 0.1008s;
+}
+/* Hamburger Menu Animation End */
+
+/* Navbar Container */
+.navtext-container {
+  width: 100%;
+  height: 52px;
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Navbar Text */
+.navtext {
+  position: absolute;
+  text-transform: uppercase;
+  color: #ddd;
+  letter-spacing: 4px;
+  font-size: 20px;
 }
     
     </style>
@@ -83,11 +186,20 @@ border-top: 5px solid #F8E750;
 </head>
 
     <body class="no-theme">
-       <div class="navs"> 
-	       <a href="javascript:location.replace('/bbs')">掲示板</a>
-		<a href="javascript:blank();">about:blank</a>
-                 <a href="javascript:location.replace('/proxy')">proxy</a>
-       </div>
+      <header class="header">
+    <div class="navtext-container">
+      <div class="navtext">company</div>
+    </div>
+    <input type="checkbox" class="menu-btn" id="menu-btn">
+    <label for="menu-btn" class="menu-icon"><span class="navicon"></span></label>
+    <ul class="menu">
+      <li class="top"><a href="#home">home</a></li>
+      <li><a href="#skills">skills</a></li>
+      <li><a href="#projects">projects</a></li>
+      <li><a href="#contact">contact</a></li>
+    </ul>
+
+  </header>
 <div id="search-widget" class="pure-g h-box">
             
             <div id="logo" class="pure-u-1">
