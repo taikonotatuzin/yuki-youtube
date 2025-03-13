@@ -569,7 +569,7 @@ def toggleVideoCheck():
   
 @app.get("/proxy", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("proxy.html", {"request": request})
+    return template("proxy/proxies.html", {"request": request})
       
 @app.get("/rammerhead", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
