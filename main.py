@@ -569,14 +569,14 @@ def toggleVideoCheck():
   
 @app.get("/proxy", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("proxy/proxies.html", {"request": request})
+    return template("proxy.html", {"request": request})
       
 @app.get("/rammerhead", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("rammerhead.html", {"request": request})
 @app.get("/chat", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("chat.html", {"request": request})
+    return template("shadow.html", {"request": request})
 
 
 @app.exception_handler(500)
