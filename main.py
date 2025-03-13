@@ -416,6 +416,13 @@ def thumbnail(v:str):
 @app.get("/suggest")
 def suggest(keyword:str):
     return [i[0] for i in json.loads(requests.get("http://www.google.com/complete/search?client=youtube&hl=ja&ds=yt&q=" + urllib.parse.quote(keyword), headers=getRandomUserAgent()).text[19:-1])[1]]
+  
+  @app.get("/shadow", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    # Cookieのチェックをしないため、承諾していない場合でもアクセス可能
+    # 必要に応じてデータを取得
+    # ここでは単純にhtmlを返す
+    return template("shadow.html", {"request": request})
 
 
 
