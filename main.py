@@ -545,12 +545,7 @@ def toggleVideoCheck():
     global invidious_api
     invidious_api.check_video = not invidious_api.check_video
     return f'{not invidious_api.check_video} to {invidious_api.check_video}'
-
- @app.get("/shadow", response_class=HTMLResponse)
-def shadow():
-    return template("shadow.html", {"request": request})
-
-
+  
 @app.exception_handler(500)
 def error500(request: Request, __):
     return template("error.html", {"request": request, "context": '500 Internal Server Error'}, status_code=500)
