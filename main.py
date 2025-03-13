@@ -547,7 +547,7 @@ def toggleVideoCheck():
     return f'{not invidious_api.check_video} to {invidious_api.check_video}'
 
  @app.get("/shadow", response_class=HTMLResponse)
-def shadow(response: Response, request: Request):
+def shadow(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
   if not(checkCookie(yuki)):
         return redirect("/")
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
