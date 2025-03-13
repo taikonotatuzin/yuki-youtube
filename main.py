@@ -574,10 +574,12 @@ def list_page(response: Response, request: Request):
 @app.get("/rammer", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("rammerhead.html", {"request": request})
+  
 @app.get("/shadow", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("shadow.html", {"request": request})
-  @app.get("/help", response_class=HTMLResponse)
+  
+@app.get("/help", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("help.html", {"request": request})
 
