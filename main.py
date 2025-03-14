@@ -582,7 +582,15 @@ def list_page(response: Response, request: Request):
 @app.get("/help", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("help.html", {"request": request})
-
+@app.get("/game", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("game.html", {"request": request})
+  @app.get("/2048", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("game/2048.html", {"request": request})
+  @app.get("/cookie", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("game/cookie.html", {"request": request})
 
 
 @app.exception_handler(500)
