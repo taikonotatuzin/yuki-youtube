@@ -587,9 +587,9 @@ def list_page(response: Response, request: Request):
 def list_page(response: Response, request: Request):
     return template("game.html", {"request": request})
 
-@app.get("/block", response_class=HTMLResponse)
+@app.get("/cookie", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("block.html", {"request": request})
+    return template("cookie.html", {"request": request})
 
 @app.exception_handler(500)
 def error500(request: Request, __):
