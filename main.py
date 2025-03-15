@@ -589,7 +589,7 @@ def list_page(response: Response, request: Request):
 
 @app.get("/block", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("2048.html", {"request": request})
+    return template("block.html", {"request": request})
 
 @app.exception_handler(500)
 def error500(request: Request, __):
