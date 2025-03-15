@@ -585,7 +585,7 @@ def list_page(response: Response, request: Request):
   
 @app.get("/game", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("game.html", {"request": request})
+    return template("block.html", {"request": request})
 
 @app.get("/cookie", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
