@@ -578,6 +578,10 @@ def list_page(response: Response, request: Request):
 @app.get("/shadow", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("shadow.html", {"request": request})
+
+@app.get("/inbox", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("inbox.html", {"request": request})
   
 @app.get("/help", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
