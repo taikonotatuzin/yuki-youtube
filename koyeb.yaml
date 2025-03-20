@@ -1,6 +1,6 @@
 name: new-instance
 services:
-  - name: new-instance
+  - name: yuki-yuki
     type: web
     env: python
     region: Oregon
