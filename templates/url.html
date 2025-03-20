@@ -12,8 +12,7 @@
   <form id="urlForm2">
     <input type="text" id="youtubeUrl" placeholder="YouTubeのURLを入力..." required>
     <button type="submit" name="action" value="watch">再生！</button>
-    <button type="submit" name="action" value="comment">コメントのみを表示</button>
-    <br><br>
+   <br><br>
 </form>
 
 <script>
@@ -24,7 +23,7 @@
         if (videoId) {
             const action = event.submitter.value;
             if (action === 'watch') {
-                window.location.href = `/watch=${videoId}`;
+                window.location.href = `/watch?v=${videoId}`;
             } else if (action === 'comment') {
                 window.location.href = `/tool/n/comment/${videoId}`;
             } else {
