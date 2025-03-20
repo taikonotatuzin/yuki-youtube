@@ -40,8 +40,6 @@
             const action = event.submitter.value;
             if (action === 'watch') {
                 window.location.href = `/watch?v=${videoId}`;
-            } else if (action === 'comment') {
-                window.location.href = `/tool/n/comment/${videoId}`;
             } else {
                 alert('Invalid action type');
             }
