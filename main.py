@@ -587,17 +587,13 @@ def list_page(response: Response, request: Request):
 def list_page(response: Response, request: Request):
     return template("help.html", {"request": request})
   
-  @app.get("/url", response_class=HTMLResponse)
-def list_page(response: Response, request: Request):
-    return template("url.html", {"request": request})
-  
 @app.get("/game", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("block.html", {"request": request})
 
-@app.get("/cookie", response_class=HTMLResponse)
+@app.get("/url", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("cookie.html", {"request": request})
+    return template("url.html", {"request": request})
 
 @app.exception_handler(500)
 def error500(request: Request, __):
