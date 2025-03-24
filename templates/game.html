@@ -10,10 +10,10 @@
             margin: 20px;
             background-color: #f9f9f9;
         }
-              .gallery {
+        .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* 幅を調整 */
+            gap: 15px; /* アイテム間の間隔を少し狭く */
         }
         .item {
             background: #ffffff;
@@ -21,6 +21,8 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
             transition: transform 0.3s, box-shadow 0.3s;
+            width: 90%; /* 幅を小さく */
+            margin: 0 auto; /* 中央に配置 */
         }
         .item:hover {
             transform: translateY(-10px);
