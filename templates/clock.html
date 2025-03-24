@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset=" UTF-8 ">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Clock</title>
+    <!--Press Spacebar-->
+  <style>
+  /* Clock style */
+          #clock {
+              text-align: center;
+              font-size: 36px; /* Larger font size */
+          }
+  
+          /* Hour, minute, second style */
+          #time {
+              font-size: 28px; /* Larger font size */
+              display: inline-block;
+          }
+  
+          /* Year and date style */
+          #date {
+              font-size: 24px; /* Larger font size */
+          }
+  </style>
+</head>
+
+<body>
+  <div id="clock">
+    <div id="date">
+    </div>
+    <div id="time">
+      <span id="hours">
+      </span>Hours
+      <span id="minutes">
+      </span>Minutes
+      <span id="seconds">
+      </span>Seconds</div>
+  </div>
+  <script>
+  // Variable to store anchor
+          let anchor = '';
+  
+          // Function to display digital clock
+          function displayClock() {
+              const now = new Date();
+              const hours = now.getHours().toString().padStart(2, '0');
+              const minutes = now.getMinutes().toString().padStart(2, '0');
+              const seconds = now.getSeconds().toString().padStart(2, '0');
+              const year = now.getFullYear();
+              const month = (now.getMonth() + 1).toString().padStart(2, '0');
+              const day = now.getDate().toString().padStart(2, '0');
+              
+              document.getElementById('hours').textContent = hours;
+              document.getElementById('minutes').textContent = minutes;
+              document.getElementById('seconds').textContent = seconds;
+              document.getElementById('date').textContent = `${year}${month}${day}`;
+          }
+  
+          // Initial display
+          displayClock();
+  
+          // Update the clock every second
+          setInterval(displayClock, 1000); // Event handler
+  
+          for when the space key is pressed           document.addEventListener('keydown', function(event) {               if (event.key === ' ') { // If the space key is pressed                   event.preventDefault(); // Disable default scrolling                   // Generate random alphanumeric characters                   const randomAnchor = Math.random().toString(36).substr(2, 6);                   // Replace the anchor with a new random value                   anchor = randomAnchor;                   // Add an anchor to the current URL                   const currentURL = window.location.href;                   const newURL = currentURL.replace(/#.*/, '') + '#' + anchor;                   // Change pages                   window.location.href = newURL;               }           });   </script> </body>
