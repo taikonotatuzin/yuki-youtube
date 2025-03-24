@@ -601,6 +601,10 @@ def list_page(response: Response, request: Request):
 @app.get("/sitsumon", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("otoiawase.html", {"request": request})
+@app.get("/news", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("news.html", {"request": request})
+
 
 
 @app.exception_handler(500)
