@@ -604,9 +604,9 @@ def list_page(response: Response, request: Request):
 @app.get("/news", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("news.html", {"request": request})
-@app.get("/clock", response_class=HTMLResponse)
+@app.get("/space", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("clock.html", {"request": request})
+    return template("space.html", {"request": request})
 
 
 @app.exception_handler(500)
