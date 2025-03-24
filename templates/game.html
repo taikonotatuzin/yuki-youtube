@@ -54,6 +54,17 @@
         #topButton:hover {
             background-color: #0056b3;
         }
+	        .description {
+            margin: 20px 0;
+            text-align: center;
+            font-size: 16px;
+        }
+	      }
+        .item p {
+            padding: 10px;
+            font-size: 14px;
+            color: #555;
+        }
     </style>
     <link rel="icon" href="/img/logo/favicon.ico">
          <link rel="stylesheet" href="/css/empty.css">
@@ -114,8 +125,10 @@
 <!--これを見てる人にお願い、これはコピペとかしないでね -->
     </div>
     <hr>
-    <h3>説明</h3>
-    <h4>使いたいものをクリックすると使えるよ、増やして欲しいのがあったら言ってねえー</h4>
+   <div class="description">
+            <h3>説明</h3>
+            <p>使いたいものをクリックすると使えるよ。増やして欲しいものがあれば教えてね！</p>
+        </div>
         <button id="topButton" onclick="javascript:location.replace('/')">  <i class="fas fa-arrow-up"></i>戻る</button>
 </body>
 </html>
