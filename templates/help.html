@@ -1,10 +1,11 @@
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
      <title>勉強に集中したい!!勉強への集中力をアップする方法とは？</title>
 	  <link rel="icon" href="/img/logo/favicon.ico">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         html, body {
             margin: 0;
@@ -31,11 +32,19 @@
         #topButton:hover {
             background-color: #0056b3;
         }
+	    #topButton:active {
+    transform: scale(0.95);
+    background-color: #ff6347;
+}
     </style>
 </head>
 <body>
-     <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScV9XYAxZqE4ZMNJvFK8ABjGfJmWgFz8dRf9YIXhk4ZMhfckQ/viewform" title=""></iframe>
-    <button id="topButton" onclick="javascript:location.replace('/')">戻る</button>
+  <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScV9XYAxZqE4ZMNJvFK8ABjGfJmWgFz8dRf9YIXhk4ZMhfckQ/viewform" title=""></iframe>
+    <button id="topButton" onclick="javascript:location.replace('/')">  <i class="fas fa-arrow-up"></i> 戻る</button>
+    <script>
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
 </body>
 </html>
- 
