@@ -376,28 +376,6 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "recommended_videos": video_data[1],
         "proxy":proxy
     })
-@app.get("/ume", response_class=HTMLResponse)
-def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
-    # v: video_id
-    if not(checkCookie(yuki)):
-        return redirect("/")
-    response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
-  return template('ume.html', {
-        "request": request,
-        "videoid": v,
-        "videourls": video_data[0]['video_urls'],
-        "description": video_data[0]['description_html'],
-        "video_title": video_data[0]['title'],
-        "author_id": video_data[0]['author_id'],
-        "author_icon": video_data[0]['author_thumbnails_url'],
-        "author": video_data[0]['author'],
-        "length_text": video_data[0]['length_text'],
-        "view_count": video_data[0]['view_count'],
-        "like_count": video_data[0]['like_count'],
-        "subscribers_count": video_data[0]['subscribers_count'],
-        "recommended_videos": video_data[1],
-        "proxy":proxy
-    })
 @app.get("/search", response_class=HTMLResponse)
 def search(q:str, response: Response, request: Request, page:Union[int, None]=1, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     if not(checkCookie(yuki)):
@@ -554,7 +532,6 @@ def displayAPI(api_name: str):
         
   return str(api_value)
     
-
 @app.get("/api/{api_name}/next", response_class=PlainTextResponse)
 def rotateAPI(api_name: str):
   match api_name:
