@@ -376,43 +376,16 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "recommended_videos": video_data[1],
         "proxy":proxy
     })
-@app.get('/ume', response_class=HTMLResponse)
+  @app.get("/ume", response_class=HTMLResponse)
 def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     # v: video_id
     if not(checkCookie(yuki)):
         return redirect("/")
     response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
-    video_data = getVideoData(v)
-    '''
-    return [
-        {
-            'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
-            'description_html': t["descriptionHtml"].replace("\n", "<br>"),
-            'title': t["title"],
-            'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"]))
-            'author_id': t["authorId"],
-            'author': t["author"],
-            'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
-            'view_count': t["viewCount"],
-            'like_count': t["likeCount"],
-            'subscribers_count': t["subCountText"]
-        },
-        [
-            {
-                "video_id": i["videoId"],
-                "title": i["title"],
-                "author_id": i["authorId"],
-                "author": i["author"],
-                "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
-                "view_count_text": i["viewCountText"]
-            } for i in recommended_videos
-        ]
-    ]
-    '''
-    response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
-    return template('ume.html', {
+  return template('ume.html', {
         "request": request,
         "videoid": v,
+        "videourls": video_data[0]['video_urls'],
         "description": video_data[0]['description_html'],
         "video_title": video_data[0]['title'],
         "author_id": video_data[0]['author_id'],
@@ -425,7 +398,6 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "recommended_videos": video_data[1],
         "proxy":proxy
     })
-  
 @app.get("/search", response_class=HTMLResponse)
 def search(q:str, response: Response, request: Request, page:Union[int, None]=1, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     if not(checkCookie(yuki)):
