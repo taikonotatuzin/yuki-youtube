@@ -539,6 +539,7 @@ body.dark-theme {
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin: 15px;
+  text-align: center;
   overflow: hidden;
   transition: all 0.3s ease;
   width: 784px;
