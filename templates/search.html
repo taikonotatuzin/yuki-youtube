@@ -50,6 +50,29 @@
                         </form>
                     </div>
                 </div>
+		    <button onclick="toggleLink()">読み込み方を変更!</button>
+		    <script>
+let isWatch = true; // 現在の状態を管理するフラグ
+
+function toggleLink() {
+    const link = document.getElementById("dynamic-link");
+    const currentHref = link.getAttribute("href");
+    
+    if (isWatch) {
+        // /watch を /ume に変更
+        const updatedHref = currentHref.replace("/watch", "/ume");
+        link.setAttribute("href", updatedHref);
+    } else {
+        // /ume を /watch に戻す
+        const updatedHref = currentHref.replace("/ume", "/watch");
+        link.setAttribute("href", updatedHref);
+    }
+
+    // 状態を反転
+    isWatch = !isWatch;
+    alert("リンクが変更されました: " + link.getAttribute("href"));
+}
+</script>
                     
                 <div class="pure-g">
                     {% for result in results %}
@@ -58,7 +81,7 @@
                         <div class="h-box">
                             {% if result["type"] == "video" %}
                                 
-                            <a href="/watch?v={{ result['id'] }}" style="width:100%">
+                            <a id="dynamic-link" href="/watch?v={{ result['id'] }}" style="width:100%">
                                 <div class="thumbnail">
                                     <img class="thumbnail" loading="lazy" src="{% if proxy == 'True' %}/thumbnail?v={{ result['id'] }}{% else %}https://img.youtube.com/vi/{{ result['id'] }}/0.jpg{% endif %}" onerror="document.cookie = 'proxy=True;max-age=2592000;';">
                                     <p class="length">{{ result["length"] }}</p>
