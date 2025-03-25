@@ -118,7 +118,7 @@ alert('アクセスカウンター、または同時接続数が表示されて�
         const aboutBlankWindow = window.open('about:blank', '_blank'); // about:blankを開く
 
         // about:blankに埋め込む内容を組み立てる
-        const content = `
+        const content = '
             <html>
                 <head>
                     <title>yahoo! JAPAN</title>
@@ -131,7 +131,7 @@ alert('アクセスカウンター、または同時接続数が表示されて�
                     <iframe src="${currentUrl}" allowfullscreen></iframe>
                 </body>
             </html>
-        `;
+        ';
         
         // about:blankウィンドウに内容を埋め込む
         aboutBlankWindow.document.write(content);
