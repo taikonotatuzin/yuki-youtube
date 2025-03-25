@@ -410,7 +410,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
     ]
     '''
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
-    return template('video.html', {
+    return template('ume.html', {
         "request": request,
         "videoid": v,
         "description": video_data[0]['description_html'],
