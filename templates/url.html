@@ -27,7 +27,8 @@
     <h1>YouTubeのURLを入力</h1>
   <form id="urlForm2">
     <input type="text" id="youtubeUrl" placeholder="YouTubeのURLを入力..." required>
-    <button type="submit" name="action" value="watch">再生！</button>
+    <button type="submit" name="action" value="watch">再生！(デフォルト)</button>
+    <button type="submit" name="action" value="watch1">再生！(埋め込み)</button>
    <br><br>
 </form>
 
@@ -40,6 +41,9 @@
             const action = event.submitter.value;
             if (action === 'watch') {
                 window.location.href = `/watch?v=${videoId}`;
+            else if (action === 'watch1') {
+                window.location.href = `/ume?v=${videoId}`;
+            } 
             } else {
                 alert('Invalid action type');
             }
