@@ -58,8 +58,7 @@
                 <div class="pure-g">
                     <div class="pure-u-1 pure-u-lg-1-5">
                         <a href="{{ videourls[0] }}" download="{{ video_title }}">ダウンロード</a><br>
-                        <a href="javascript:{navigator.share({title: '現時点の動画を共有', text: '{{ video_title }}', url: location.origin + '/watch?v={{ videoid }}' + '&t=' + Math.floor(document.getElementById('player').currentTime)})}">現時点の動画を共有</a><br>
-                        <a href="javascript:{navigator.share({title: '動画を共有', text: '{{ video_title }}', url: location.href})}">動画を共有</a><br>
+                       <a href="javascript:location.replace('/ume?=v{{ videoid }}')">
                         <hr>
                         <button onclick="location.replace(location.href)">Reload</button>
                         <a href="https://google.com">緊急ボタン</a>
