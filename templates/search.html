@@ -51,26 +51,31 @@
                     </div>
                 </div>
 		    <button onclick="toggleLink()">読み込み方を変更!</button>
-		    <script>
+		 <script>
 let isWatch = true; // 現在の状態を管理するフラグ
 
 function toggleLink() {
     const link = document.getElementById("dynamic-link");
     const currentHref = link.getAttribute("href");
-    
+    let message = ""; // メッセージ用の変数
+
     if (isWatch) {
         // /watch を /ume に変更
         const updatedHref = currentHref.replace("/watch", "/ume");
         link.setAttribute("href", updatedHref);
+        message = "埋め込みモードに変更されました！";
     } else {
         // /ume を /watch に戻す
         const updatedHref = currentHref.replace("/ume", "/watch");
         link.setAttribute("href", updatedHref);
+        message = "デフォルトモードに変更されました！";
     }
 
     // 状態を反転
     isWatch = !isWatch;
-    alert("リンクが変更されました: " + link.getAttribute("href"));
+
+    // メッセージをアラートで表示
+    alert(message);
 }
 </script>
                     
