@@ -25,6 +25,26 @@
             text-align: right;
             z-index: 20;
 	　　 color: #fffff;
+			     }
+        #topButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #topButton:hover {
+            background-color: #0056b3;
+        }
+	    #topButton:active {
+    transform: scale(0.95);
+    background-color: #ff6347;
+}
                       </style>
     </head>
     <body class="no-theme">
@@ -50,7 +70,7 @@
                         </form>
                     </div>
                 </div>
-		    <button onclick="toggleLink()">読み込み方を変更!</button>
+		    <button id="topButton onclick="toggleLink()">読み込み方を変更!</button>
 		 <script>
 let isWatch = true; // 現在の状態を管理するフラグ
 
