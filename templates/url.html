@@ -14,15 +14,26 @@
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="/js/utils/utils.js"></script>
     </head>
-    <body class="no-theme">
-        <div class="navbar-logo">
+    <body>
+       <div class="top-bar">
+               <div class="navbar-logo">
      <a href="/">
           <img
-            src="/img/logo/IMG_0258.jpeg"
+            src="/img/logo/th.png"
             alt="YouTube Icon"
           />
    </a>
         </div>
+		    <nav>
+		    <a href="javascript:location.replace('/bbs')">|掲示板|</a>
+		    <a href="javascript:openAboutBlank();">|about:blank|</a>
+		     <a href="javascript:location.replace('/proxypage')">|proxy|</a>
+		   <a href="javascript:location.replace('/url')">|urlで検索|</a>
+                   <a href="javascript:location.replace('/help')">|問い合わせ|</a>
+		   <a href="javascript:location.replace('/sitsumon')">|回答よろ|</a>
+		</nav>
+            </div>
+        <div  class="no-theme">
   <br><br>
     <h1>YouTubeのURLを入力</h1>
   <form id="urlForm2">
