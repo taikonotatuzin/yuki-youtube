@@ -658,6 +658,10 @@ def list_page(response: Response, request: Request):
 @app.get("/update", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("settings.html", {"request": request})
+@app.get("/others", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("others.html", {"request": request})
+
 
 
 @app.exception_handler(500)
