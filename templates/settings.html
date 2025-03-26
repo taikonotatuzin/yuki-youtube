@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設定スイッチとリンク</title>
+    <style>/* style.css */
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f4f4f9;
+}
+
+.container {
+    text-align: center;
+}
+
+.toggle-container {
+    margin-top: 20px;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin-bottom: 10px;
+}
+
+.toggle-switch input {
+    display: none;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #4caf50;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}</style>
+</head>
+<body>
+    <div class="container">
+        <h1>設定スイッチ</h1>
+        <p>以下のスイッチをオンにするとリンク動作が変更されます。</p>
+        
+        <div class="toggle-container">
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggle">
+                <span class="slider"></span>
+            </label>
+            <p id="status">オフ</p>
+        </div>
+
+        <a href="/watch" id="dynamic-link">リンクはこちら</a>
+    </div>
+
+    <script>
+        const toggleInput = document.getElementById('toggle');
+        const statusText = document.getElementById('status');
+        const dynamicLink = document.getElementById('dynamic-link');
+        let isWatch = true; // 初期状態
+
+        // ページ読み込み時にローカルストレージから状態を取得
+        const savedState = localStorage.getItem('toggleState');
+        if (savedState === 'on') {
+            toggleInput.checked = true;
+            statusText.textContent = 'オン';
+        } else {
+            statusText.textContent = 'オフ';
+        }
+
+        // トグルスイッチの状態が変更されたときの処理
+        toggleInput.addEventListener('change', () => {
+            const currentState = toggleInput.checked ? 'on' : 'off';
+            statusText.textContent = currentState === 'on' ? 'オン' : 'オフ';
+            localStorage.setItem('toggleState', currentState);
+
+            if (toggleInput.checked && isWatch) {
+                // ボタンがオンの場合
+                const currentHref = dynamicLink.getAttribute("href");
+                const updatedHref = currentHref.replace("/watch", "/ume");
+                dynamicLink.setAttribute("href", updatedHref);
+                alert("埋め込みモードに変更されました！");
+                isWatch = !isWatch; // 状態を反転
+            } else if (!toggleInput.checked && !isWatch) {
+                // ボタンがオフの場合
+                const currentHref = dynamicLink.getAttribute("href");
+                const updatedHref = currentHref.replace("/ume", "/watch");
+                dynamicLink.setAttribute("href", updatedHref);
+                alert("通常モードに戻りました！");
+                isWatch = !isWatch; // 状態を反転
+            }
+        });
+    </script>
+</body>
+</html>
