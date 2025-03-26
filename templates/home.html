@@ -18,6 +18,35 @@
             width: 200px;
             cursor: move;
         }
+	            
+
+        .top-bar {
+            background-color: #f9f9f9; /* 薄いグレーで柔らかな印象 */
+            color: #333;
+            padding: 15px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #555;
+        }
+
+        .top-bar a {
+            text-decoration: none;
+            color: #007bff; /* さわやかな青 */
+            margin-left: 15px;
+            font-size: 14px;
+        }
+
+        .top-bar a:hover {
+            text-decoration: underline;
+            color: #0056b3; /* 濃い青で強調 */
+        }
     </style>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="robots" content="noindex,nofollow">
@@ -59,14 +88,16 @@
     <body class="no-theme">
 <div id="search-widget" class="pure-g h-box">
             
-            <div id="logo" class="pure-u-1">
+         <div class="top-bar">
                 <h1 href="javascript:location.replace('/')" class="pure-menu-heading">Yuki-Youtube</h1>
+		    <nav>
 		    <a href="javascript:location.replace('/bbs')">|掲示板|</a>
 		    <a href="javascript:openAboutBlank();">|about:blank|</a>
 		     <a href="javascript:location.replace('/proxypage')">|proxy|</a>
 		   <a href="javascript:location.replace('/url')">|urlで検索|</a>
                    <a href="javascript:location.replace('/help')">|問い合わせ|</a>
 		   <a href="javascript:location.replace('/sitsumon')">|回答よろ|</a>
+		</nav>
             </div>
             
             <div class="pure-u-1-4"></div>
@@ -141,6 +172,4 @@ alert('アクセスカウンター、または同時接続数が表示されて�
 	    	<script src="//accaii.com/siken1/script.js" async></script><noscript><img src="//accaii.com/siken1/script?guid=on"></noscript>
     <div style="width:100%;height:401.5px;margin:1px;background:#4db6ac;"><script src="//accaii.com/siken1/widget.js" async></script></div>
 	    <br>fork lunakamituki modification …#*#sleepy#*#…</br>
-	    	<!--shinobi1--><script type="text/javascript" src="//xa.shinobi.jp/ufo/191887800"></script><noscript><a href="//xa.shinobi.jp/bin/gg?191887800" target="_blank"><img src="//xa.shinobi.jp/bin/ll?191887800" border="0"></a><br><span style="font-size:9px"><img style="margin:0;vertical-align:text-bottom;" src="//img.shinobi.jp/tadaima/fj.gif" width="19" height="11"> </span></noscript><!--shinobi2-->
-</body>
 </html>
