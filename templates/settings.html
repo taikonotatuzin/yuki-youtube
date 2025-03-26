@@ -85,42 +85,45 @@ input:checked + .slider:before {
     </div>
 
     <script>
-        const toggleInput = document.getElementById('toggle');
-        const statusText = document.getElementById('status');
-        const dynamicLink = document.getElementById('dynamic-link');
-        let isWatch = true; // 初期状態
+    let isWatch = true; // 現在の状態を管理するフラグ
 
-        // ページ読み込み時にローカルストレージから状態を取得
-        const savedState = localStorage.getItem('toggleState');
-        if (savedState === 'on') {
-            toggleInput.checked = true;
-            statusText.textContent = 'オン';
-        } else {
-            statusText.textContent = 'オフ';
+function handleToggleChange(toggleInputId, statusTextId, linkId) {
+    const toggleInput = document.getElementById(toggleInputId);
+    const statusText = document.getElementById(statusTextId);
+    const dynamicLink = document.getElementById(linkId);
+
+    // ページ読み込み時にローカルストレージから状態を取得
+    const savedState = localStorage.getItem('toggleState');
+    if (savedState === 'on') {
+        toggleInput.checked = true;
+        statusText.textContent = 'オン';
+    } else {
+        statusText.textContent = 'オフ';
+    }
+
+    // トグルスイッチの状態が変更されたときの処理
+    toggleInput.addEventListener('change', () => {
+        const currentState = toggleInput.checked ? 'on' : 'off';
+        statusText.textContent = currentState === 'on' ? 'オン' : 'オフ';
+        localStorage.setItem('toggleState', currentState);
+
+        if (toggleInput.checked && isWatch) {
+            // ボタンがオンの場合
+            const currentHref = dynamicLink.getAttribute("href");
+            const updatedHref = currentHref.replace("/watch", "/ume");
+            dynamicLink.setAttribute("href", updatedHref);
+            alert("埋め込みモードに変更されました！");
+            isWatch = !isWatch; // 状態を反転
+        } else if (!toggleInput.checked && !isWatch) {
+            // ボタンがオフの場合
+            const currentHref = dynamicLink.getAttribute("href");
+            const updatedHref = currentHref.replace("/ume", "/watch");
+            dynamicLink.setAttribute("href", updatedHref);
+            alert("通常モードに戻りました！");
+            isWatch = !isWatch; // 状態を反転
         }
-
-        // トグルスイッチの状態が変更されたときの処理
-        toggleInput.addEventListener('change', () => {
-            const currentState = toggleInput.checked ? 'on' : 'off';
-            statusText.textContent = currentState === 'on' ? 'オン' : 'オフ';
-            localStorage.setItem('toggleState', currentState);
-
-            if (toggleInput.checked && isWatch) {
-                // ボタンがオンの場合
-                const currentHref = dynamicLink.getAttribute("href");
-                const updatedHref = currentHref.replace("/watch", "/ume");
-                dynamicLink.setAttribute("href", updatedHref);
-                alert("埋め込みモードに変更されました！");
-                isWatch = !isWatch; // 状態を反転
-            } else if (!toggleInput.checked && !isWatch) {
-                // ボタンがオフの場合
-                const currentHref = dynamicLink.getAttribute("href");
-                const updatedHref = currentHref.replace("/ume", "/watch");
-                dynamicLink.setAttribute("href", updatedHref);
-                alert("通常モードに戻りました！");
-                isWatch = !isWatch; // 状態を反転
-            }
-        });
+    });
+}
     </script>
 </body>
 </html>
