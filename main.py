@@ -655,7 +655,7 @@ def list_page(response: Response, request: Request):
 @app.get("/space", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("space.html", {"request": request})
-@app.get("/chat", response_class=HTMLResponse)
+@app.get("/settings", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("clock.html", {"request": request})
 
