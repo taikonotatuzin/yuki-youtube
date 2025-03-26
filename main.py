@@ -657,7 +657,7 @@ def list_page(response: Response, request: Request):
     return template("space.html", {"request": request})
 @app.get("/settings", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("clock.html", {"request": request})
+    return template("settings.html", {"request": request})
 
 
 @app.exception_handler(500)
