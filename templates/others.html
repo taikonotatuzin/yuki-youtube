@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アニメーション付きボックス</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+        h2 {
+            font-size: 24px;
+            color: #333;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .box {
+            width: 200px;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards;
+        }
+        .box:hover {
+            transform: scale(1.05);
+            background-color: #f1f1f1;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .description {
+            font-size: 14px;
+            color: #666;
+        }
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <section>
+        <h2>その他</h2>
+        <div class="container">
+            <div class="box">
+                <div class="title">題名 1</div>
+                <div class="description">これは説明文です。</div>
+            </div>
+            <div class="box">
+                <div class="title">題名 2</div>
+                <div class="description">これも説明文です。</div>
+            </div>
+            <div class="box">
+                <div class="title">題名 3</div>
+                <div class="description">説明文をここに追加できます。</div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
