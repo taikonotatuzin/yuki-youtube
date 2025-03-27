@@ -14,27 +14,34 @@
             font-size: 24px;
             color: #333;
         }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .box {
-            width: 200px;
-            padding: 15px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            opacity: 0;
-            transform: translateY(20px);
-            animation: fadeInUp 1s ease forwards;
-        }
-        .box:hover {
-            transform: scale(1.05);
-            background-color: #f1f1f1;
-            transition: transform 0.3s, background-color 0.3s;
-        }
+       .container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.box {
+    width: 250px; /* Increased width */
+    height: 120px; /* Added fixed height */
+    padding: 20px; /* Increased padding for better spacing */
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 1s ease forwards;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center; /* Centered text alignment */
+}
+
+.box:hover {
+    transform: scale(1.05);
+    background-color: #f1f1f1;
+    transition: transform 0.3s, background-color 0.3s;
+}
         a.box {
     display: block;
     text-decoration: none;
@@ -61,6 +68,19 @@
                 transform: translateY(0);
             }
         }
+	    @media (max-width: 768px) {
+    .container {
+        flex-direction: column; /* スマホではボックスを縦に配置 */
+        align-items: center;
+    }
+
+    .box {
+        width: 90%; /* ボックスが画面幅に収まるように調整 */
+        height: auto; /* 高さは内容に合わせて調整 */
+        padding: 15px; /* パディングを少し減らしてコンパクトに */
+    }
+}
+
     </style>
     <link rel="icon" href="/img/logo/favicon.ico">
              <link rel="stylesheet" href="/css/empty.css">
