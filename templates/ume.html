@@ -16,6 +16,24 @@
         <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="/js/utils/utils.js"></script>
+	     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      // モバイル時：ハンバーガーメニューのトグル
+      $("#hamburger").click(function() {
+        $("#top-nav").toggleClass("show");
+      });
+      
+      // スクロールによるトップバーの縮小効果
+      $(window).on("scroll", function() {
+        if($(window).scrollTop() > 50) {
+          $("#top-bar").addClass("scrolled");
+        } else {
+          $("#top-bar").removeClass("scrolled");
+        }
+      });
+    });
+  </script>
     </head>
     <body>
        <header id="top-bar">
