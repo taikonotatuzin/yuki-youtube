@@ -1,138 +1,211 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title>勉強に集中したい!!勉強への集中力をアップする方法とは？</title>
-	    <link rel="icon" href="/img/logo/favicon.ico">
-             <link rel="stylesheet" href="/css/empty.css">
-        <link rel="stylesheet" href="/css/pure-min.css">
-        <link rel="stylesheet" href="/css/grids-responsive-min.css">
-        <link rel="stylesheet" href="/css/ionicons.min.css">
-        <link rel="stylesheet" href="/css/default.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0px;
-            background-color: #f9f9f9;
-        }
-             .gallery {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-        }
-        .item {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
-            width: 200px;
-            text-align: center;
-            padding: 10px;
-        }
-        .item img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 4px;
-        }
-        .item p {
-            margin: 10px 0 0;
-            font-size: 14px;
-            color: #555;
-        }
-	      .item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
-	      }
-              #topButton {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #007BFF;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        #topButton:hover {
-            background-color: #0056b3;
-        }
-	        #topButton:active {
-    transform: scale(0.95);
-    background-color: #ff6347;
-}
-	        .description {
-            margin: 20px 0;
-            text-align: center;
-            font-size: 16px;
-        }
-	      }
-        .item p {
-            padding: 10px;
-            font-size: 14px;
-            color: #555;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>勉強に集中したい!!勉強への集中力をアップする方法とは？</title>
+  <link rel="icon" href="/img/logo/favicon.ico">
+  <link rel="stylesheet" href="/css/empty.css">
+  <link rel="stylesheet" href="/css/pure-min.css">
+  <link rel="stylesheet" href="/css/grids-responsive-min.css">
+  <link rel="stylesheet" href="/css/ionicons.min.css">
+  <link rel="stylesheet" href="/css/default.css">
+  <style>
+    /* 基本設定 */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f9f9f9;
+      overflow-x: hidden;
+    }
+    /* トップバー */
+    .top-bar {
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 10px;
+    }
+    .navbar-logo img {
+      height: 40px;
+      transition: transform 0.3s ease;
+    }
+    .navbar-logo img:hover {
+      transform: scale(1.1);
+    }
+    nav a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+    nav a:hover {
+      color: #007BFF;
+    }
+    /* ギャラリー用スタイル */
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      padding: 20px;
+    }
+    .item {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+      width: 200px;
+      text-align: center;
+      padding: 10px;
+      /* 初期状態：下にずれて透明 */
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s forwards;
+    }
+    /* 個別遅延はインライン style で調整 */
+    .item img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+      transition: transform 0.3s ease;
+    }
+    .item:hover img {
+      transform: scale(1.05);
+    }
+    .item p {
+      margin: 10px 0 0;
+      padding: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+    .item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    }
+    /* アニメーション定義 */
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    /* 戻るボタン */
+    #topButton {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #007BFF;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    #topButton:hover {
+      background-color: #0056b3;
+    }
+    #topButton:active {
+      transform: scale(0.95);
+      background-color: #ff6347;
+    }
+    /* 説明エリア */
+    .description {
+      margin: 20px 0;
+      text-align: center;
+      font-size: 16px;
+      padding: 0 20px;
+    }
+  </style>
 </head>
 <body>
-	<div class="top-bar">
-                             <div class="navbar-logo">
-     <a href="/">
-          <img
-            src="/img/logo/th.png"
-            alt="YouTube Icon"
-          />
-   </a>
-				        </div>
-		     <nav>
-		    <a href="javascript:location.replace('/bbs')">|掲示板|</a>
-		     <a href="javascript:location.replace('/proxypage')">|proxy|</a>
-		 　<a href="javascript:location.replace('/others')">|その他|</a>
-		   <a href="javascript:location.replace('/sitsumon')">|回答よろ|</a>
-		</nav>
-            </div>
-	<br>
-    <div class="gallery">
-         <div class="item">
-             <a href="/inbox">
-            <img src="/img/logo/IMG_0276.jpeg" alt="inbox"></a>
-            <p>inbox:これを使えば直接youtubeが見れるとか見れないとか</p>
-	 </div>
-        <div class="item">
-             <a href="/shadow">
-            <img src="/img/logo/shadow.png" alt="shadow"></a>
-            <p>shadow:この頃は不具合しか起こさない為使えないかもしれないです</p>
-        </div>
-         <div class="item">
-        <a href="/light">
-            <img src="/img/logo/light.jpeg" alt="light"></a>
-            <p>light:この頃見た目が変わったけど僕は前の見た目の方が好きでした…</p>
-        </div>
-	    <div class="item">
-        <a href="/space">
-            <img src="/img/logo/space.jpeg" alt="space"></a>
-            <p>space:上のurlを貼るところに「https://bing.com」と打ってから使用しよう</p>
-        </div>
-	  <div class="item">
-       <a href="https://haihu-bysleepy-6.myclarevision.com" target="_blank">
-            <img src="/img/logo/inter.jpeg" alt="inter"></a>
-            <p>interstellar:重いサイトが比較的軽く開けます、お勧めは漫画raw!※新しいタブで開きます</p>
-         </div>
-	         <div class="item">
-        <a href="https://haihu-bysleepy-6.myclarevision.com" target="_blank">
-            <img src="/img/logo/uto.jpeg" alt="uto"></a>
-            <p>interstellar:重いサイトが比較的軽く開けます、お勧めは漫画raw!※新しいタブで開きます</p>
-         </div>
-<!--これを見てる人にお願い、これはコピペとかしないでね -->
+  <header id="top-bar">
+    <div class="navbar-logo">
+      <a href="/"><img src="/img/logo/th.png" alt="Logo"></a>
     </div>
-    <hr>
-   <div class="description">
-            <h3>説明</h3>
-            <p>使いたいものをクリックすると使えるよ。増やして欲しいものがあれば<a href="javascript:location.replace('/help')">ここまで！</a></p>
-        </div>
-        <button id="topButton" onclick="javascript:location.replace('/')">  <i class="fas fa-arrow-up"> </i>戻る</button>
+    <!-- モバイル用ハンバーガーアイコン -->
+    <div id="hamburger">&#9776;</div>
+    <!-- ナビゲーション -->
+    <nav id="top-nav">
+      <a href="/bbs">掲示板</a>
+      <a href="/proxypage">Proxy</a>
+      <a href="/others">その他</a>
+      <a href="/sitsumon">回答よろ</a>
+	&emsp;
+    </nav>
+  </header>
+  <br>
+  <div class="gallery">
+    <div class="item" style="animation-delay: 0.1s;">
+      <a href="/inbox">
+        <img src="/img/logo/IMG_0276.jpeg" alt="inbox">
+      </a>
+      <p>inbox:これを使えば直接youtubeが見れるとか見れないとか</p>
+    </div>
+    <div class="item" style="animation-delay: 0.2s;">
+      <a href="/shadow">
+        <img src="/img/logo/shadow.png" alt="shadow">
+      </a>
+      <p>shadow:この頃は不具合しか起こさない為使えないかもしれないです</p>
+    </div>
+    <div class="item" style="animation-delay: 0.3s;">
+      <a href="/light">
+        <img src="/img/logo/light.jpeg" alt="light">
+      </a>
+      <p>light:この頃見た目が変わったけど僕は前の見た目の方が好きでした…</p>
+    </div>
+    <div class="item" style="animation-delay: 0.4s;">
+      <a href="/space">
+        <img src="/img/logo/space.jpeg" alt="space">
+      </a>
+      <p>space:上のurlを貼るところに「https://bing.com」と打ってから使用しよう</p>
+    </div>
+    <div class="item" style="animation-delay: 0.5s;">
+      <a href="https://haihu-bysleepy-6.myclarevision.com" target="_blank">
+        <img src="/img/logo/inter.jpeg" alt="inter">
+      </a>
+      <p>interstellar:重いサイトが比較的軽く開けます、お勧めは漫画raw!※新しいタブで開きます</p>
+    </div>
+    <div class="item" style="animation-delay: 0.6s;">
+      <a href="https://haihu-bysleepy-6.myclarevision.com" target="_blank">
+        <img src="/img/logo/uto.jpeg" alt="uto">
+      </a>
+      <p>interstellar:重いサイトが比較的軽く開けます、お勧めは漫画raw!※新しいタブで開きます</p>
+    </div>
+    <!-- これを見てる人にお願い、これはコピペとかしないでね -->
+  </div>
+  <hr>
+  <div class="description">
+    <h3>説明</h3>
+    <p>使いたいものをクリックすると使えるよ。増やして欲しいものがあれば<a href="javascript:location.replace('/help')">ここまで！</a></p>
+  </div>
+  <button id="topButton" onclick="scrollToTop()">戻る</button>
+  
+  <!-- JavaScriptで動きを追加 -->
+  <script>
+    // スムーズにトップへスクロールする関数
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // スクロール位置に応じて「戻る」ボタンの表示・非表示を切り替え
+    window.addEventListener('scroll', function () {
+      const topButton = document.getElementById('topButton');
+      if (window.scrollY > 200) {
+        topButton.style.opacity = 1;
+      } else {
+        topButton.style.opacity = 0;
+      }
+    });
+  </script>
 </body>
 </html>
