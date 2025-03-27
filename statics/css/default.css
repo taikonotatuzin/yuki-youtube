@@ -209,6 +209,19 @@ img.thumbnail {
         width: 100px;
         height: auto;
       }
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .navbar-logo img {
+        width: 150px; /* Increased width for better visibility on smaller screens */
+        height: auto; /* Aspect ratio remains intact */
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar-logo img {
+        width: 180px; /* Further increase width for very small screens */
+        height: auto; /* Keeps the image proportional */
+    }
 }
 
 /* Actual logo */
