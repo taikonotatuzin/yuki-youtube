@@ -14,22 +14,21 @@
             <script src="./scripts.js"></script>
     </head>
     <body>
-        <div class="top-bar">
-                             <div class="navbar-logo">
-     <a href="/">
-          <img
-            src="/img/logo/th.png"
-            alt="YouTube Icon"
-          />
-   </a>
-				        </div>
-		     <nav>
-		    <a href="javascript:location.replace('/bbs')">|掲示板|</a>
-		     <a href="javascript:location.replace('/proxypage')">|proxy|</a>
-		 　<a href="javascript:location.replace('/others')">|その他|</a>
-		   <a href="javascript:location.replace('/sitsumon')">|回答よろ|</a>
-		</nav>
-            </div>
+         <header id="top-bar">
+    <div class="navbar-logo">
+      <a href="/"><img src="/img/logo/th.png" alt="Logo"></a>
+    </div>
+    <!-- モバイル用ハンバーガーアイコン -->
+    <div id="hamburger">&#9776;</div>
+    <!-- ナビゲーション -->
+    <nav id="top-nav">
+      <a href="/bbs">掲示板</a>
+      <a href="/proxypage">Proxy</a>
+      <a href="/others">その他</a>
+      <a href="/sitsumon">回答よろ</a>
+	&emsp;
+    </nav>
+  </header>
 	    <br>
          <h1>読み込み中...</h1>
   <script>setTimeout(function(){location.reload();},1000);</script>
