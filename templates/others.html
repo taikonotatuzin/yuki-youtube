@@ -1,87 +1,96 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>勉強に集中したい!!勉強への集中力をアップする方法とは？</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f9f9f9;
-        }
-        h2 {
-            font-size: 24px;
-            color: #333;
-        }
-       .container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>勉強に集中したい!! シンプルで動きのあるデザイン (JavaScript付き)</title>
+  <style>
+    /* 基本のスタイル */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
 
-.box {
-    width: 250px; /* Increased width */
-    height: 120px; /* Added fixed height */
-    padding: 20px; /* Increased padding for better spacing */
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 1s ease forwards;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center; /* Centered text alignment */
-}
+    h2 {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-.box:hover {
-    transform: scale(1.05);
-    background-color: #f1f1f1;
-    transition: transform 0.3s, background-color 0.3s;
-}
-        a.box {
-    display: block;
-    text-decoration: none;
-    color: inherit;
-}
-
-        .title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .description {
-            font-size: 14px;
-            color: #666;
-        }
-        @keyframes fadeInUp {
-            0% {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-	    @media (max-width: 768px) {
+    /* コンテナ：初期状態は下にずれていて、不透明度0 */
     .container {
-        flex-direction: column; /* スマホではボックスを縦に配置 */
-        align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
     }
 
+    /* コンテナが表示状態になるアニメーション */
+    .container.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* 各ボックスの基本スタイル */
     .box {
-        width: 90%; /* ボックスが画面幅に収まるように調整 */
-        height: auto; /* 高さは内容に合わせて調整 */
-        padding: 15px; /* パディングを少し減らしてコンパクトに */
+      width: 250px;
+      height: 120px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease, background-color 0.3s ease;
     }
-}
 
-    </style>
+    /* ボックスがIntersection Observerで表示判定されたらフェードイン */
+    .box.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ホバー時 */
+    .box:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+      background-color: #fdfdfd;
+    }
+
+    /* タイトルと説明のスタイル */
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #222;
+    }
+
+    .description {
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* レスポンシブ対応 */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        align-items: center;
+      }
+      .box {
+        width: 90%;
+        height: auto;
+      }
+    }
+  </style>
 		     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script>
     $(document).ready(function() {
@@ -100,15 +109,9 @@
       });
     });
   </script>
-    <link rel="icon" href="/img/logo/favicon.ico">
-             <link rel="stylesheet" href="/css/empty.css">
-        <link rel="stylesheet" href="/css/pure-min.css">
-        <link rel="stylesheet" href="/css/grids-responsive-min.css">
-        <link rel="stylesheet" href="/css/ionicons.min.css">
-        <link rel="stylesheet" href="/css/default.css">
 </head>
 <body>
-  <header id="top-bar">
+	 <header id="top-bar">
     <div class="navbar-logo">
       <a href="/"><img src="/img/logo/th.png" alt="Logo"></a>
     </div>
@@ -124,22 +127,58 @@
     </nav>
   </header>
     <br>
-    <section>
-        <h2>その他</h2>
-       <div class="container">
-        <a href="javascript:location.replace('/url')" class="box">
-            <div class="title">urlで検索</div>
-            <div class="description">youtubeのurlから動画を視聴できます。デフォルト、埋め込みから選べます</div>
-        </a>
-        <a href="javascript:location.replace('/update')" class="box">
-            <div class="title">アップデート状況</div>
-            <div class="description">名前の通りアップデート状況がわかります、機能とか注意点とかが週2-4程度で更新していきます</div>
-        </a>
-        <a href="javascript:location.replace('/help')" class="box">
-            <div class="title">質問</div>
-            <div class="description">googleformで僕に問題点や質問点を送れます。後々Q&Aという項目を作る予定ですので改善点など、お待ちしております</div>
-        </a>
+  <section>
+    <h2>その他</h2>
+    <div class="container" id="boxContainer">
+      <a href="javascript:location.replace('/url')" class="box">
+        <div class="title">urlで検索</div>
+        <div class="description">youtubeのurlから動画を視聴できます。デフォルト、埋め込みから選べます</div>
+      </a>
+      <a href="javascript:location.replace('/update')" class="box">
+        <div class="title">アップデート状況</div>
+        <div class="description">アップデート状況が確認でき、機能や注意点が随時更新されています</div>
+      </a>
+      <a href="javascript:location.replace('/help')" class="box">
+        <div class="title">質問</div>
+        <div class="description">googleフォームで問題点や質問点を送れます。Q&amp;Aページで改善案を募集中です</div>
+      </a>
     </div>
-    </section>
+  </section>
+
+  <script>
+    // DOMの読み込み完了後の動作
+    document.addEventListener("DOMContentLoaded", function() {
+      const container = document.getElementById('boxContainer');
+      const boxes = document.querySelectorAll('.box');
+
+      // ページ全体のフェードイン用
+      setTimeout(() => {
+        container.classList.add('visible');
+      }, 200);
+
+      // IntersectionObserverを使って、各ボックスが画面に見えたら表示
+      if ('IntersectionObserver' in window) {
+        const options = {
+          threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observerRef) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observerRef.unobserve(entry.target);
+            }
+          });
+        }, options);
+
+        boxes.forEach(box => {
+          observer.observe(box);
+        });
+      } else {
+        // 古いブラウザ向けのフォールバック：すべて一括で表示
+        boxes.forEach(box => box.classList.add('visible'));
+      }
+    });
+  </script>
 </body>
 </html>
