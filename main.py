@@ -661,6 +661,9 @@ def list_page(response: Response, request: Request):
 @app.get("/others", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("others.html", {"request": request})
+@app.get("/qanda", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("Q&A.html", {"request": request})
 
 
 
