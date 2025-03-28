@@ -31,87 +31,107 @@ header {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* メインコンテナ */
-.container {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    background: #f8f9fa; /* 薄いグレー */
-    border: 1px solid #e2e2e2;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: #f8f9fa; /* 薄いグレー */
+      border: 1px solid #e2e2e2;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 1s ease-in-out;
+    }
 
-/* エントリーのカードスタイル */
-.entry {
-    margin-bottom: 20px;
-    padding: 15px;
-    border: 1px solid #dcdcdc; /* 明るいグレー */
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    background-color: #ffffff; /* 白背景 */
-}
+    /* エントリーのカードスタイル */
+    .entry {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #dcdcdc; /* 明るいグレー */
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      background-color: #ffffff; /* 白背景 */
+      border-left: 5px solid #3b82f6; /* 左にアクセントライン */
+      opacity: 0;
+      transform: translateY(20px);
+      animation: slideUp 0.5s forwards;
+    }
 
-.entry h2 {
-    margin: 0 0 10px 0;
-    font-size: 18px;
-    color: #5f5f5f; /* ダークグレー */
-}
+    .entry h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      color: #5f5f5f; /* ダークグレー */
+    }
 
-.entry p {
-    margin: 0;
-    font-size: 16px;
-    color: #4d4d4d; /* 濃いめのグレー */
-}
+    .entry p {
+      margin: 0;
+      font-size: 16px;
+      color: #4d4d4d; /* 濃いめのグレー */
+    }
 
-/* フォームのスタイル */
-form {
-    margin-top: 20px;
-    padding: 15px;
-    border: 1px solid #dcdcdc;
-    border-radius: 5px;
-    background-color: #f8f9fa;
-}
+    /* フォームのスタイル */
+    form {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #dcdcdc;
+      border-radius: 5px;
+      background-color: #f8f9fa;
+    }
 
-form textarea {
-    width: 100%;
-    height: 100px;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #dcdcdc;
-    border-radius: 5px;
-    resize: none;
-    background-color: #ffffff; /* テキストエリアの白背景 */
-}
+    form textarea {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #dcdcdc;
+      border-radius: 5px;
+      resize: none;
+      background-color: #ffffff; /* テキストエリアの白背景 */
+    }
 
-form button {
-    margin-top: 10px;
-    padding: 10px 20px;
-    background-color: #5f5f5f; /* ダークグレー */
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+    form button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #5f5f5f; /* ダークグレー */
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s;
+    }
 
-form button:hover {
-    background-color: #4a4a4a; /* ヘバー時にさらに濃いグレー */
-}
-        .entry {
-    border-left: 5px solid #3b82f6; /* 左にアクセントライン */
-    padding: 15px;
-}
-        body.dark-mode {
-    background-color: #2d2d2d; /* ダーク背景 */
-    color: #f1f1f1;
-}
+    form button:hover {
+      background-color: #4a4a4a; /* ホバー時にさらに濃いグレー */
+    }
 
-button {
-    background-color: #ff5722; /* 明るいアクセント色 */
-}
+    body.dark-mode {
+      background-color: #2d2d2d; /* ダーク背景 */
+      color: #f1f1f1;
+    }
 
+    button {
+      background-color: #ff5722; /* 明るいアクセント色 */
+    }
+
+    /* アニメーション */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* エントリーにホバーエフェクトを追加 */
+    .entry:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
 </style>
 </head>
 <body>
