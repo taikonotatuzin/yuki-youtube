@@ -670,6 +670,10 @@ def list_page(response: Response, request: Request):
 @app.exception_handler(500)
 def error500(request: Request, __):
     return template("error.html", {"request": request, "context": '500 Internal Server Error'}, status_code=500)
+@app.exception_handler(404)
+def error404(request: Request, __):
+    return template("error.html", {"request": request, "context": '500 Internal Server Error'}, status_code=404)
+
 
 @app.exception_handler(APITimeoutError)
 def apiWait(request: Request, exception: APITimeoutError):
