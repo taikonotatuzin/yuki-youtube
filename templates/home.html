@@ -153,6 +153,60 @@
       padding: 20px;
       line-height: 1.6;
     }
+/* 最新情報欄の基本スタイル（小さめに調整） */
+.latest-info {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #000;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  width: 200px;
+  animation: fadeIn 1s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* タブレットサイズ以下（例：幅768px以下）の設定 */
+@media (max-width: 768px) {
+  .latest-info {
+    width: 35%;
+    right: 5%;
+    bottom: 15px;
+    padding: 8px;
+  }
+  .latest-info h3 {
+    font-size: 16px;
+  }
+  .latest-info p {
+    font-size: 14px;
+  }
+}
+
+/* スマートフォンサイズ以下（例：幅480px以下）の設定 */
+@media (max-width: 480px) {
+  .latest-info {
+    width: 80%;
+    right: 5%;
+    bottom: 10px;
+    padding: 6px;
+  }
+  .latest-info h3 {
+    font-size: 14px;
+  }
+  .latest-info p {
+    font-size: 12px;
+  }
+}
+
+
+
   </style>
   
   <!-- jQuery（DOM操作用） -->
@@ -210,6 +264,11 @@
 	&emsp;
     </nav>
   </header>
+	    <!-- 最新情報欄（右下固定） -->
+<div class="latest-info" id="latestInfo">
+  <p id="infoContent">yukiyoutube<sup>+</sup>にようこそ!!</p>
+</div>
+
 	<div class="no-theme">
 		<div id="search-widget" class="pure-g h-box">
 			        <div id="logo" class="pure-u-1">
@@ -292,5 +351,19 @@ alert('アクセスカウンター、または同時接続数が表示されて�
       // $(".counter-card").draggable("disable");
     });
   </script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const infoContent = document.getElementById("infoContent");
+    let toggle = true;
+    
+    // 5秒ごとに「内容1」と「内容2」を交互に表示
+    setInterval(() => {
+      infoContent.textContent = toggle ? "内容2" : "内容1";
+      toggle = !toggle;
+    }, 5000);
+  });
+</script>
+
+
 	    <br>fork lunakamituki modification …#*#sleepy#*#…</br>
 </html>
