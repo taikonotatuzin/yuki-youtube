@@ -6,18 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
        .counter-card {
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background-color: rgba(255, 255, 255, 0.8);
-            color: black;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-            z-index: 30;
-            width: 200px;
-            cursor: move;
-        }
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background-color: rgba(255, 255, 255, 0.8);
+      color: black;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      z-index: 30;
+      width: 200px;
+      /* ドラッグさせないためにカーソルを変更 */
+      cursor: default;
+
+      /* CSSで「浮遊」するアニメーション */
+      animation: float 3s ease-in-out infinite;
+    }
+
+    /* 「浮遊」アニメーション用のキーフレーム */
+    @keyframes float {
+      0%   { transform: translateY(0); }
+      50%  { transform: translateY(-10px); }
+      100% { transform: translateY(0); }
+    }
+    @keyframes fadeInDown {
+      0% { opacity: 0; transform: translateY(-20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
 	            
 
  /* トップバー全体 */
@@ -177,6 +192,7 @@
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
         <script src="./scripts.js"></script>
 </head>
+</head>
 
     <body>
     <header id="top-bar">
@@ -269,5 +285,14 @@ alert('アクセスカウンター、または同時接続数が表示されて�
         aboutBlankWindow.document.close(); // Documentを閉じて描画を完了する
     }
     </script>
+	     <script>
+    $(document).ready(function() {
+      // 以前はここで $(".counter-card").draggable(); を呼び出していましたが、
+      // 今回はドラッグできないようにするため、呼び出しを削除しています。
+      
+      // ※もし以前にドラッグが有効化済みの場合は、以下のようにして無効にすることも可能です：
+      // $(".counter-card").draggable("disable");
+    });
+  </script>
 	    <br>fork lunakamituki modification …#*#sleepy#*#…</br>
 </html>
