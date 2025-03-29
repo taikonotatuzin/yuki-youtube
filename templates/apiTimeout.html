@@ -31,8 +31,26 @@
   </header>
 	    <br>
          <h1>読み込み中...</h1>
+	    <script>
+    // ページが読み込まれたときに実行する処理
+    window.onload = function() {
+      // 表示するメッセージの配列
+      const messages = [
+        "動画が見れない？そんな時には埋め込みを使おう‼︎",
+        "liveが見たいけど、見れない？そんな時には埋め込みを使おう‼︎",
+        "ずっとこの読み込みが続いている？そんな時はurlと一緒に僕にメッセージを送ろう‼︎",
+        "画質を変えたい？そんな時には埋め込みを使おう‼︎",
+        "proxyの項目のproxyが使えない？そんな時は別のproxyを追加されるまで待とう‼︎"
+      ];
+      // 0からmessages.length-1までのランダムな整数を生成
+      const randomIndex = Math.floor(Math.random() * messages.length);
+      // ランダムに選んだメッセージをページ内の要素に表示
+      document.getElementById("dynamicContent").innerText = messages[randomIndex];
+    };
+  </script>
+</head>
+<body>
+  <h3 id="dynamicContent">読み込み中…</h3>
   <script>setTimeout(function(){location.reload();},1000);</script>
-             <h5>ただいま動画が見れないバグが発生しておりますが、結論から申し上げますと、invが何日で治るかにかかっています。<br>invと言うyoutubeの代替サイトで動画を再生しているのですが、そのinvが全て使えなくなってしまいました…</h5>
-	<h5>そのinvは僕ではどうしようもすることはできませんので、今は見れません、代わりにyoutubeを埋め込んで見れるようにしました！<br>使い方は動画を調べて、右下にボタンがあると思いますのでそちらを押してください</h5>
 </body>
 </html>
