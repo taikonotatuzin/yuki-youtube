@@ -109,7 +109,7 @@
 
                     
                         {% for rec_video in recommended_videos %}
-                        <a href="/ume?v={{ rec_video['video_id'] }}">
+                        <a href="/edu?v={{ rec_video['video_id'] }}">
                             <div class="thumbnail">
                                 <img loading="lazy" class="thumbnail" src="{% if proxy == 'True' %}/thumbnail?v={{ rec_video['video_id'] }}{% else %}https://img.youtube.com/vi/{{ rec_video['video_id'] }}/0.jpg{% endif %}">
                                 <p class="length">{{ rec_video["length_text"] }}</p>
