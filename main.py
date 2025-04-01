@@ -475,27 +475,6 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "recommended_videos": video_data[1],
         "proxy":proxy
     })
- from flask import Flask, request, render_template
-
-app = Flask(__name__)
-
-def get_video_url(video_id, quality):
-    base_url = "https://invidious.example.com/watch"  # 適宜変更してください
-    if quality and quality != "auto":
-        return f"{base_url}?v={video_id}&quality={quality}"
-    else:
-        return f"{base_url}?v={video_id}"
-
-@app.route('/video/<video_id>')
-def video(video_id):
-    # クエリパラメータから画質を取得（指定がなければ 'auto'）
-    quality = request.args.get("quality", "auto")
-    video_url = get_video_url(video_id, quality)
-    # テンプレートに動画 URL などの情報を渡す
-    return render_template("video.html", video_url=video_url, quality=quality, video_id=video_id)
-
-if __name__ == '__main__':
-    app.run()
 
 @app.get("/search", response_class=HTMLResponse)
 def search(q:str, response: Response, request: Request, page:Union[int, None]=1, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
