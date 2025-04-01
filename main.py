@@ -475,7 +475,28 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "recommended_videos": video_data[1],
         "proxy":proxy
     })
-  
+ from flask import Flask, request, render_template
+
+app = Flask(__name__)
+
+def get_video_url(video_id, quality):
+    base_url = "https://invidious.example.com/watch"  # 適宜変更してください
+    if quality and quality != "auto":
+        return f"{base_url}?v={video_id}&quality={quality}"
+    else:
+        return f"{base_url}?v={video_id}"
+
+@app.route('/video/<video_id>')
+def video(video_id):
+    # クエリパラメータから画質を取得（指定がなければ 'auto'）
+    quality = request.args.get("quality", "auto")
+    video_url = get_video_url(video_id, quality)
+    # テンプレートに動画 URL などの情報を渡す
+    return render_template("video.html", video_url=video_url, quality=quality, video_id=video_id)
+
+if __name__ == '__main__':
+    app.run()
+
 @app.get("/search", response_class=HTMLResponse)
 def search(q:str, response: Response, request: Request, page:Union[int, None]=1, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     if not(checkCookie(yuki)):
@@ -733,39 +754,3 @@ def apiWait(request: Request, exception: APITimeoutError):
 @app.exception_handler(UnallowedBot)
 def returnToUnallowedBot(request: Request, exception: UnallowedBot):
     return template("error.html", {"request": request, "context": '403 Forbidden'}, status_code=403)
-
-# 既存のクラスや定義の後に追加
-
-def get_video_url(video_id, quality):
-    """
-    video_id: 再生する動画のID
-    quality: 'auto', '360p', '480p', '720p', '1080p' などを指定
-    ※実際の動画提供サービスに合わせて URL の組み立ては調整してください。
-    """
-    base_url = "https://invidious.example.com/watch"
-    if quality and quality != "auto":
-        return f"{base_url}?v={video_id}&quality={quality}"
-    else:
-        return f"{base_url}?v={video_id}"
-
-from flask import Flask, request, render_template
-
-app = Flask(__name__)
-
-def get_video_url(video_id, quality):
-    base_url = "https://invidious.f5.si/watch"  # 適宜変更してください
-    if quality and quality != "auto":
-        return f"{base_url}?v={video_id}&quality={quality}"
-    else:
-        return f"{base_url}?v={video_id}"
-
-@app.route('/video/<video_id>')
-def video(video_id):
-    # クエリパラメータから画質を取得（指定がなければ 'auto'）
-    quality = request.args.get("quality", "auto")
-    video_url = get_video_url(video_id, quality)
-    # テンプレートに動画 URL などの情報を渡す
-    return render_template("video.html", video_url=video_url, quality=quality, video_id=video_id)
-
-if __name__ == '__main__':
-    app.run()
