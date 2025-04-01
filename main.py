@@ -356,6 +356,31 @@ def video(v: str,
     response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
     # 画質指定（quality）の値を getVideoData に渡す
     video_data = getVideoData(v, quality=quality)
+              '''
+    return [
+        {
+            'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
+            'description_html': t["descriptionHtml"].replace("\n", "<br>"),
+            'title': t["title"],
+            'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"]))
+            'author_id': t["authorId"],
+            'author': t["author"],
+            'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
+            'view_count': t["viewCount"],
+            'like_count': t["likeCount"],
+            'subscribers_count': t["subCountText"]
+        },
+        [
+            {
+                "title": i["title"],
+                "author_id": i["authorId"],
+                "author": i["author"],
+                "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
+                "view_count_text": i["viewCountText"]
+            } for i in recommended_videos
+        ]
+    ]
+    '''
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
     return template('video.html', {
         "request": request,
