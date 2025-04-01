@@ -273,5 +273,24 @@
                 }, delay: 300
             });
         </script>
+		     <label for="quality-selector">画質を選択:</label>
+  <select id="quality-selector" onchange="changeQuality()">
+    <option value="auto" {% if quality == 'auto' %}selected{% endif %}>自動</option>
+    <option value="360p" {% if quality == '360p' %}selected{% endif %}>360p</option>
+    <option value="480p" {% if quality == '480p' %}selected{% endif %}>480p</option>
+    <option value="720p" {% if quality == '720p' %}selected{% endif %}>720p</option>
+    <option value="1080p" {% if quality == '1080p' %}selected{% endif %}>1080p</option>
+  </select>
+
+  <script>
+    function changeQuality(){
+      // ユーザが選択した画質を取得
+      var quality = document.getElementById('quality-selector').value;
+      // 現在の URL に quality パラメータを追加してリダイレクト
+      var url = new URL(window.location.href);
+      url.searchParams.set('quality', quality);
+      window.location.href = url.href;
+    }
+  </script>
     </body>
 </html>
