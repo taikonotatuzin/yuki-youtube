@@ -748,21 +748,24 @@ def get_video_url(video_id, quality):
     else:
         return f"{base_url}?v={video_id}"
 
-@app.route('/video/<video_id>')
-def video(video_id):
-    # URL のクエリパラメータから画質を取得（なければ 'auto' を使用）
-    quality = request.args.get("quality", "auto")
-    video_url = get_video_url(video_id, quality)
-    # テンプレートをレンダリングして動画ページを返す
-    return render_template("video.html", video_url=video_url, quality=quality, video_id=video_id)
+from flask import Flask, request, render_template
 
-# もし __main__ ブロックがあるなら、その前に上記ルートを定義する
-if __name__ == '__main__':
-    app.run()
+app = Flask(__name__)
 
 def get_video_url(video_id, quality):
-    base_url = "https://invidious.example.com/watch"
+    base_url = "https://invidious.f5.si/watch"  # 適宜変更してください
     if quality and quality != "auto":
         return f"{base_url}?v={video_id}&quality={quality}"
     else:
         return f"{base_url}?v={video_id}"
+
+@app.route('/video/<video_id>')
+def video(video_id):
+    # クエリパラメータから画質を取得（指定がなければ 'auto'）
+    quality = request.args.get("quality", "auto")
+    video_url = get_video_url(video_id, quality)
+    # テンプレートに動画 URL などの情報を渡す
+    return render_template("video.html", video_url=video_url, quality=quality, video_id=video_id)
+
+if __name__ == '__main__':
+    app.run()
