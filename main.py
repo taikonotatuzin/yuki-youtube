@@ -733,3 +733,30 @@ def apiWait(request: Request, exception: APITimeoutError):
 @app.exception_handler(UnallowedBot)
 def returnToUnallowedBot(request: Request, exception: UnallowedBot):
     return template("error.html", {"request": request, "context": '403 Forbidden'}, status_code=403)
+
+# 既存のクラスや定義の後に追加
+
+def get_video_url(video_id, quality):
+    """
+    video_id: 再生する動画のID
+    quality: 'auto', '360p', '480p', '720p', '1080p' などを指定
+    ※実際の動画提供サービスに合わせて URL の組み立ては調整してください。
+    """
+    base_url = "https://invidious.example.com/watch"
+    if quality and quality != "auto":
+        return f"{base_url}?v={video_id}&quality={quality}"
+    else:
+        return f"{base_url}?v={video_id}"
+
+@app.route('/video/<video_id>')
+def video(video_id):
+    # URL のクエリパラメータから画質を取得（なければ 'auto' を使用）
+    quality = request.args.get("quality", "auto")
+    video_url = get_video_url(video_id, quality)
+    # テンプレートをレンダリングして動画ページを返す
+    return render_template("video.html", video_url=video_url, quality=quality, video_id=video_id)
+
+# もし __main__ ブロックがあるなら、その前に上記ルートを定義する
+if __name__ == '__main__':
+    app.run()
+
