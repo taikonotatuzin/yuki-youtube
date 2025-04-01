@@ -139,6 +139,7 @@ failed = "Load Failed"
 def getVideoData(videoid, quality: Union[str, None] = None):
     t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
     
+    # 推奨動画の取得（元のコードのまま）
     if 'recommendedvideo' in t:
         recommended_videos = t["recommendedvideo"]
     elif 'recommendedVideos' in t:
@@ -153,20 +154,24 @@ def getVideoData(videoid, quality: Union[str, None] = None):
             "viewCountText": "Load Failed"
         }]
     
-    # 使用者が画質指定している場合、その画質に該当するストリームを探す
+    # 画質指定を行う場合
     if quality:
-        # "qualityLabel" などのキーがある前提です
-        matching_streams = [
-            stream for stream in t["formatStreams"]
-            if stream.get("qualityLabel", "").lower() == quality.lower()
-        ]
+        matching_streams = []
+        for stream in t["formatStreams"]:
+            # まず、qualityLabel があるかチェックし、なければ height を用いて変換
+            label = stream.get("qualityLabel")
+            if not label and "height" in stream:
+                label = f"{stream['height']}p"
+            if label and label.lower() == quality.lower():
+                matching_streams.append(stream)
+        
         if matching_streams:
             selected_url = matching_streams[0]["url"]
         else:
-            # 指定画質が見つからなければフォールバックとして従来の最高画質（＝逆順の先頭）
+            # 指定画質が見つからない場合はフォールバックとして従来の方法を使用
             selected_url = list(reversed([i["url"] for i in t["formatStreams"]]))[0]
     else:
-        # 指定がなければ従来の実装（例：より高画質と判断される順序で先頭の1件を選択）
+        # 指定がなければ従来の実装
         selected_url = list(reversed([i["url"] for i in t["formatStreams"]]))[0]
     
     return [
