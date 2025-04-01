@@ -136,26 +136,42 @@ def getInfo(request):
 
 failed = "Load Failed"
 
-def getVideoData(videoid):
+def getVideoData(videoid, quality: Union[str, None] = None):
     t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
-
+    
     if 'recommendedvideo' in t:
         recommended_videos = t["recommendedvideo"]
     elif 'recommendedVideos' in t:
         recommended_videos = t["recommendedVideos"]
     else:
-        recommended_videos = {
+        recommended_videos = [{
             "videoId": failed,
             "title": failed,
             "authorId": failed,
             "author": failed,
             "lengthSeconds": 0,
             "viewCountText": "Load Failed"
-        }
-
+        }]
+    
+    # 使用者が画質指定している場合、その画質に該当するストリームを探す
+    if quality:
+        # "qualityLabel" などのキーがある前提です
+        matching_streams = [
+            stream for stream in t["formatStreams"]
+            if stream.get("qualityLabel", "").lower() == quality.lower()
+        ]
+        if matching_streams:
+            selected_url = matching_streams[0]["url"]
+        else:
+            # 指定画質が見つからなければフォールバックとして従来の最高画質（＝逆順の先頭）
+            selected_url = list(reversed([i["url"] for i in t["formatStreams"]]))[0]
+    else:
+        # 指定がなければ従来の実装（例：より高画質と判断される順序で先頭の1件を選択）
+        selected_url = list(reversed([i["url"] for i in t["formatStreams"]]))[0]
+    
     return [
         {
-            'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
+            'video_urls': [selected_url],
             'description_html': t["descriptionHtml"].replace("\n", "<br>"),
             'title': t["title"],
             'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"])),
@@ -177,6 +193,7 @@ def getVideoData(videoid):
             } for i in recommended_videos
         ]
     ]
+
 
 def getSearchData(q, page):
 
@@ -327,38 +344,18 @@ def home(response: Response, request: Request, yuki: Union[str] = Cookie(None)):
 
 
 @app.get('/watch', response_class=HTMLResponse)
-def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
+def video(v: str,
+          quality: Union[str, None] = None,  # ここで任意の画質をクエリパラメータとして受け取る
+          response: Response,
+          request: Request,
+          yuki: Union[str] = Cookie(None),
+          proxy: Union[str] = Cookie(None)):
     # v: video_id
     if not(checkCookie(yuki)):
         return redirect("/")
     response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
-    video_data = getVideoData(v)
-    '''
-    return [
-        {
-            'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
-            'description_html': t["descriptionHtml"].replace("\n", "<br>"),
-            'title': t["title"],
-            'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"]))
-            'author_id': t["authorId"],
-            'author': t["author"],
-            'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
-            'view_count': t["viewCount"],
-            'like_count': t["likeCount"],
-            'subscribers_count': t["subCountText"]
-        },
-        [
-            {
-                "video_id": i["videoId"],
-                "title": i["title"],
-                "author_id": i["authorId"],
-                "author": i["author"],
-                "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
-                "view_count_text": i["viewCountText"]
-            } for i in recommended_videos
-        ]
-    ]
-    '''
+    # 画質指定（quality）の値を getVideoData に渡す
+    video_data = getVideoData(v, quality=quality)
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
     return template('video.html', {
         "request": request,
@@ -374,8 +371,9 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "like_count": video_data[0]['like_count'],
         "subscribers_count": video_data[0]['subscribers_count'],
         "recommended_videos": video_data[1],
-        "proxy":proxy
+        "proxy": proxy
     })
+
 @app.get('/ume', response_class=HTMLResponse)
 def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     # v: video_id
