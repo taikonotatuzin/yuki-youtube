@@ -760,3 +760,9 @@ def video(video_id):
 if __name__ == '__main__':
     app.run()
 
+def get_video_url(video_id, quality):
+    base_url = "https://invidious.example.com/watch"
+    if quality and quality != "auto":
+        return f"{base_url}?v={video_id}&quality={quality}"
+    else:
+        return f"{base_url}?v={video_id}"
