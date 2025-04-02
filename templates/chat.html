@@ -390,5 +390,14 @@ onSnapshot(chatQuery, (snapshot) => {
     <button id="sendButton">送信</button>
     <button id="logoutButton">ログアウト</button>
   </div>
+		<script>
+  if (!sessionStorage.getItem("reloaded")) {
+    sessionStorage.setItem("reloaded", "true");
+    setTimeout(function() {
+      location.reload();
+    }, 1000);
+  }
+</script>
+
 </body>
 </html>
