@@ -86,7 +86,7 @@
       appId: "1:381735974784:web:1708b0c08d911878bf3365",
     };
     
-    // Firebase の初期化
+    // Firebase の初
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -101,8 +101,6 @@
       return Math.floor(1000 + Math.random() * 9000).toString();
     }
     
-    // ※【全発言削除用パスワード】管理者がこのパスワードを送信するとチャット内の全メッセージを削除します
-    // （例として "RESET1234" としていますが、好みのものに変更してください）
     const CLEAR_CHAT_PASSWORD = "RESET1234";
     
     // DOM 要素の参照を取得
