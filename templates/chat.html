@@ -130,60 +130,6 @@
 
   </style>
 	<!-- 送信日時用のスタイル（任意で好みに合わせて調整） -->
-<style>
-  .timestamp {
-    color: #888;
-    font-size: 0.8em;
-    margin-right: 5px;
-  }
-</style>
-
-<script type="module">
-// 既存の Firebase 初期化やイベントハンドラ内はそのまま
-
-  // Cloud Firestore からチャットをリアルタイム取得して表示
-  const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
-  onSnapshot(chatQuery, (snapshot) => {
-    chatBox.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const msg = doc.data();
-      const messageElement = document.createElement("div");
-      messageElement.className = "message";
-
-      // Firestore の timestamp フィールドは、場合によっては Timestamp 型になっているので、
-      // toDate() メソッドで JavaScript の Date オブジェクトに変換する処理を入れます
-      let sendDate;
-      if (msg.timestamp && msg.timestamp.toDate) {
-        sendDate = msg.timestamp.toDate();
-      } else {
-        sendDate = new Date(msg.timestamp);
-      }
-      // ローカルの形式（※ブラウザの locale により表示が変わります）
-      const formattedTime = sendDate.toLocaleString();
-      
-      // タイムスタンプ用の span 要素を作成
-      const timeSpan = document.createElement("span");
-      timeSpan.className = "timestamp";
-      timeSpan.textContent = `[${formattedTime}] `;
-
-      // 送信者が「ねむい」の場合（管理者色を出すための処理など）
-      if (msg.name === "ねむい") {
-        const nameSpan = document.createElement("span");
-        nameSpan.className = "rainbow-name";
-        nameSpan.textContent = msg.name;
-        messageElement.appendChild(timeSpan);
-        messageElement.appendChild(nameSpan);
-        messageElement.appendChild(document.createTextNode(`: ${msg.text}`));
-      } else {
-        // 通常の場合
-        messageElement.appendChild(timeSpan);
-        messageElement.appendChild(document.createTextNode(`${msg.name}: ${msg.text}`));
-      }
-      chatBox.appendChild(messageElement);
-    });
-    chatBox.scrollTop = chatBox.scrollHeight;
-  });
-</script>
 
   
   <!-- Firebase やチャットの動作に関するスクリプト -->
