@@ -92,19 +92,7 @@
       background-color: #2980b9;
       transform: scale(1.05);
     }
-    
-    /* トップバー（ヘッダー）の動的スタイル */
-    #top-bar {
-      background-color: #f5f5f5;
-      padding: 20px;
-      transition: padding 0.3s ease, background-color 0.3s ease;
-    }
-    #top-bar.scrolled {
-      padding: 10px;
-      background-color: rgba(245,245,245,0.9);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    
+
     /* サインアップ／ログインおよびチャットエリアの読み込みアニメーション */
     #user-auth, #chat-section {
       animation: slideIn 0.6s ease-out;
@@ -139,25 +127,7 @@
       box-shadow: 0 0 5px rgba(52,152,219,0.5);
       transition: box-shadow 0.3s ease, border 0.3s ease;
     }
-    
-    /* ハンバーガーメニューのアニメーション */
-    #hamburger {
-      cursor: pointer;
-      transition: transform 0.3s ease;
-    }
-    #hamburger:hover {
-      transform: rotate(90deg);
-    }
-    
-    /* ナビゲーション（モバイル用）：高さをアニメーションで展開・格納 */
-    #top-nav {
-      transition: max-height 0.3s ease;
-      overflow: hidden;
-      max-height: 0;
-    }
-    #top-nav.show {
-      max-height: 200px; /* メニュー項目に合わせて調整 */
-    }
+
   </style>
   
   <!-- Firebase やチャットの動作に関するスクリプト -->
