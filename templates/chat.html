@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase チャットアプリ（名前とパスワード＆強制ID付き）</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    input {
+      margin: 5px;
+      padding: 5px;
+    }
+    #chat-box {
+      border: 1px solid #ccc;
+      height: 300px;
+      overflow-y: scroll;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .message {
+      padding: 3px 0;
+    }
+  
+  </style>
+  <script type="module">
+    // Firebase の必要なモジュールをインポート
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      updateProfile,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+    
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      deleteDoc,
+      getDocs,
+      onSnapshot,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+    
+    // Firebase プロジェクトの設定（Firebase コンソールで取得した情報に置き換えてください）
+    const firebaseConfig = {
+      apiKey: "AIzaSyCjsdIC6rDslXnm6N_q4Z308zL8_FwSlsI",
+      authDomain: "chat-siken2.firebaseapp.com",
+      projectId: "chat-siken2",
+      storageBucket: "chat-siken2.firebasestorage.app",
+      messagingSenderId: "381735974784",
+      appId: "1:381735974784:web:1708b0c08d911878bf3365",
+    };
+    
+    // Firebase の初期化
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    
+    // サインイン用：名前から生成する一意のメールアドレス (例: "Taro" → "taro@chatapp.local")
+    function generateEmailFromName(name) {
+      return name.trim().toLowerCase().replace(/\s+/g, "") + "@chatapp.local";
+    }
+    
+    // 強制的なIDを生成する関数（4桁のランダムな数字）
+    function generateForcedId() {
+      return Math.floor(1000 + Math.random() * 9000).toString();
+    }
+    
+    // ※【全発言削除用パスワード】管理者がこのパスワードを送信するとチャット内の全メッセージを削除します
+    // （例として "RESET1234" としていますが、好みのものに変更してください）
+    const CLEAR_CHAT_PASSWORD = "RESET1234";
+    
+    // DOM 要素の参照を取得
+    const signupButton = document.getElementById("signupButton");
+    const loginButton = document.getElementById("loginButton");
+    const logoutButton = document.getElementById("logoutButton");
+    const sendButton = document.getElementById("sendButton");
+    const chatBox = document.getElementById("chat-box");
+    const messageInput = document.getElementById("messageInput");
+    
+    // サインアップ処理
+    signupButton.addEventListener("click", async () => {
+      const name = document.getElementById("signupName").value;
+      const password = document.getElementById("signupPassword").value;
+      if (!name || !password) {
+        alert("名前とパスワードの両方を入力してください。");
+        return;
+      }
+      // 名前から生成されたメールアドレス（重複チェックは別途検討してください）
+      const email = generateEmailFromName(name);
+    
+      // 強制的なIDを生成して、名前に付加（例: "Taro" → "Taro#1234"）
+      // ※ただし、名前が "僕" の場合は ID を付けずそのままにする
+      const forcedId = generateForcedId();
+      const fullName = (name === "ねむい") ? name : `${name}#${forcedId}`;
+    
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        // Firebase のユーザープロファイルに、強制ID付きの表示名（または「僕」そのまま）を設定
+        await updateProfile(userCredential.user, { displayName: fullName });
+        console.log("サインアップ成功:", userCredential.user);
+      } catch (error) {
+        alert("サインアップエラー: " + error.message);
+      }
+    });
+    
+    // ログイン処理
+    loginButton.addEventListener("click", async () => {
+      const name = document.getElementById("loginName").value;
+      const password = document.getElementById("loginPassword").value;
+      if (!name || !password) {
+        alert("名前とパスワードの両方を入力してください。");
+        return;
+      }
+      const email = generateEmailFromName(name);
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        console.log("ログイン成功");
+      } catch (error) {
+        alert("ログインエラー: " + error.message);
+      }
+    });
+    
+    // 認証状態の変化を監視し、表示を切替える
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("user-auth").style.display = "none";
+        document.getElementById("chat-section").style.display = "block";
+      } else {
+        document.getElementById("user-auth").style.display = "block";
+        document.getElementById("chat-section").style.display = "none";
+      }
+    });
+    
+    // メッセージ送信処理
+    sendButton.addEventListener("click", async () => {
+      const messageText = messageInput.value;
+      if (messageText.trim() === "") return; // 空のメッセージは送信しない
+      const user = auth.currentUser;
+      if (!user) {
+        alert("まずログインしてください。");
+        return;
+      }
+    
+      // 管理者（名前が「僕」）が送信したとき、特定のパスワード（CLEAR_CHAT_PASSWORD）なら全チャット削除
+      if (messageText === CLEAR_CHAT_PASSWORD) {
+        if (user.displayName === "ねむい") {
+          try {
+            const chatCollection = collection(db, "chat");
+            const snapshot = await getDocs(chatCollection);
+            // 各ドキュメントを削除
+            for (const docSnap of snapshot.docs) {
+              await deleteDoc(docSnap.ref);
+            }
+            chatBox.innerHTML = "";
+            console.log("全ての発言を削除しました。");
+            // 削除コマンドの場合は送信処理を中断
+            messageInput.value = "";
+          } catch (error) {
+            alert("チャット削除エラー: " + error.message);
+          }
+          return;
+        } else {
+          alert("この操作は権限がありません。");
+          return;
+        }
+      }
+    
+      // 通常のメッセージ送信処理
+      try {
+        await addDoc(collection(db, "chat"), {
+          text: messageText,
+          name: user.displayName || "名無し",
+          uid: user.uid,
+          timestamp: new Date()
+        });
+        messageInput.value = "";
+      } catch (error) {
+        alert("メッセージ送信エラー: " + error.message);
+      }
+    });
+    
+    // ログアウト処理
+    logoutButton.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        console.log("ログアウト成功");
+      } catch (error) {
+        alert("ログアウトエラー: " + error.message);
+      }
+    });
+    
+    // Cloud Firestore からチャットメッセージをリアルタイム取得し表示
+    const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
+    onSnapshot(chatQuery, (snapshot) => {
+      chatBox.innerHTML = ""; // チャットボックスを一旦クリア
+      snapshot.forEach((doc) => {
+        const msg = doc.data();
+        const messageElement = document.createElement("div");
+        messageElement.className = "message";
+        // 名前が「僕」の場合は虹色スタイルで表示（かつ、強制IDが付いていないはず）
+        if (msg.name === "ねむい") {
+          const nameSpan = document.createElement("span");
+          nameSpan.className = "rainbow-name";
+          nameSpan.textContent = msg.name;
+          messageElement.appendChild(nameSpan);
+          messageElement.appendChild(document.createTextNode(`: ${msg.text}`));
+        } else {
+          messageElement.textContent = `${msg.name}: ${msg.text}`;
+        }
+        chatBox.appendChild(messageElement);
+      });
+      // 最新メッセージが見えるようスクロール
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+  </script>
+</head>
+<body>
+  <!-- サインアップ／ログイン用エリア -->
+  <div id="user-auth">
+    <div id="signup">
+      <h3>サインアップ</h3>
+      <input type="text" id="signupName" placeholder="名前">
+      <input type="password" id="signupPassword" placeholder="パスワード">
+      <button id="signupButton">サインアップ</button>
+    </div>
+    <div id="login">
+      <h3>ログイン</h3>
+      <input type="text" id="loginName" placeholder="名前">
+      <input type="password" id="loginPassword" placeholder="パスワード">
+      <button id="loginButton">ログイン</button>
+    </div>
+  </div>
+  <!-- チャット用エリア -->
+  <div id="chat-section" style="display:none;">
+    <h2>チャットルーム</h2>
+    <div id="chat-box"></div>
+    <input type="text" id="messageInput" placeholder="メッセージを入力">
+    <button id="sendButton">送信</button>
+    <button id="logoutButton">ログアウト</button>
+  </div>
+</body>
+</html>
+
+  </body>
+</html>
