@@ -141,7 +141,7 @@
   <!-- Firebase やチャットの動作に関するスクリプト -->
   <script type="module">
     // Firebase の必要なモジュールをインポート
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     
     import {
       getAuth,
@@ -257,34 +257,7 @@
         alert("まずログインしてください。");
         return;
       }
-      
-      // /color コマンドの処理
-      if(messageText.startsWith("/color ")) {
-        // 入力例: /color #fff
-        const parts = messageText.split(" ");
-        if(parts.length < 2) {
-          alert("使い方: /color #fff (カラーコードを入力してください)");
-          return;
-        }
-        const newColor = parts[1].trim();
-        if(!/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(newColor)) {
-          alert("有効なカラーコードを入力してください (例: /color #fff)");
-          return;
-        }
-        // 現在の displayName が既に /color で更新されている可能性があるので、名前部分だけを抽出
-        const currentDisplayName = user.displayName || "名無し";
-        const namePart = currentDisplayName.split("|")[0];
-        const newDisplayName = namePart + "|" + newColor;
-        try {
-          await updateProfile(user, { displayName: newDisplayName });
-          alert("名前の色が変更されました");
-        } catch(error) {
-          alert("名前の色更新エラー: " + error.message);
-        }
-        messageInput.value = ""; // コマンドの場合はメッセージ送信とせず終了
-        return;
-      }
-      
+    
       // 管理者（名前が「ねむい」）が特定パスワードを送信した場合、全チャット削除
       if (messageText === CLEAR_CHAT_PASSWORD) {
         if (user.displayName === "ねむい") {
@@ -306,7 +279,7 @@
           return;
         }
       }
-      
+    
       try {
         await addDoc(collection(db, "chat"), {
           text: messageText,
@@ -331,44 +304,24 @@
     });
     
     // Cloud Firestore からチャットをリアルタイム取得して表示
-    const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
-    onSnapshot(chatQuery, (snapshot) => {
-      chatBox.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const msg = doc.data();
-        const messageElement = document.createElement("div");
-        messageElement.className = "message";
-        
-        // ユーザー名に /color コマンドが適用されているかをチェックする
-        let displayName = msg.name;
-        let namePart = displayName;
-        let colorCode = null;
-        if (displayName.includes("|")) {
-          [namePart, colorCode] = displayName.split("|");
-        }
-        
-        // 「ねむい」は特別なスタイルを適用
-        if (namePart === "ねむい") {
-          const nameSpan = document.createElement("span");
-          nameSpan.className = "rainbow-name";
-          nameSpan.textContent = namePart;
-          messageElement.appendChild(nameSpan);
-          messageElement.appendChild(document.createTextNode(": " + msg.text));
-        } else {
-          if (colorCode) {
-            const nameSpan = document.createElement("span");
-            nameSpan.textContent = namePart;
-            nameSpan.style.color = colorCode;
-            messageElement.appendChild(nameSpan);
-            messageElement.appendChild(document.createTextNode(": " + msg.text));
-          } else {
-            messageElement.textContent = namePart + ": " + msg.text;
-          }
-        }
-        chatBox.appendChild(messageElement);
-      });
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
+const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
+onSnapshot(chatQuery, (snapshot) => {
+  chatBox.innerHTML = "";
+  snapshot.forEach((doc) => {
+    const msg = doc.data();
+    const messageElement = document.createElement("div");
+    messageElement.className = "message";
+    
+    // メッセージ本文とユーザー名の表示（特定の名前は別フォーマット）
+    if (msg.name === "ねむい") {
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "rainbow-name";
+      nameSpan.textContent = msg.name;
+      messageElement.appendChild(nameSpan);
+      messageElement.appendChild(document.createTextNode(`: ${msg.text}`));
+    } else {
+      messageElement.textContent = `${msg.name}: ${msg.text}`;
+    }
     
     // 投稿日時が存在すれば、表示する
     if (msg.timestamp) {
