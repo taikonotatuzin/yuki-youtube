@@ -129,6 +129,34 @@
     }
 
   </style>
+	<!-- 送信日時用のスタイル（任意で好みに合わせて調整） -->
+<style>
+  .timestamp {
+    color: #888;
+    font-size: 0.8em;
+    margin-right: 5px;
+  }
+</style>
+
+<script type="module">
+      // Firestore の timestamp フィールドは、場合によっては Timestamp 型になっているので、
+      // toDate() メソッドで JavaScript の Date オブジェクトに変換する処理を入れます
+      let sendDate;
+      if (msg.timestamp && msg.timestamp.toDate) {
+        sendDate = msg.timestamp.toDate();
+      } else {
+        sendDate = new Date(msg.timestamp);
+      }
+      // ローカルの形式（※ブラウザの locale により表示が変わります）
+      const formattedTime = sendDate.toLocaleString();
+      
+      // タイムスタンプ用の span 要素を作成
+      const timeSpan = document.createElement("span");
+      timeSpan.className = "timestamp";
+      timeSpan.textContent = `[${formattedTime}] `;
+	
+</script>
+
   
   <!-- Firebase やチャットの動作に関するスクリプト -->
   <script type="module">
