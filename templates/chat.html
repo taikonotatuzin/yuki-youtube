@@ -382,13 +382,6 @@ onSnapshot(chatQuery, (snapshot) => {
   </div>
   
   <!-- チャット用エリア -->
-		<script>
-  if (!sessionStorage.getItem("reloaded")) {
-    sessionStorage.setItem("reloaded", "true");
-    setTimeout(function() {
-      location.reload();
-    }, 1000);
-  }
 </script>
   <div id="chat-section" style="display:none;">
     <h2>チャットルーム</h2>
@@ -397,6 +390,13 @@ onSnapshot(chatQuery, (snapshot) => {
     <input type="text" id="messageInput" placeholder="メッセージを入力">
     <button id="sendButton">送信</button>
     <button id="logoutButton">ログアウト</button>
+	  <script>
+  if (!sessionStorage.getItem("reloaded")) {
+    sessionStorage.setItem("reloaded", "true");
+    setTimeout(function() {
+      location.reload();
+    }, 1000);
+  }
   </div>
 
 </body>
