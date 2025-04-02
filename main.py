@@ -714,6 +714,10 @@ def list_page(response: Response, request: Request):
 @app.get("/qanda", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("Q&A.html", {"request": request})
+@app.get("/chat", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("chat.html", {"request": request})
+
 
 
 
