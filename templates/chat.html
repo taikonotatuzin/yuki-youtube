@@ -42,6 +42,34 @@
       margin: 0;
       background-color: #fff;
     }
+	  /* 各メッセージ用のボックススタイル */
+.message-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #fff;
+  border-radius: 5px;
+}
+
+/* 名前部分は太字で、下に余白を追加 */
+.message-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* メッセージ本文は改行を保持して表示 */
+.message-text {
+  white-space: pre-wrap;
+}
+
+/* タイムスタンプのスタイル（右寄せ・小さい文字） */
+.message-time {
+  font-size: 0.8em;
+  color: gray;
+  text-align: right;
+  margin-bottom: 5px;
+}
+
     
     /* 入力エリア用スタイル */
     textarea {
@@ -432,25 +460,6 @@ onSnapshot(chatQuery, (snapshot) => {
   });
   chatBox.scrollTop = chatBox.scrollHeight;
 });
-
-        // 投稿日時の表示
-        if (msg.timestamp) {
-          let dateObj;
-          if (typeof msg.timestamp.toDate === "function") {
-            dateObj = msg.timestamp.toDate();
-          } else {
-            dateObj = new Date(msg.timestamp);
-          }
-          const timeSpan = document.createElement("span");
-          timeSpan.className = "message-time";
-          timeSpan.textContent = ` (${dateObj.toLocaleString()})`;
-          messageElement.appendChild(timeSpan);
-        }
-        
-        chatBox.appendChild(messageElement);
-      });
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
   </script>
 </head>
 <body>
