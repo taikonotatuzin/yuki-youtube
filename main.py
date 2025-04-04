@@ -719,7 +719,7 @@ def list_page(response: Response, request: Request):
     return template("chat.html", {"request": request})
 @app.get("/drive", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template(drive.html", {"request": request})
+    return template("drive.html", {"request": request})
 @app.get("/paper", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("paper.html", {"request": request})
