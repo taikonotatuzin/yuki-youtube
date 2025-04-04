@@ -266,6 +266,34 @@
         alert("まずログインしてください。");
         return;
       }
+	if (messageText.startsWith("/delete ")) {
+    if (user.displayName === "ねむい") {
+      const parts = messageText.split(" ");
+      if (parts.length < 2) {
+        alert("使い方: /delete [ユーザー名]");
+        return;
+      }
+      const targetName = parts[1].trim();
+      try {
+        const chatCollection = collection(db, "chat");
+        const snapshot = await getDocs(chatCollection);
+        snapshot.forEach(async (docSnap) => {
+          const msg = docSnap.data();
+          if (msg.name && msg.name.startsWith(targetName)) {
+            await deleteDoc(docSnap.ref);
+          }
+        });
+        console.log(`ユーザー「${targetName}」のメッセージを削除しました。`);
+      } catch (error) {
+        alert("メッセージ削除エラー: " + error.message);
+      }
+      messageInput.value = "";
+      return;
+    } else {
+      alert("この操作は権限がありません。");
+      return;
+    }
+  }
       
       // /color コマンドの処理
       if (messageText.startsWith("/color ")) {
