@@ -1,49 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top News</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 20px;
-        }
-        .news-item {
-            margin-bottom: 20px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>カテゴリー別画像リンクサイト</title>
+  <style>
+    /* ページ全体の設定 */
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff; /* 背景を白に */
+      font-family: Arial, sans-serif;
+    }
+
+    /* ヘッダー部分のスタイル */
+    header {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    header h1 {
+      font-size: 2.5em; /* 題名を大きめに */
+      margin: 0;
+    }
+    header p {
+      font-size: 1.2em; /* 説明文を見やすく */
+      margin-top: 10px;
+    }
+
+    /* 各項目のコンテナ */
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    /* 各項目のスタイル */
+    .item {
+      display: block;
+      width: 250px;  /* 項目の横幅 */
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      transition: transform 0.3s;
+      text-decoration: none; /* リンク下線を消去 */
+      color: inherit;
+    }
+
+    /* 画像部分のスタイル */
+    .item img {
+      width: 100%;
+      height: 200px; /* 高さを固定 */
+      object-fit: cover; /* コンテナ内に収めつつ比率を維持 */
+      transition: transform 0.3s;
+    }
+
+    /* テキスト部分のスタイル */
+    .item-content {
+      padding: 15px;
+      text-align: center;
+    }
+    .item-content h3 {
+      margin: 10px 0 5px;
+      font-size: 1.5em;
+    }
+    .item-content p {
+      margin: 0;
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    /* ホバー時のエフェクト */
+    .item:hover {
+      transform: scale(1.05);
+    }
+    .item:hover img {
+      transform: scale(1.1);
+    }
+  </style>
 </head>
 <body>
-    <h1>Top 10 News</h1>
-    <div id="news-container"></div>
-    <script>
-        async function fetchNews() {
-            const apiKey = '5e79082be7f64ab0a63f2784e037702e'; // NewsAPIのAPIキーを入力してください
-            const url = `https://newsapi.org/v2/top-headlines?country=us&pageSize=10&apiKey=${apiKey}`;
-            
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                const newsContainer = document.getElementById('news-container');
-
-                data.articles.forEach((article, index) => {
-                    const newsItem = document.createElement('div');
-                    newsItem.classList.add('news-item');
-                    newsItem.innerHTML = `
-                        <h2>${index + 1}. ${article.title}</h2>
-                        <p>${article.description || 'No description available.'}</p>
-                        <a href="${article.url}" target="_blank">Read more</a>
-                    `;
-                    newsContainer.appendChild(newsItem);
-                });
-            } catch (error) {
-                console.error('Error fetching the news:', error);
-            }
-        }
-
-        fetchNews();
-    </script>
+  <header>
+    <h1>サイトのタイトル</h1>
+    <p>ここはサイトの説明文です。各項目をクリックすることで詳細ページに移動します。</p>
+  </header>
+  
+  <div class="container">
+    <!-- 項目1 -->
+    <a href="page1.html" class="item">
+      <img src="https://via.placeholder.com/250x200" alt="項目1の画像">
+      <div class="item-content">
+          <h3>項目タイトル1</h3>
+          <p>この項目の簡単な説明文がここに入ります。</p>
+      </div>
+    </a>
+    
+    <!-- 項目2 -->
+    <a href="page2.html" class="item">
+      <img src="https://via.placeholder.com/250x200" alt="項目2の画像">
+      <div class="item-content">
+          <h3>項目タイトル2</h3>
+          <p>この項目の簡単な説明文がここに入ります。</p>
+      </div>
+    </a>
+    
+    <!-- 項目3 -->
+    <a href="page3.html" class="item">
+      <img src="https://via.placeholder.com/250x200" alt="項目3の画像">
+      <div class="item-content">
+          <h3>項目タイトル3</h3>
+          <p>この項目の簡単な説明文がここに入ります。</p>
+      </div>
+    </a>
+    
+    <!-- 項目4 -->
+    <a href="page4.html" class="item">
+      <img src="https://via.placeholder.com/250x200" alt="項目4の画像">
+      <div class="item-content">
+          <h3>項目タイトル4</h3>
+          <p>この項目の簡単な説明文がここに入ります。</p>
+      </div>
+    </a>
+  </div>
 </body>
 </html>
