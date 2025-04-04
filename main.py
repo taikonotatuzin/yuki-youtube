@@ -726,6 +726,9 @@ def list_page(response: Response, request: Request):
 @app.get("/snow", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("snow.html", {"request": request})
+@app.get("/game", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("proxy.html", {"request": request})
 
 
 
