@@ -69,6 +69,21 @@
   text-align: right;
   margin-bottom: 5px;
 }
+	  .delete-button {
+  background-color: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.8em;
+  transition: background-color 0.3s ease;
+}
+
+.delete-button:hover {
+  background-color: #c0392b;
+}
+
 
     
     /* 入力エリア用スタイル */
@@ -449,6 +464,21 @@ onSnapshot(chatQuery, (snapshot) => {
       timeDiv.className = "message-time";
       timeDiv.textContent = dateObj.toLocaleString();
       messageBox.appendChild(timeDiv);
+    }
+	  const currentUser = auth.currentUser;
+    if (currentUser && msg.uid === currentUser.uid) {
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "削除";
+      deleteBtn.className = "delete-button";
+      deleteBtn.style.marginTop = "5px";
+      deleteBtn.addEventListener("click", async () => {
+        try {
+          await deleteDoc(doc.ref);
+        } catch (error) {
+          alert("メッセージ削除エラー: " + error.message);
+        }
+      });
+      messageBox.appendChild(deleteBtn);
     }
     
     // 名前とメッセージ本文（改行して表示）をボックスに追加
