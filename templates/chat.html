@@ -499,8 +499,7 @@ onSnapshot(chatQuery, (snapshot) => {
       timeDiv.textContent = dateObj.toLocaleString();
       messageContainer.appendChild(timeDiv);
     }
-	  // グッドボタンの表示
-    const goodButton = document.createElement("button");
+	     const goodButton = document.createElement("button");
     goodButton.className = "good-button";
     goodButton.textContent = `グッド (${msg.goodCount})`;  // グッドボタンのカウント表示
     goodButton.onclick = async () => {
@@ -515,13 +514,12 @@ onSnapshot(chatQuery, (snapshot) => {
         alert("グッドボタンの処理エラー: " + error.message);
       }
     };
+    messageContainer.appendChild(goodButton);
 
-
-    // チャットボックスにメッセージコンテナを追加
+    // チャットボックスにメッセージを追加
     chatBox.appendChild(messageContainer);
   });
-  // 最新メッセージが下部に表示されるようスクロール
-  chatBox.scrollTop = chatBox.scrollHeight;
+ chatBox.scrollTop = chatBox.scrollHeight;
 });
 
 
