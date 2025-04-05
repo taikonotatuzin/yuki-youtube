@@ -204,6 +204,21 @@
       box-shadow: 0 0 5px rgba(52,152,219,0.5);
       transition: box-shadow 0.3s ease, border 0.3s ease;
     }
+	  .like-button {
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+  margin-top: 5px;
+  transition: background-color 0.3s ease;
+}
+.like-button:hover {
+  background-color: #27ae60;
+}
+
 
   </style>
 	<!-- 送信日時用のスタイル（任意で好みに合わせて調整） -->
@@ -229,6 +244,9 @@
       getDocs,
       onSnapshot,
       query,
+       doc,
+  updateDoc,
+  increment,
       orderBy
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
     
@@ -403,13 +421,14 @@
       }
       
       // 通常のメッセージ送信処理
-      try {
-        await addDoc(collection(db, "chat"), {
-          text: messageText,
-          name: user.displayName || "名無し",
-          uid: user.uid,
-          timestamp: new Date()
-        });
+  await addDoc(collection(db, "chat"), {
+  text: messageText,
+  name: user.displayName || "名無し",
+  uid: user.uid,
+  timestamp: new Date(),
+  likes: 0  // ←ここを追加！
+});
+
         messageInput.value = "";
       } catch (error) {
         alert("メッセージ送信エラー: " + error.message);
@@ -481,6 +500,22 @@ onSnapshot(chatQuery, (snapshot) => {
       timeDiv.textContent = dateObj.toLocaleString();
       messageContainer.appendChild(timeDiv);
     }
+	  // グッドボタン
+const likeButton = document.createElement("button");
+likeButton.textContent = `👍 ${msg.likes || 0}`;
+likeButton.className = "like-button";
+likeButton.addEventListener("click", async () => {
+  try {
+    const msgRef = doc(db, "chat", doc.id);
+    await updateDoc(msgRef, {
+      likes: increment(1)
+    });
+  } catch (error) {
+    alert("いいね失敗: " + error.message);
+  }
+});
+messageContainer.appendChild(likeButton);
+
 
 
     // チャットボックスにメッセージコンテナを追加
