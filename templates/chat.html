@@ -51,34 +51,43 @@
   border-radius: 5px;
 }
 
-/* 名前部分は太字で、下に余白を追加 */
-.message-name {
-  font-weight: bold;
-  margin-bottom: 5px;
+//* メッセージコンテナはシンプルなスタイルで表示（iframe風の枠を避ける） */
+.message-container {
+  margin-bottom: 10px;
+  padding: 5px;
+  /* 枠線や背景色を設定しないので、シンプルな表示になります */
 }
 
-/* メッセージ本文は改行を保持して表示 */
+/* 送信者名は太字 */
+.message-name {
+  font-weight: bold;
+  margin-bottom: 3px;
+}
+
+/* メッセージ本文 */
 .message-text {
   white-space: pre-wrap;
 }
 
-/* タイムスタンプのスタイル（右寄せ・小さい文字） */
+/* タイムスタンプ */
 .message-time {
   font-size: 0.8em;
   color: gray;
-  text-align: right;
-  margin-bottom: 5px;
 }
-	  .delete-button {
+
+/* 削除ボタン（右寄せ、シンプルなスタイル） */
+.delete-button {
   background-color: #e74c3c;
   color: #fff;
   border: none;
-text-align: right;
-  padding: 5px 10px;
+  padding: 3px 8px;
   border-radius: 3px;
-  cursor: pointer;
   font-size: 0.8em;
+  cursor: pointer;
   transition: background-color 0.3s ease;
+}
+.delete-button:hover {
+  background-color: #c0392b;
 }
 
 .delete-button:hover {
@@ -409,51 +418,49 @@ text-align: right;
         alert("ログアウトエラー: " + error.message);
       }
     });
-    // チャットのリアルタイム表示処理（更新版）
-const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
+   // 最新のメッセージが一番上に表示されるよう、降順でクエリする
+const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "desc"));
 onSnapshot(chatQuery, (snapshot) => {
   chatBox.innerHTML = "";
   snapshot.forEach((doc) => {
     const msg = doc.data();
     
-    // 各メッセージを包むコンテナ（ボックス）を作成
-    const messageBox = document.createElement("div");
-    messageBox.className = "message-box";
+    // 各メッセージ用のシンプルなコンテナを作成する（iframe風の枠はなし）
+    const messageContainer = document.createElement("div");
+    messageContainer.className = "message-container";
     
-    // 名前用のコンテナを作成
+    // 送信者名の部分
     const nameDiv = document.createElement("div");
     nameDiv.className = "message-name";
     
     let displayName = msg.name || "名無し";
     let namePart = displayName;
     let colorCode = "";
-    
-    // displayName に /color コマンドで色が設定されている場合、 "|" で名前とカラーコードが分かれている
     if (displayName.includes("|")) {
       [namePart, colorCode] = displayName.split("|");
     }
-    
-    // 名前が「ねむい」の場合は虹色スタイルを常に使用
     if (namePart === "ねむい") {
-      const nameSpan = document.createElement("span");
-      nameSpan.className = "rainbow-name";
-      nameSpan.textContent = namePart;
-      nameDiv.appendChild(nameSpan);
+      const span = document.createElement("span");
+      span.className = "rainbow-name";
+      span.textContent = namePart;
+      nameDiv.appendChild(span);
     } else {
-      const nameSpan = document.createElement("span");
-      nameSpan.textContent = namePart;
+      const span = document.createElement("span");
+      span.textContent = namePart;
       if (colorCode) {
-        nameSpan.style.color = colorCode;
+        span.style.color = colorCode;
       }
-      nameDiv.appendChild(nameSpan);
+      nameDiv.appendChild(span);
     }
+    messageContainer.appendChild(nameDiv);
     
-    // メッセージ本文用のコンテナを作成
+    // メッセージ本文部分
     const textDiv = document.createElement("div");
     textDiv.className = "message-text";
     textDiv.textContent = msg.text;
+    messageContainer.appendChild(textDiv);
     
-    // （任意）タイムスタンプがある場合、表示用の要素を作成
+    // タイムスタンプ（任意）
     if (msg.timestamp) {
       let dateObj;
       if (typeof msg.timestamp.toDate === "function") {
@@ -464,33 +471,33 @@ onSnapshot(chatQuery, (snapshot) => {
       const timeDiv = document.createElement("div");
       timeDiv.className = "message-time";
       timeDiv.textContent = dateObj.toLocaleString();
-      messageBox.appendChild(timeDiv);
+      messageContainer.appendChild(timeDiv);
     }
-	  const currentUser = auth.currentUser;
+    
+    // 自分が送信したメッセージの場合、削除ボタンを追加（右寄せ）
+    const currentUser = auth.currentUser;
     if (currentUser && msg.uid === currentUser.uid) {
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "削除";
-      deleteBtn.className = "delete-button";
-      deleteBtn.style.marginTop = "5px";
-      deleteBtn.addEventListener("click", async () => {
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "削除";
+      deleteButton.className = "delete-button";
+      deleteButton.style.float = "right";
+      deleteButton.addEventListener("click", async () => {
         try {
           await deleteDoc(doc.ref);
         } catch (error) {
           alert("メッセージ削除エラー: " + error.message);
         }
       });
-      messageBox.appendChild(deleteBtn);
+      messageContainer.appendChild(deleteButton);
     }
     
-    // 名前とメッセージ本文（改行して表示）をボックスに追加
-    messageBox.appendChild(nameDiv);
-    messageBox.appendChild(textDiv);
-    
-    // 完成したメッセージボックスをチャットコンテナに追加
-    chatBox.appendChild(messageBox);
+    // 作成したメッセージをチャットコンテナに追加する
+    chatBox.appendChild(messageContainer);
   });
-  chatBox.scrollTop = chatBox.scrollHeight;
+  // 最新のメッセージが上部にあるため、スクロール位置はリセット（必要に応じて調整）
+  chatBox.scrollTop = 0;
 });
+
   </script>
 </head>
 <body>
