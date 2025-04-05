@@ -51,40 +51,47 @@
   border-radius: 5px;
 }
 
-//* メッセージコンテナはシンプルなスタイルで表示（iframe風の枠を避ける） */
+/* メッセージコンテナを iframe のような枠線と背景に */
 .message-container {
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  padding: 10px;
   margin-bottom: 10px;
-  padding: 5px;
-  /* 枠線や背景色を設定しないので、シンプルな表示になります */
+  border-radius: 4px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* 送信者名は太字 */
+/* 送信者名は太字で表示 */
 .message-name {
   font-weight: bold;
-  margin-bottom: 3px;
+  margin-bottom: 5px;
 }
 
-/* メッセージ本文 */
+/* メッセージ本文：改行を保持して表示 */
 .message-text {
   white-space: pre-wrap;
+  margin-bottom: 5px;
 }
 
 /* タイムスタンプ */
 .message-time {
   font-size: 0.8em;
   color: gray;
+  text-align: right;
 }
 
-/* 削除ボタン（右寄せ、シンプルなスタイル） */
+/* 削除ボタン：右寄せのスタイル */
 .delete-button {
+  float: right;
   background-color: #e74c3c;
   color: #fff;
   border: none;
-  padding: 3px 8px;
+  padding: 5px 10px;
   border-radius: 3px;
-  font-size: 0.8em;
   cursor: pointer;
+  font-size: 0.8em;
   transition: background-color 0.3s ease;
+  margin-top: 5px;
 }
 .delete-button:hover {
   background-color: #c0392b;
@@ -418,21 +425,21 @@
         alert("ログアウトエラー: " + error.message);
       }
     });
-   // 最新のメッセージが一番上に表示されるよう、降順でクエリする
-const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "desc"));
+// 昇順（古い順～新しい順）でメッセージを取得
+const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
 onSnapshot(chatQuery, (snapshot) => {
   chatBox.innerHTML = "";
   snapshot.forEach((doc) => {
     const msg = doc.data();
-    
-    // 各メッセージ用のシンプルなコンテナを作成する（iframe風の枠はなし）
+
+    // メッセージコンテナ（iframe風の枠線・背景）の作成
     const messageContainer = document.createElement("div");
     messageContainer.className = "message-container";
-    
-    // 送信者名の部分
+
+    // 送信者名の表示用Div
     const nameDiv = document.createElement("div");
     nameDiv.className = "message-name";
-    
+
     let displayName = msg.name || "名無し";
     let namePart = displayName;
     let colorCode = "";
@@ -453,14 +460,14 @@ onSnapshot(chatQuery, (snapshot) => {
       nameDiv.appendChild(span);
     }
     messageContainer.appendChild(nameDiv);
-    
-    // メッセージ本文部分
+
+    // メッセージ本文の表示用Div
     const textDiv = document.createElement("div");
     textDiv.className = "message-text";
     textDiv.textContent = msg.text;
     messageContainer.appendChild(textDiv);
-    
-    // タイムスタンプ（任意）
+
+    // タイムスタンプがある場合
     if (msg.timestamp) {
       let dateObj;
       if (typeof msg.timestamp.toDate === "function") {
@@ -473,14 +480,13 @@ onSnapshot(chatQuery, (snapshot) => {
       timeDiv.textContent = dateObj.toLocaleString();
       messageContainer.appendChild(timeDiv);
     }
-    
-    // 自分が送信したメッセージの場合、削除ボタンを追加（右寄せ）
+
+    // 自分が送信したメッセージの場合、削除ボタンを右側に追加
     const currentUser = auth.currentUser;
     if (currentUser && msg.uid === currentUser.uid) {
       const deleteButton = document.createElement("button");
       deleteButton.textContent = "削除";
       deleteButton.className = "delete-button";
-      deleteButton.style.float = "right";
       deleteButton.addEventListener("click", async () => {
         try {
           await deleteDoc(doc.ref);
@@ -490,13 +496,14 @@ onSnapshot(chatQuery, (snapshot) => {
       });
       messageContainer.appendChild(deleteButton);
     }
-    
-    // 作成したメッセージをチャットコンテナに追加する
+
+    // チャットボックスにメッセージコンテナを追加
     chatBox.appendChild(messageContainer);
   });
-  // 最新のメッセージが上部にあるため、スクロール位置はリセット（必要に応じて調整）
-  chatBox.scrollTop = 0;
+  // 最新メッセージが下部に表示されるようスクロール
+  chatBox.scrollTop = chatBox.scrollHeight;
 });
+
 
   </script>
 </head>
