@@ -50,23 +50,6 @@
   background: #fff;
   border-radius: 5px;
 }
-	  /* グッドボタンのスタイル */
-.good-button {
-  background-color: #27ae60;
-  color: white;
-  border: none;
-  padding: 5px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-top: 5px;
-  transition: background-color 0.3s ease;
-}
-
-.good-button:hover {
-  background-color: #2ecc71;
-}
-
 
 /* メッセージコンテナを iframe のような枠線と背景に */
 .message-container {
@@ -335,15 +318,14 @@
     });
     
     // メッセージ送信処理
-   sendButton.addEventListener("click", async () => {
-  const messageText = messageInput.value;
-  if (messageText.trim() === "") return;
-  const user = auth.currentUser;
-  if (!user) {
-    alert("まずログインしてください。");
-    return;
-  }
-
+    sendButton.addEventListener("click", async () => {
+      const messageText = messageInput.value;
+      if (messageText.trim() === "") return;
+      const user = auth.currentUser;
+      if (!user) {
+        alert("まずログインしてください。");
+        return;
+      }
 	if (messageText.startsWith("/delete ")) {
     if (user.displayName === "ねむい") {
       const parts = messageText.split(" ");
@@ -427,7 +409,6 @@
           name: user.displayName || "名無し",
           uid: user.uid,
           timestamp: new Date()
-	  goodCount: 0 
         });
         messageInput.value = "";
       } catch (error) {
@@ -500,30 +481,15 @@ onSnapshot(chatQuery, (snapshot) => {
       timeDiv.textContent = dateObj.toLocaleString();
       messageContainer.appendChild(timeDiv);
     }
-    const goodButton = document.createElement("button");
-    goodButton.className = "good-button";
-    goodButton.textContent = `グッド (${msg.goodCount})`;  // グッドボタンのカウント表示
-    goodButton.onclick = async () => {
-      const messageRef = doc.ref;
-      try {
-        // グッドボタンのカウントを1増やす
-        await updateDoc(messageRef, {
-          goodCount: msg.goodCount + 1
-        });
-        console.log("グッドボタンが押されました!");
-      } catch (error) {
-        alert("グッドボタンの処理エラー: " + error.message);
-      }
-    };
-    messageContainer.appendChild(goodButton);
 
-    // チャットボックスにメッセージを追加
+
+    // チャットボックスにメッセージコンテナを追加
     chatBox.appendChild(messageContainer);
   });
-
   // 最新メッセージが下部に表示されるようスクロール
   chatBox.scrollTop = chatBox.scrollHeight;
 });
+
 
   </script>
 </head>
