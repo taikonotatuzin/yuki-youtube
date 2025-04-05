@@ -409,6 +409,7 @@
           name: user.displayName || "名無し",
           uid: user.uid,
           timestamp: new Date()
+	  goodCount: 0 
         });
         messageInput.value = "";
       } catch (error) {
@@ -481,6 +482,22 @@ onSnapshot(chatQuery, (snapshot) => {
       timeDiv.textContent = dateObj.toLocaleString();
       messageContainer.appendChild(timeDiv);
     }
+	  // グッドボタンの表示
+    const goodButton = document.createElement("button");
+    goodButton.className = "good-button";
+    goodButton.textContent = `グッド (${msg.goodCount})`;  // グッドボタンのカウント表示
+    goodButton.onclick = async () => {
+      const messageRef = doc.ref;
+      try {
+        // グッドボタンのカウントを1増やす
+        await updateDoc(messageRef, {
+          goodCount: msg.goodCount + 1
+        });
+        console.log("グッドボタンが押されました!");
+      } catch (error) {
+        alert("グッドボタンの処理エラー: " + error.message);
+      }
+    };
 
 
     // チャットボックスにメッセージコンテナを追加
