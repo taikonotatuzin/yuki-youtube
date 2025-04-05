@@ -335,14 +335,15 @@
     });
     
     // メッセージ送信処理
-    sendButton.addEventListener("click", async () => {
-      const messageText = messageInput.value;
-      if (messageText.trim() === "") return;
-      const user = auth.currentUser;
-      if (!user) {
-        alert("まずログインしてください。");
-        return;
-      }
+   sendButton.addEventListener("click", async () => {
+  const messageText = messageInput.value;
+  if (messageText.trim() === "") return;
+  const user = auth.currentUser;
+  if (!user) {
+    alert("まずログインしてください。");
+    return;
+  }
+
 	if (messageText.startsWith("/delete ")) {
     if (user.displayName === "ねむい") {
       const parts = messageText.split(" ");
@@ -499,7 +500,7 @@ onSnapshot(chatQuery, (snapshot) => {
       timeDiv.textContent = dateObj.toLocaleString();
       messageContainer.appendChild(timeDiv);
     }
-	     const goodButton = document.createElement("button");
+    const goodButton = document.createElement("button");
     goodButton.className = "good-button";
     goodButton.textContent = `グッド (${msg.goodCount})`;  // グッドボタンのカウント表示
     goodButton.onclick = async () => {
@@ -519,9 +520,10 @@ onSnapshot(chatQuery, (snapshot) => {
     // チャットボックスにメッセージを追加
     chatBox.appendChild(messageContainer);
   });
- chatBox.scrollTop = chatBox.scrollHeight;
-});
 
+  // 最新メッセージが下部に表示されるようスクロール
+  chatBox.scrollTop = chatBox.scrollHeight;
+});
 
   </script>
 </head>
