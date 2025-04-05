@@ -466,6 +466,22 @@ onSnapshot(chatQuery, (snapshot) => {
     textDiv.className = "message-text";
     textDiv.textContent = msg.text;
     messageContainer.appendChild(textDiv);
+  // 自分が送信したメッセージの場合、削除ボタンを右側に追加
+    const currentUser = auth.currentUser;
+    if (currentUser && msg.uid === currentUser.uid) {
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "削除";
+      deleteButton.className = "delete-button";
+      deleteButton.addEventListener("click", async () => {
+        try {
+          await deleteDoc(doc.ref);
+        } catch (error) {
+          alert("メッセージ削除エラー: " + error.message);
+        }
+      });
+      messageContainer.appendChild(deleteButton);
+    }
+
 
     // タイムスタンプがある場合
     if (msg.timestamp) {
@@ -481,21 +497,6 @@ onSnapshot(chatQuery, (snapshot) => {
       messageContainer.appendChild(timeDiv);
     }
 
-    // 自分が送信したメッセージの場合、削除ボタンを右側に追加
-    const currentUser = auth.currentUser;
-    if (currentUser && msg.uid === currentUser.uid) {
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "削除";
-      deleteButton.className = "delete-button";
-      deleteButton.addEventListener("click", async () => {
-        try {
-          await deleteDoc(doc.ref);
-        } catch (error) {
-          alert("メッセージ削除エラー: " + error.message);
-        }
-      });
-      messageContainer.appendChild(deleteButton);
-    }
 
     // チャットボックスにメッセージコンテナを追加
     chatBox.appendChild(messageContainer);
