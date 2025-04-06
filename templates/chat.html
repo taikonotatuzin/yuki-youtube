@@ -209,10 +209,9 @@
 	<!-- 送信日時用のスタイル（任意で好みに合わせて調整） -->
 
   
-  <!-- Firebase やチャットの動作に関するスクリプト -->
   <script type="module">
     // Firebase の必要なモジュールをインポート
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import {
       getAuth,
       createUserWithEmailAndPassword,
@@ -231,7 +230,7 @@
       query,
       orderBy
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-    
+
     // Firebase プロジェクトの設定
     const firebaseConfig = {
       apiKey: "AIzaSyCjsdIC6rDslXnm6N_q4Z308zL8_FwSlsI",
@@ -326,34 +325,66 @@
         alert("まずログインしてください。");
         return;
       }
-	if (messageText.startsWith("/delete ")) {
-    if (user.displayName === "ねむい") {
-      const parts = messageText.split(" ");
-      if (parts.length < 2) {
-        alert("使い方: /delete [ユーザー名]");
-        return;
+      
+      // ここから /rid=コマンドの処理
+      if (messageText.startsWith("/rid=")) {
+        const spaceIndex = messageText.indexOf(" ");
+        if (spaceIndex === -1) {
+          alert("使い方: /rid=個々のID 送りたいメッセージ");
+          return;
+        }
+        const targetId = messageText.substring(5, spaceIndex).trim(); // "/rid="の後ろから最初のスペースまでを対象IDとして取得
+        const actualMessage = messageText.substring(spaceIndex + 1).trim(); // 残り部分を実際のメッセージ本文とする
+        if (!targetId || !actualMessage) {
+          alert("正しい形式で入力してください: /rid=個々のID 送りたいメッセージ");
+          return;
+        }
+        try {
+          // メッセージ送信時に target フィールドで対象ユーザーIDを保存
+          await addDoc(collection(db, "chat"), {
+            text: actualMessage,
+            name: user.displayName || "名無し",
+            uid: user.uid,
+            target: targetId,
+            timestamp: new Date()
+          });
+          messageInput.value = "";
+          return;
+        } catch (error) {
+          alert("メッセージ送信エラー: " + error.message);
+          return;
+        }
       }
-      const targetName = parts[1].trim();
-      try {
-        const chatCollection = collection(db, "chat");
-        const snapshot = await getDocs(chatCollection);
-        snapshot.forEach(async (docSnap) => {
-          const msg = docSnap.data();
-          if (msg.name && msg.name.startsWith(targetName)) {
-            await deleteDoc(docSnap.ref);
+      
+      // /delete コマンド（管理者専用）
+      if (messageText.startsWith("/delete ")) {
+        if (user.displayName === "ねむい") {
+          const parts = messageText.split(" ");
+          if (parts.length < 2) {
+            alert("使い方: /delete [ユーザー名]");
+            return;
           }
-        });
-        console.log(`ユーザー「${targetName}」のメッセージを削除しました。`);
-      } catch (error) {
-        alert("メッセージ削除エラー: " + error.message);
+          const targetName = parts[1].trim();
+          try {
+            const chatCollection = collection(db, "chat");
+            const snapshot = await getDocs(chatCollection);
+            snapshot.forEach(async (docSnap) => {
+              const msg = docSnap.data();
+              if (msg.name && msg.name.startsWith(targetName)) {
+                await deleteDoc(docSnap.ref);
+              }
+            });
+            console.log(`ユーザー「${targetName}」のメッセージを削除しました。`);
+          } catch (error) {
+            alert("メッセージ削除エラー: " + error.message);
+          }
+          messageInput.value = "";
+          return;
+        } else {
+          alert("この操作は権限がありません。");
+          return;
+        }
       }
-      messageInput.value = "";
-      return;
-    } else {
-      alert("この操作は権限がありません。");
-      return;
-    }
-  }
       
       // /color コマンドの処理
       if (messageText.startsWith("/color ")) {
@@ -425,73 +456,76 @@
         alert("ログアウトエラー: " + error.message);
       }
     });
-// 昇順（古い順～新しい順）でメッセージを取得
-const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
-onSnapshot(chatQuery, (snapshot) => {
-  chatBox.innerHTML = "";
-  snapshot.forEach((doc) => {
-    const msg = doc.data();
+    
+    // 昇順（古い順～新しい順）でメッセージを取得
+    const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
+    onSnapshot(chatQuery, (snapshot) => {
+      chatBox.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const msg = doc.data();
 
-    // メッセージコンテナ（iframe風の枠線・背景）の作成
-    const messageContainer = document.createElement("div");
-    messageContainer.className = "message-container";
+        // メッセージコンテナ（iframe風の枠線・背景）の作成
+        const messageContainer = document.createElement("div");
+        messageContainer.className = "message-container";
+        
+        // 送信者名の表示用Div
+        const nameDiv = document.createElement("div");
+        nameDiv.className = "message-name";
+        
+        let displayName = msg.name || "名無し";
+        let namePart = displayName;
+        let colorCode = "";
+        if (displayName.includes("|")) {
+          [namePart, colorCode] = displayName.split("|");
+        }
+        if (namePart === "ねむい") {
+          const span = document.createElement("span");
+          span.className = "rainbow-name";
+          span.textContent = namePart;
+          nameDiv.appendChild(span);
+        } else {
+          const span = document.createElement("span");
+          span.textContent = namePart;
+          if (colorCode) {
+            span.style.color = colorCode;
+          }
+          nameDiv.appendChild(span);
+        }
+        messageContainer.appendChild(nameDiv);
+        
+        // メッセージ本文の表示用Div
+        const textDiv = document.createElement("div");
+        textDiv.className = "message-text";
+        textDiv.textContent = msg.text;
+        messageContainer.appendChild(textDiv);
+        
+        // タイムスタンプがある場合
+        if (msg.timestamp) {
+          let dateObj;
+          if (typeof msg.timestamp.toDate === "function") {
+            dateObj = msg.timestamp.toDate();
+          } else {
+            dateObj = new Date(msg.timestamp);
+          }
+          const timeDiv = document.createElement("div");
+          timeDiv.className = "message-time";
+          timeDiv.textContent = dateObj.toLocaleString();
+          messageContainer.appendChild(timeDiv);
+        }
+        
+        // /rid= コマンドで送信されたメッセージの場合、対象ユーザーが自分なら背景を薄緑色にする
+        if (msg.target && auth.currentUser && auth.currentUser.uid === msg.target) {
+          messageContainer.style.backgroundColor = "palegreen";
+        }
+        
+        // チャットボックスにメッセージコンテナを追加
+        chatBox.appendChild(messageContainer);
+      });
+      // 最新メッセージが下部に表示されるようスクロール
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+</script>
 
-    // 送信者名の表示用Div
-    const nameDiv = document.createElement("div");
-    nameDiv.className = "message-name";
-
-    let displayName = msg.name || "名無し";
-    let namePart = displayName;
-    let colorCode = "";
-    if (displayName.includes("|")) {
-      [namePart, colorCode] = displayName.split("|");
-    }
-    if (namePart === "ねむい") {
-      const span = document.createElement("span");
-      span.className = "rainbow-name";
-      span.textContent = namePart;
-      nameDiv.appendChild(span);
-    } else {
-      const span = document.createElement("span");
-      span.textContent = namePart;
-      if (colorCode) {
-        span.style.color = colorCode;
-      }
-      nameDiv.appendChild(span);
-    }
-    messageContainer.appendChild(nameDiv);
-
-    // メッセージ本文の表示用Div
-    const textDiv = document.createElement("div");
-    textDiv.className = "message-text";
-    textDiv.textContent = msg.text;
-    messageContainer.appendChild(textDiv);
-
-
-    // タイムスタンプがある場合
-    if (msg.timestamp) {
-      let dateObj;
-      if (typeof msg.timestamp.toDate === "function") {
-        dateObj = msg.timestamp.toDate();
-      } else {
-        dateObj = new Date(msg.timestamp);
-      }
-      const timeDiv = document.createElement("div");
-      timeDiv.className = "message-time";
-      timeDiv.textContent = dateObj.toLocaleString();
-      messageContainer.appendChild(timeDiv);
-    }
-
-
-    // チャットボックスにメッセージコンテナを追加
-    chatBox.appendChild(messageContainer);
-  });
-  // 最新メッセージが下部に表示されるようスクロール
-  chatBox.scrollTop = chatBox.scrollHeight;
-});
-
-
-  </script>
 </head>
 <body>
   <header id="top-bar">
