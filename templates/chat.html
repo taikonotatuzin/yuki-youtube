@@ -209,233 +209,289 @@
 	<!-- 送信日時用のスタイル（任意で好みに合わせて調整） -->
 
   
-<script type="module">
-  // Firebase の必要なモジュールをインポート
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-  import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    updateProfile,
-    signOut,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    deleteDoc,
-    getDocs,
-    onSnapshot,
-    query,
-    orderBy
-  } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-
-  // Firebase プロジェクトの設定
-  const firebaseConfig = {
-    apiKey: "AIzaSyCjsdIC6rDslXnm6N_q4Z308zL8_FwSlsI",
-    authDomain: "chat-siken2.firebaseapp.com",
-    projectId: "chat-siken2",
-    storageBucket: "chat-siken2.firebasestorage.app",
-    messagingSenderId: "381735974784",
-    appId: "1:381735974784:web:1708b0c08d911878bf3365",
-  };
-
-  // Firebase の初期化
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  // サインイン用：名前から生成する一意のメールアドレス
-  function generateEmailFromName(name) {
-    return name.trim().toLowerCase().replace(/\s+/g, "") + "@chatapp.local";
-  }
-
-  // 強制的なIDを生成する関数（4桁のランダムな数字）
-  function generateForcedId() {
-    return Math.floor(1000 + Math.random() * 9000).toString();
-  }
-
-  const CLEAR_CHAT_PASSWORD = "RESET1234";
-
-  // DOM 要素の参照取得
-  const signupButton   = document.getElementById("signupButton");
-  const loginButton    = document.getElementById("loginButton");
-  const logoutButton   = document.getElementById("logoutButton");
-  const sendButton     = document.getElementById("sendButton");
-  const chatBox        = document.getElementById("chat-box");
-  const messageInput   = document.getElementById("messageInput");
-
-  // サインアップ処理
-  signupButton.addEventListener("click", async () => {
-    const name     = document.getElementById("signupName").value;
-    const password = document.getElementById("signupPassword").value;
-    if (!name || !password) {
-      alert("名前とパスワードの両方を入力してください。");
-      return;
+  <!-- Firebase やチャットの動作に関するスクリプト -->
+  <script type="module">
+    // Firebase の必要なモジュールをインポート
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      updateProfile,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      deleteDoc,
+      getDocs,
+      onSnapshot,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+    
+    // Firebase プロジェクトの設定
+    const firebaseConfig = {
+      apiKey: "AIzaSyCjsdIC6rDslXnm6N_q4Z308zL8_FwSlsI",
+      authDomain: "chat-siken2.firebaseapp.com",
+      projectId: "chat-siken2",
+      storageBucket: "chat-siken2.firebasestorage.app",
+      messagingSenderId: "381735974784",
+      appId: "1:381735974784:web:1708b0c08d911878bf3365",
+    };
+    
+    // Firebase の初期化
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    
+    // サインイン用：名前から生成する一意のメールアドレス
+    function generateEmailFromName(name) {
+      return name.trim().toLowerCase().replace(/\s+/g, "") + "@chatapp.local";
     }
-    const email    = generateEmailFromName(name);
-    const forcedId = generateForcedId();
-    // 名前が「ねむい」の場合は強制IDを付けない
-    const fullName = (name === "ねむい") ? name : `${name}#${forcedId}`;
-
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(userCredential.user, { displayName: fullName });
-      console.log("サインアップ成功:", userCredential.user);
-    } catch (error) {
-      alert("サインアップエラー: " + error.message);
+    
+    // 強制的なIDを生成する関数（4桁のランダムな数字）
+    function generateForcedId() {
+      return Math.floor(1000 + Math.random() * 9000).toString();
     }
-  });
-
-  // ログイン処理
-  loginButton.addEventListener("click", async () => {
-    const name     = document.getElementById("loginName").value;
-    const password = document.getElementById("loginPassword").value;
-    if (!name || !password) {
-      alert("名前とパスワードの両方を入力してください。");
-      return;
-    }
-    const email = generateEmailFromName(name);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      console.log("ログイン成功");
-    } catch (error) {
-      alert("ログインエラー: " + error.message);
-    }
-  });
-
-  // 認証状態の変化を監視
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      document.getElementById("user-auth").style.display = "none";
-      document.getElementById("chat-section").style.display = "block";
-    } else {
-      document.getElementById("user-auth").style.display = "block";
-      document.getElementById("chat-section").style.display = "none";
-    }
-  });
-
-  // メッセージ送信処理
-  sendButton.addEventListener("click", async () => {
-    const messageText = messageInput.value;
-    if (messageText.trim() === "") return;
-    const user = auth.currentUser;
-    if (!user) {
-      alert("まずログインしてください。");
-      return;
-    }
-
-    // /rid= コマンドの処理（例: /rid=個々のID 送りたいメッセージ）
-    if (messageText.startsWith("/rid=")) {
-      const firstSpace = messageText.indexOf(" ");
-      if (firstSpace === -1) {
-        alert("使い方: /rid=個々のID 送りたいメッセージ");
+    
+    const CLEAR_CHAT_PASSWORD = "RESET1234";
+    
+    // DOM 要素の参照取得
+    const signupButton   = document.getElementById("signupButton");
+    const loginButton    = document.getElementById("loginButton");
+    const logoutButton   = document.getElementById("logoutButton");
+    const sendButton     = document.getElementById("sendButton");
+    const chatBox        = document.getElementById("chat-box");
+    const messageInput   = document.getElementById("messageInput");
+    
+    // サインアップ処理
+    signupButton.addEventListener("click", async () => {
+      const name     = document.getElementById("signupName").value;
+      const password = document.getElementById("signupPassword").value;
+      if (!name || !password) {
+        alert("名前とパスワードの両方を入力してください。");
         return;
       }
-      const targetId = messageText.substring(5, firstSpace).trim();
-      const actualMessage = messageText.substring(firstSpace + 1).trim();
-      if (!targetId || !actualMessage) {
-        alert("正しい形式で入力してください: /rid=個々のID 送りたいメッセージ");
-        return;
-      }
+      const email     = generateEmailFromName(name);
+      const forcedId  = generateForcedId();
+      // 名前が「ねむい」の場合は強制IDを付けない
+      const fullName  = (name === "ねむい") ? name : `${name}#${forcedId}`;
+    
       try {
-        // Firestore に送信時、target フィールドに対象ユーザーのIDを保持しておく
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(userCredential.user, { displayName: fullName });
+        console.log("サインアップ成功:", userCredential.user);
+      } catch (error) {
+        alert("サインアップエラー: " + error.message);
+      }
+    });
+    
+    // ログイン処理
+    loginButton.addEventListener("click", async () => {
+      const name     = document.getElementById("loginName").value;
+      const password = document.getElementById("loginPassword").value;
+      if (!name || !password) {
+        alert("名前とパスワードの両方を入力してください。");
+        return;
+      }
+      const email = generateEmailFromName(name);
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        console.log("ログイン成功");
+      } catch (error) {
+        alert("ログインエラー: " + error.message);
+      }
+    });
+    
+    // 認証状態の変化を監視
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById("user-auth").style.display = "none";
+        document.getElementById("chat-section").style.display = "block";
+      } else {
+        document.getElementById("user-auth").style.display = "block";
+        document.getElementById("chat-section").style.display = "none";
+      }
+    });
+    
+    // メッセージ送信処理
+    sendButton.addEventListener("click", async () => {
+      const messageText = messageInput.value;
+      if (messageText.trim() === "") return;
+      const user = auth.currentUser;
+      if (!user) {
+        alert("まずログインしてください。");
+        return;
+      }
+	if (messageText.startsWith("/delete ")) {
+    if (user.displayName === "ねむい") {
+      const parts = messageText.split(" ");
+      if (parts.length < 2) {
+        alert("使い方: /delete [ユーザー名]");
+        return;
+      }
+      const targetName = parts[1].trim();
+      try {
+        const chatCollection = collection(db, "chat");
+        const snapshot = await getDocs(chatCollection);
+        snapshot.forEach(async (docSnap) => {
+          const msg = docSnap.data();
+          if (msg.name && msg.name.startsWith(targetName)) {
+            await deleteDoc(docSnap.ref);
+          }
+        });
+        console.log(`ユーザー「${targetName}」のメッセージを削除しました。`);
+      } catch (error) {
+        alert("メッセージ削除エラー: " + error.message);
+      }
+      messageInput.value = "";
+      return;
+    } else {
+      alert("この操作は権限がありません。");
+      return;
+    }
+  }
+      
+      // /color コマンドの処理
+      if (messageText.startsWith("/color ")) {
+        const parts = messageText.split(" ");
+        if (parts.length < 2) {
+          alert("使い方: /color #fff (カラーコードを入力してください)");
+          return;
+        }
+        const newColor = parts[1].trim();
+        if (!/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(newColor)) {
+          alert("有効なカラーコードを入力してください (例: /color #fff)");
+          return;
+        }
+        const currentDisplayName = user.displayName || "名無し";
+        const namePart = currentDisplayName.split("|")[0];
+        const newDisplayName = namePart + "|" + newColor;
+        try {
+          await updateProfile(user, { displayName: newDisplayName });
+          alert("名前の色が変更されました");
+        } catch (error) {
+          alert("名前の色更新エラー: " + error.message);
+        }
+        messageInput.value = "";
+        return;
+      }
+      
+      // 管理者（名前が「ねむい」）による全チャット削除コマンド
+      if (messageText === CLEAR_CHAT_PASSWORD) {
+        if (user.displayName === "ねむい") {
+          try {
+            const chatCollection = collection(db, "chat");
+            const snapshot = await getDocs(chatCollection);
+            for (const docSnap of snapshot.docs) {
+              await deleteDoc(docSnap.ref);
+            }
+            chatBox.innerHTML = "";
+            console.log("全ての発言を削除しました。");
+            messageInput.value = "";
+          } catch (error) {
+            alert("チャット削除エラー: " + error.message);
+          }
+          return;
+        } else {
+          alert("この操作は権限がありません。");
+          return;
+        }
+      }
+      
+      // 通常のメッセージ送信処理
+      try {
         await addDoc(collection(db, "chat"), {
-          text: actualMessage,
+          text: messageText,
           name: user.displayName || "名無し",
           uid: user.uid,
-          target: targetId,
           timestamp: new Date()
         });
         messageInput.value = "";
-        return;
       } catch (error) {
         alert("メッセージ送信エラー: " + error.message);
-        return;
       }
-    }
-
-    // 追加のコマンド（/delete, /color, 全チャット削除など）の処理は省略し、通常メッセージ送信
-    try {
-      await addDoc(collection(db, "chat"), {
-        text: messageText,
-        name: user.displayName || "名無し",
-        uid: user.uid,
-        timestamp: new Date()
-      });
-      messageInput.value = "";
-    } catch (error) {
-      alert("メッセージ送信エラー: " + error.message);
-    }
-  });
-
-  // ログアウト処理
-  logoutButton.addEventListener("click", async () => {
-    try {
-      await signOut(auth);
-      console.log("ログアウト成功");
-    } catch (error) {
-      alert("ログアウトエラー: " + error.message);
-    }
-  });
-
-  // メッセージの受信と表示（古い順～新しい順に並ぶ）
-  const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
-  onSnapshot(chatQuery, (snapshot) => {
-    chatBox.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const msg = doc.data();
-
-      // メッセージコンテナの作成（CSSは先に定義済み）
-      const messageContainer = document.createElement("div");
-      messageContainer.className = "message-container";
-
-      // /rid= コマンドで送信されたメッセージの場合、対象ユーザーが自分なら背景を薄緑色に
-      if (msg.target && auth.currentUser && auth.currentUser.uid === msg.target) {
-        messageContainer.style.backgroundColor = "palegreen";
-      }
-
-      // 送信者名の表示
-      const nameDiv = document.createElement("div");
-      nameDiv.className = "message-name";
-      let displayName = msg.name || "名無し";
-      // 管理者の名前（例：「ねむい」）は虹色のクラスを適用
-      if (displayName === "ねむい") {
-        const span = document.createElement("span");
-        span.className = "rainbow-name";
-        span.textContent = displayName;
-        nameDiv.appendChild(span);
-      } else {
-        const span = document.createElement("span");
-        span.textContent = displayName;
-        nameDiv.appendChild(span);
-      }
-      messageContainer.appendChild(nameDiv);
-
-      // メッセージ本文の表示（改行も保持）
-      const textDiv = document.createElement("div");
-      textDiv.className = "message-text";
-      textDiv.textContent = msg.text;
-      messageContainer.appendChild(textDiv);
-
-      // タイムスタンプの表示（存在する場合）
-      if (msg.timestamp) {
-        let dateObj = (typeof msg.timestamp.toDate === "function")
-          ? msg.timestamp.toDate() : new Date(msg.timestamp);
-        const timeDiv = document.createElement("div");
-        timeDiv.className = "message-time";
-        timeDiv.textContent = dateObj.toLocaleString();
-        messageContainer.appendChild(timeDiv);
-      }
-
-      // チャットボックスへ追加
-      chatBox.appendChild(messageContainer);
     });
-    // 最新のメッセージが下部に表示されるようスクロール
-    chatBox.scrollTop = chatBox.scrollHeight;
+    
+    // ログアウト処理
+    logoutButton.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        console.log("ログアウト成功");
+      } catch (error) {
+        alert("ログアウトエラー: " + error.message);
+      }
+    });
+// 昇順（古い順～新しい順）でメッセージを取得
+const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
+onSnapshot(chatQuery, (snapshot) => {
+  chatBox.innerHTML = "";
+  snapshot.forEach((doc) => {
+    const msg = doc.data();
+
+    // メッセージコンテナ（iframe風の枠線・背景）の作成
+    const messageContainer = document.createElement("div");
+    messageContainer.className = "message-container";
+
+    // 送信者名の表示用Div
+    const nameDiv = document.createElement("div");
+    nameDiv.className = "message-name";
+
+    let displayName = msg.name || "名無し";
+    let namePart = displayName;
+    let colorCode = "";
+    if (displayName.includes("|")) {
+      [namePart, colorCode] = displayName.split("|");
+    }
+    if (namePart === "ねむい") {
+      const span = document.createElement("span");
+      span.className = "rainbow-name";
+      span.textContent = namePart;
+      nameDiv.appendChild(span);
+    } else {
+      const span = document.createElement("span");
+      span.textContent = namePart;
+      if (colorCode) {
+        span.style.color = colorCode;
+      }
+      nameDiv.appendChild(span);
+    }
+    messageContainer.appendChild(nameDiv);
+
+    // メッセージ本文の表示用Div
+    const textDiv = document.createElement("div");
+    textDiv.className = "message-text";
+    textDiv.textContent = msg.text;
+    messageContainer.appendChild(textDiv);
+
+
+    // タイムスタンプがある場合
+    if (msg.timestamp) {
+      let dateObj;
+      if (typeof msg.timestamp.toDate === "function") {
+        dateObj = msg.timestamp.toDate();
+      } else {
+        dateObj = new Date(msg.timestamp);
+      }
+      const timeDiv = document.createElement("div");
+      timeDiv.className = "message-time";
+      timeDiv.textContent = dateObj.toLocaleString();
+      messageContainer.appendChild(timeDiv);
+    }
+
+
+    // チャットボックスにメッセージコンテナを追加
+    chatBox.appendChild(messageContainer);
   });
-</script>
+  // 最新メッセージが下部に表示されるようスクロール
+  chatBox.scrollTop = chatBox.scrollHeight;
+});
+
+
+  </script>
 </head>
 <body>
   <header id="top-bar">
