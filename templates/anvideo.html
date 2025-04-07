@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Videoan - URL置換による動画切替</title>
+  <style>
+    /* ページ全体のレイアウト */
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background-color: #000;
+    }
+    /* 動画コンテナ：2つのvideo要素を重ねる */
+    #video-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+    }
+    /* 両方のvideoを同じ位置・サイズで重ねる */
+    video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0; /* 初期は非表示 */
+      transition: opacity 0.3s ease;
+      background: #000;
+    }
+    /* 表示中のvideo要素 */
+    video.active {
+      opacity: 1;
+    }
+    /* トグルボタンのスタイル */
+    #toggle-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 10;
+      padding: 10px 15px;
+      font-size: 16px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="video-container">
+    <!-- 2つのvideo要素。最初はvideo1を表示（active） -->
+    <video id="video1" class="active" autoplay muted playsinline></video>
+    <video id="video2" autoplay muted playsinline></video>
+    <!-- スクロール切替機能のオンオフボタン -->
+    <button id="toggle-btn">Scroll切替: ON</button>
+  </div>
+
+  <script>
+    // 動画URL一覧（replaceで指定したい動画のURLを記載）
+    const videos = [
+      "'/watch?v={{ videoid }}'",
+      {% for rec_video in recommended_videos %}
+      "/watch?v={{ rec_video['video_id'] }}"
+     {% endfor %}
+      // 必要に応じて追加
+    ];
+
+    let currentIndex = 0; // 現在の動画インデックス
+
+    // スクロール切替機能のオンオフ状態。localStorageで永続化（初回はON）
+    let scrollEnabled = localStorage.getItem("scrollEnabled");
+    if (scrollEnabled === null) {
+      scrollEnabled = true;
+      localStorage.setItem("scrollEnabled", scrollEnabled);
+    } else {
+      scrollEnabled = (scrollEnabled === 'true');
+    }
+
+    // 要素の取得
+    const toggleBtn = document.getElementById("toggle-btn");
+    const video1 = document.getElementById("video1");
+    const video2 = document.getElementById("video2");
+    // active/inactiveのvideo要素を切替えるための参照
+    let activeVideo = video1;
+    let inactiveVideo = video2;
+
+    // トグルボタンのテキスト更新
+    function updateToggleBtn() {
+      toggleBtn.textContent = "Scroll切替: " + (scrollEnabled ? "ON" : "OFF");
+    }
+    updateToggleBtn();
+
+    toggleBtn.addEventListener("click", () => {
+      scrollEnabled = !scrollEnabled;
+      localStorage.setItem("scrollEnabled", scrollEnabled);
+      updateToggleBtn();
+    });
+
+    // 初期動画をactiveVideoにセットして再生開始
+    activeVideo.src = videos[currentIndex];
+    activeVideo.play();
+
+    let wheelTimeout;
+    window.addEventListener('wheel', function(e) {
+      if (!scrollEnabled) return;
+      if (e.deltaY > 0) {  // 下方向スクロールの場合
+        clearTimeout(wheelTimeout);
+        wheelTimeout = setTimeout(() => {
+          switchToNextVideo();
+        }, 100);
+      }
+    });
+
+    // 動画切替関数：次の動画URLをinactiveVideoにセットし、事前に読み込んでからフェードで入れ替え
+    function switchToNextVideo() {
+      currentIndex = (currentIndex + 1) % videos.length;
+      inactiveVideo.src = videos[currentIndex];
+      // 読み込み開始
+      inactiveVideo.load();
+      // 次の動画が再生できる状態になったらフェード切替
+      inactiveVideo.oncanplay = function() {
+        inactiveVideo.play();
+        // フェードでinactiveVideoを表示（activeVideoは徐々に非表示）
+        inactiveVideo.classList.add("active");
+        activeVideo.classList.remove("active");
+
+        // 切替完了後、oncanplayのハンドラを解除し、2つのvideo要素を入れ替える
+        inactiveVideo.oncanplay = null;
+        let temp = activeVideo;
+        activeVideo = inactiveVideo;
+        inactiveVideo = temp;
+      };
+    }
+  </script>
+</body>
+</html>
