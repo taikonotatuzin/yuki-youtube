@@ -43,6 +43,62 @@
       margin: 0;
       background-color: #fff;
     }
+      .toolbar {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(50, 50, 50, 0.8);
+      padding: 10px;
+      border-radius: 8px;
+      z-index: 1000;
+    }
+    .toolbar button {
+      background: #007bff;
+      border: none;
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 5px;
+    }
+  
+    /* iframeコンテナ（オーバーレイ）のスタイル */
+    .iframe-container {
+      position: fixed;
+      bottom: 80px;  /* ツールバーの上部に配置 */
+      right: 20px;
+      width: 400px;
+      height: 300px;
+      border: 2px solid #007bff;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      display: none;  /* 初期状態は非表示 */
+      z-index: 1000;
+    }
+    .iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    /* iframe内の閉じるボタン */
+    .close-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: #ff4d4d;
+      border: none;
+      color: #fff;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: bold;
+      line-height: 25px;
+      text-align: center;
+      z-index: 10;
+    }
 	  /* 各メッセージ用のボックススタイル */
 .message-box {
   border: 1px solid #ccc;
@@ -523,6 +579,66 @@
 
 </head>
 <body>
+  <div class="toolbar">
+    <!-- トグル（開閉）ボタン -->
+    <button id="toggleVideoCall">video通話開始</button>
+    <!-- 全画面ボタン -->
+    <button id="toggleFullscreen">全画面</button>
+  </div>
+  
+  <!-- iframeを表示するオーバーレイコンテナ -->
+  <div class="iframe-container" id="videoCallContainer">
+    <!-- iframe内の閉じるボタン -->
+    <button class="close-btn" id="closeVideoCall">&times;</button>
+    <!-- 指定サイト「1.com」をiframeで表示 -->
+    <iframe src="https://p2p.mirotalk.com/ id="videoCallFrame"></iframe>
+  </div>
+  
+  <script>
+    const toggleButton = document.getElementById("toggleVideoCall");
+    const videoContainer = document.getElementById("videoCallContainer");
+    const closeButton   = document.getElementById("closeVideoCall");
+    const toggleFullscreenButton = document.getElementById("toggleFullscreen");
+  
+    // 「video通話開始／閉じる」ボタンのクリックでiframeの表示を切り替え
+    toggleButton.addEventListener("click", function() {
+      if (videoContainer.style.display === "block") {
+        videoContainer.style.display = "none";
+        toggleButton.textContent = "video通話開始";
+      } else {
+        videoContainer.style.display = "block";
+        toggleButton.textContent = "閉じる";
+      }
+    });
+  
+    // iframe内の閉じるボタンでもiframeを非表示にし、ツールバー側のテキスト更新
+    closeButton.addEventListener("click", function() {
+      videoContainer.style.display = "none";
+      toggleButton.textContent = "video通話開始";
+    });
+  
+    // 全画面ボタンのクリックでiframeコンテナの全画面表示/解除を切り替える
+    toggleFullscreenButton.addEventListener("click", function() {
+      // 現在全画面表示中でなければリクエスト
+      if (!document.fullscreenElement) {
+        videoContainer.requestFullscreen().catch(err => {
+          alert(`全画面にできませんでした: ${err.message}`);
+        });
+      } else {
+        // もし全画面中なら解除
+        document.exitFullscreen();
+      }
+    });
+  
+    // 全画面状態の変化があったときに全画面ボタンのテキストを更新
+    document.addEventListener("fullscreenchange", () => {
+      if (document.fullscreenElement) {
+        toggleFullscreenButton.textContent = "全画面解除";
+      } else {
+        toggleFullscreenButton.textContent = "全画面";
+      }
+    });
+  </script>
   <header id="top-bar">
     <div class="navbar-logo">
       <a href="/"><img src="/img/logo/th.png" alt="Logo"></a>
