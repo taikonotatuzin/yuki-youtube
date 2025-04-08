@@ -233,14 +233,16 @@
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
     
     // Firebase プロジェクトの設定
-    const firebaseConfig = {
-      apiKey: "AIzaSyCjsdIC6rDslXnm6N_q4Z308zL8_FwSlsI",
-      authDomain: "chat-siken2.firebaseapp.com",
-      projectId: "chat-siken2",
-      storageBucket: "chat-siken2.firebasestorage.app",
-      messagingSenderId: "381735974784",
-      appId: "1:381735974784:web:1708b0c08d911878bf3365",
-    };
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCjsdIC6rDslXnm6N_q4Z308zL8_FwSlsI",
+  authDomain: "chat-siken2.firebaseapp.com",
+  projectId: "chat-siken2",
+  storageBucket: "chat-siken2.firebasestorage.app",
+  messagingSenderId: "381735974784",
+  appId: "1:381735974784:web:1708b0c08d911878bf3365",
+  measurementId: "G-BMQZ337ZRJ"
+};
     
     // Firebase の初期化
     const app = initializeApp(firebaseConfig);
