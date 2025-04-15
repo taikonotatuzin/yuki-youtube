@@ -714,9 +714,9 @@ def list_page(response: Response, request: Request):
 @app.get("/qanda", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("Q&A.html", {"request": request})
-@app.get("/chat", response_class=HTMLResponse)
+@app.get("/1v1lol", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("chat.html", {"request": request})
+    return template("1v1lol.html", {"request": request})
 @app.get("/drive", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("drive.html", {"request": request})
