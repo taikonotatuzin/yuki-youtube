@@ -275,6 +275,38 @@
           }, delay: 300
       });
     </script>
+    <script>
+$(document).ready(function(){
+  // 動画と音声の要素を取得
+  var video = document.getElementById('player');
+  var audio = document.getElementById('audio');
+
+  // 動画再生時に音声も同時に再生する
+  video.addEventListener('play', function(){
+    // 現在の再生位置を合わせる
+    audio.currentTime = video.currentTime;
+    audio.play();
+  });
+
+  // 動画一時停止時に音声も停止する
+  video.addEventListener('pause', function(){
+    audio.pause();
+  });
+
+  // 動画をシーク（再生位置変更）したとき、音声も同じ位置へジャンプ
+  video.addEventListener('seeked', function(){
+    audio.currentTime = video.currentTime;
+  });
+
+  // 微調整: 動画再生中にズレが生じた場合は補正する
+  video.addEventListener('timeupdate', function(){
+    // 0.3秒以上のずれがあれば同期を取り直す
+    if (Math.abs(audio.currentTime - video.currentTime) > 0.3) {
+      audio.currentTime = video.currentTime;
+    }
+  });
+});
+</script>
 
   </body>
 </html>
