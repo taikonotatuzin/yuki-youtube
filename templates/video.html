@@ -275,38 +275,6 @@
           }, delay: 300
       });
     </script>
-    <script>
- const video = document.getElementById('player');
-    const audio = document.getElementById('audio');
-
-    // video再生開始時にaudioも再生する（再生位置の同期も行う）
-    video.addEventListener('play', () => {
-      // videoと同じ再生位置に設定しておく
-      audio.currentTime = video.currentTime;
-      audio.play();
-    });
-
-    // videoの一時停止時にaudioも一時停止する
-    video.addEventListener('pause', () => {
-      audio.pause();
-    });
-
-    // 動画のシーク操作が行われたとき、audioの再生位置も追従させる
-    video.addEventListener('seeked', () => {
-      audio.currentTime = video.currentTime;
-    });
-
-    // volumeやミュートなどの調整も連動させたい場合
-    video.addEventListener('volumechange', () => {
-      audio.volume = video.volume;
-      // ミュート状態が連動するように（両方に適用）
-      audio.muted = video.muted;
-    });
-
-    // 動画が終了したら、audioも初期状態に戻すなどの処理
-    video.addEventListener('ended', () => {
-    
-</script>
 
   </body>
 </html>
