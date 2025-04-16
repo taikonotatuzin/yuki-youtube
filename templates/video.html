@@ -296,12 +296,7 @@ $(document).ready(function(){
   });
 
   // timeupdateイベントで、再生中に0.3秒以上ズレが生じた場合は微調整を行う
-  video.addEventListener('timeupdate', function(){
-    if (Math.abs(audio.currentTime - video.currentTime) > 0.3) {
-      audio.currentTime = video.currentTime;
-    }
-  });
-});
+ 
 </script>
   <script>
   $(document).ready(function(){
