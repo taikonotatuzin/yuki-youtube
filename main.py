@@ -171,7 +171,8 @@ def getVideoData(videoid):
             audio_url = stream.get("url")
             break
 
-    video_details = {
+    return [
+      {
         # 既存処理（ここでは formatStreams のURLを逆順にして上位2件を使用）
         'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
         # 追加：高画質動画と音声のURL
@@ -186,9 +187,10 @@ def getVideoData(videoid):
         'view_count': t["viewCount"],
         'like_count': t["likeCount"],
         'subscribers_count': t["subCountText"]
-    }
+    },
 
-    recommended_data = [{
+    [
+      {
         "video_id": i["videoId"],
         "title": i["title"],
         "author_id": i["authorId"],
@@ -196,6 +198,8 @@ def getVideoData(videoid):
         "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
         "view_count_text": i["viewCountText"]
     } for i in recommended_videos]
+    
+]
 
     return [video_details, recommended_data]
 def getSearchData(q, page):
