@@ -200,8 +200,6 @@ def getVideoData(videoid):
     } for i in recommended_videos]
     
 ]
-
-    return [video_details, recommended_data]
 def getSearchData(q, page):
 
     def formatSearchData(data_dict):
