@@ -139,45 +139,65 @@ failed = "Load Failed"
 def getVideoData(videoid):
     t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
 
+    # 推奨動画の情報（キー名の違いに対応）
     if 'recommendedvideo' in t:
         recommended_videos = t["recommendedvideo"]
     elif 'recommendedVideos' in t:
         recommended_videos = t["recommendedVideos"]
     else:
-        recommended_videos = {
+        recommended_videos = [{
             "videoId": failed,
             "title": failed,
             "authorId": failed,
             "author": failed,
             "lengthSeconds": 0,
             "viewCountText": "Load Failed"
-        }
+        }]
 
-    return [
-        {
-            'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
-            'description_html': t["descriptionHtml"].replace("\n", "<br>"),
-            'title': t["title"],
-            'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"])),
-            'author_id': t["authorId"],
-            'author': t["author"],
-            'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
-            'view_count': t["viewCount"],
-            'like_count': t["likeCount"],
-            'subscribers_count': t["subCountText"]
-        },
-        [
-            {
-                "video_id": i["videoId"],
-                "title": i["title"],
-                "author_id": i["authorId"],
-                "author": i["author"],
-                "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
-                "view_count_text": i["viewCountText"]
-            } for i in recommended_videos
-        ]
-    ]
+    # 【新規追加】adaptiveFormats から高画質動画と音声の URL を抽出する
+    adaptiveFormats = t.get("adaptiveFormats", [])
+    highstream_url = None
+    audio_url = None
 
+    # 高画質: container == 'webm' かつ resolution == '1080p' のストリーム
+    for stream in adaptiveFormats:
+        if stream.get("container") == "webm" and stream.get("resolution") == "1080p":
+            highstream_url = stream.get("url")
+            break
+
+    # 音声: container == 'm4a' かつ audioQuality == 'AUDIO_QUALITY_MEDIUM' のストリーム
+    for stream in adaptiveFormats:
+        if stream.get("container") == "m4a" and stream.get("audioQuality") == "AUDIO_QUALITY_MEDIUM":
+            audio_url = stream.get("url")
+            break
+
+    video_details = {
+        # 既存処理（ここでは formatStreams のURLを逆順にして上位2件を使用）
+        'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
+        # 追加：高画質動画と音声のURL
+        'highstream_url': highstream_url,
+        'audio_url': audio_url,
+        'description_html': t["descriptionHtml"].replace("\n", "<br>"),
+        'title': t["title"],
+        'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"])),
+        'author_id': t["authorId"],
+        'author': t["author"],
+        'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
+        'view_count': t["viewCount"],
+        'like_count': t["likeCount"],
+        'subscribers_count': t["subCountText"]
+    }
+
+    recommended_data = [{
+        "video_id": i["videoId"],
+        "title": i["title"],
+        "author_id": i["authorId"],
+        "author": i["author"],
+        "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
+        "view_count_text": i["viewCountText"]
+    } for i in recommended_videos]
+
+    return [video_details, recommended_data]
 def getSearchData(q, page):
 
     def formatSearchData(data_dict):
@@ -337,6 +357,8 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
     return [
         {
             'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
+            'highstream_url': highstream_url,
+            'audio_url': audio_url,
             'description_html': t["descriptionHtml"].replace("\n", "<br>"),
             'title': t["title"],
             'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"]))
@@ -364,6 +386,8 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "request": request,
         "videoid": v,
         "videourls": video_data[0]['video_urls'],
+        "highstream_url": video_data[0]['highstream_url'],
+        "audio_url": video_data[0]['audio_url'],
         "description": video_data[0]['description_html'],
         "video_title": video_data[0]['title'],
         "author_id": video_data[0]['author_id'],
