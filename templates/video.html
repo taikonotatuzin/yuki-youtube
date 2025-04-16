@@ -272,6 +272,62 @@
           }, delay: 300
       });
     </script>
+    <script>
+document.addEventListener("DOMContentLoaded", function() {
+  // 既存の動画プレーヤーを取得
+  const video = document.getElementById('player');
+  
+  // audio_url がテンプレート変数などでセットされている前提
+  const audioUrl = "{{ audio_url }}";
+  if (!audioUrl || audioUrl.trim() === "") {
+      console.warn("音声ストリームの URL が設定されていません。");
+      return;
+  }
+  
+  // Audio 要素を生成して音声ストリームをセット
+  const audio = new Audio();
+  audio.src = audioUrl;
+  audio.crossOrigin = "anonymous";
+  audio.preload = "auto";
+
+  // シンクの許容誤差（秒単位）
+  const syncTolerance = 0.25;
+
+  // 動画再生開始時：音声も同時に再生し、時間を合わせる
+  video.addEventListener('play', function() {
+    audio.currentTime = video.currentTime;
+    // 自動再生の制限により再生がブロックされる場合もあるため、promise でエラーをキャッチ
+    audio.play().catch(err => {
+      console.error("音声の再生エラー:", err);
+    });
+  });
+
+  // 動画が一時停止されたら、音声も一時停止
+  video.addEventListener('pause', function() {
+    audio.pause();
+  });
+
+  // シーク操作があった際、音声の再生位置も更新
+  video.addEventListener('seeking', function() {
+    audio.currentTime = video.currentTime;
+  });
+
+  // 動画の「timeupdate」で定期的に再生位置をチェックし、ずれが大きい場合に音声位置を調整
+  video.addEventListener('timeupdate', function() {
+    const videoTime = video.currentTime;
+    const audioTime = audio.currentTime;
+    if (Math.abs(videoTime - audioTime) > syncTolerance && !video.paused) {
+      audio.currentTime = videoTime;
+    }
+  });
+
+  // 動画が終了したら、音声も停止する
+  video.addEventListener('ended', function() {
+    audio.pause();
+  });
+});
+</script>
+
   </body>
 </html>
 </body>
