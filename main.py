@@ -154,7 +154,7 @@ def getVideoData(videoid):
             "viewCountText": "Load Failed"
         }]
 
-      # 【新規追加】adaptiveFormats から高画質動画と音声の URL を抽出する
+    # 【新規追加】adaptiveFormats から高画質動画と音声の URL を抽出する
     adaptiveFormats = t.get("adaptiveFormats", [])
     highstream_url = None
     audio_url = None
@@ -402,7 +402,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "recommended_videos": video_data[1],
         "proxy":proxy
     })
-  @app.get('/ume', response_class=HTMLResponse)
+@app.get('/ume', response_class=HTMLResponse)
 def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     # v: video_id
     if not(checkCookie(yuki)):
