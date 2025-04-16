@@ -161,18 +161,9 @@ def getVideoData(videoid):
 
     # 高画質: container == 'webm' かつ resolution == '1080p' のストリーム
     for stream in adaptiveFormats:
-    if stream.get("container") == "webm" and stream.get("resolution") == "1080p":
+        if stream.get("container") == "webm" and stream.get("resolution") == "1080p":
             highstream_url = stream.get("url")
             break
-    if not selected_url:
-    for stream in adaptiveFormats:
-    if stream.get("container") == "webm" and stream.get("resolution") == "720p":
-                selected_url = stream.get("url")
-                break
-
-    # fallback：adaptiveFormats に目的の動画がなければ、formatStreams から default を選択
-    default_url = (list(reversed([i["url"] for i in t.get("formatStreams", [])])) or [None])[0]
-    chosen_url = selected_url if selected_url else default_url
 
     # 音声: container == 'm4a' かつ audioQuality == 'AUDIO_QUALITY_MEDIUM' のストリーム
     for stream in adaptiveFormats:
@@ -411,7 +402,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "recommended_videos": video_data[1],
         "proxy":proxy
     })
-@app.get('/ume', response_class=HTMLResponse)
+  @app.get('/ume', response_class=HTMLResponse)
 def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     # v: video_id
     if not(checkCookie(yuki)):
