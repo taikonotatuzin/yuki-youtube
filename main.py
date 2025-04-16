@@ -164,15 +164,6 @@ def getVideoData(videoid):
         if stream.get("container") == "webm" and stream.get("resolution") == "1080p":
             highstream_url = stream.get("url")
             break
-        if not selected_url:
-        for stream in adaptiveFormats:
-            if stream.get("container") == "webm" and stream.get("resolution") == "720p":
-                selected_url = stream.get("url")
-                break
-
-    # fallback：adaptiveFormats に目的の動画がなければ、formatStreams から default を選択
-    default_url = (list(reversed([i["url"] for i in t.get("formatStreams", [])])) or [None])[0]
-    chosen_url = selected_url if selected_url else default_url
 
     # 音声: container == 'm4a' かつ audioQuality == 'AUDIO_QUALITY_MEDIUM' のストリーム
     for stream in adaptiveFormats:
