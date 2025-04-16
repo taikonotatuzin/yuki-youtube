@@ -279,25 +279,28 @@ $(document).ready(function(){
   var video = document.getElementById('player');
   var audio = document.getElementById('audio');
 
-  // 動画再生時に、現在の再生位置を合わせた上で音声も再生する
+  // 動画再生時、現在の再生位置に合わせた上で音声も再生する
   video.addEventListener('play', function(){
     audio.currentTime = video.currentTime;
     audio.play();
   });
 
-  // 動画一時停止時には音声も一時停止
+  // 動画一時停止時、音声も一時停止する
   video.addEventListener('pause', function(){
     audio.pause();
   });
 
-  // ユーザーが動画をシーク（再生位置変更）したときだけ、音声の再生位置も合わせる
+  // ユーザーが動画をシーク（移動）したときだけ、音声の再生位置も合わせる
   video.addEventListener('seeked', function(){
     audio.currentTime = video.currentTime;
   });
 
-  // timeupdateイベントで、再生中に0.3秒以上ズレが生じた場合は微調整を行う
- 
+  // ※ 通常再生中の連続的な時間調整は行わず、
+  //     ユーザー操作による再生位置変更（seeked）のみで同期します。
+});
 </script>
+
+
   <script>
   $(document).ready(function(){
     // 動画要素を取得
