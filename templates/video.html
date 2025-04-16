@@ -278,31 +278,27 @@ $(document).ready(function(){
   var video = document.getElementById('player');
   var audio = document.getElementById('audio');
 
-  // 動画再生時に音声も同時に再生する
+  // 動画再生時、現在の再生位置に合わせた上で音声も再生する
   video.addEventListener('play', function(){
-    // 現在の再生位置を合わせる
     audio.currentTime = video.currentTime;
     audio.play();
   });
 
-  // 動画一時停止時に音声も停止する
+  // 動画一時停止時、音声も一時停止する
   video.addEventListener('pause', function(){
     audio.pause();
   });
 
-  // 動画をシーク（再生位置変更）したとき、音声も同じ位置へジャンプ
+  // ユーザーが動画をシーク（移動）したときだけ、音声の再生位置も合わせる
   video.addEventListener('seeked', function(){
     audio.currentTime = video.currentTime;
   });
 
-  // 微調整: 動画再生中にズレが生じた場合は補正する
-  video.addEventListener('timeupdate', function(){
-    // 0.3秒以上のずれがあれば同期を取り直す
-    if (Math.abs(audio.currentTime - video.currentTime) > 0.3) {
-      audio.currentTime = video.currentTime;
-    }
-  });
+  // ※ 通常再生中の連続的な時間調整は行わず、
+  //     ユーザー操作による再生位置変更（seeked）のみで同期します。
 });
+</script>
+
 </script>
     <audio id="audio" controls>
           <source src="{{ audio_url }}" />
