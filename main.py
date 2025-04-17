@@ -812,6 +812,9 @@ def list_page(response: Response, request: Request):
 @app.get("/game", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("proxy.html", {"request": request})
+@app.get("/set", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("set.html", {"request": request})
 
 
 
