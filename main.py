@@ -441,7 +441,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
     ]
     '''
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
-    return template('video.html', {
+    return template('hiquo.html', {
         "request": request,
         "videoid": v,
         "videourls": video_data[0]['video_urls'],
