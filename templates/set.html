@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>リンク変換対応（/watch→/w 追加版）</title>
+  <style>
+    #transformation-options {
+      padding: 8px;
+      background: #efefef;
+      margin-bottom: 10px;
+    }
+    #transformation-options label {
+      margin-right: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="transformation-options">
+    <span>リンク変換を選択:</span>
+    <label>
+      <input type="radio" name="transformation" value="none" id="option-none">
+      変換なし
+    </label>
+    <label>
+      <input type="radio" name="transformation" value="watchToUme" id="option-watchToUme">
+      /watch → /ume
+    </label>
+    <label>
+      <input type="radio" name="transformation" value="watchToW" id="option-watchToW">
+      /watch → /w
+    </label>
+  </div>
+
+  <script>
+    let currentOption = "none";
+
+    function storeOriginalHref(anchor) {
+      if (!anchor.dataset.originalHref) {
+        anchor.dataset.originalHref = anchor.getAttribute("href");
+      }
+    }
+
+    function transformAnchor(anchor, option) {
+      storeOriginalHref(anchor);
+      let original = anchor.dataset.originalHref;
+      let newHref = original;
+
+      if (option === "watchToUme" && original.indexOf("/watch?v=") !== -1) {
+        newHref = original.replace("/watch", "/ume");
+      } else if (option === "watchToW" && original.indexOf("/watch?v=") !== -1) {
+        newHref = original.replace("/watch", "/w");
+      }
+      anchor.setAttribute("href", newHref);
+    }
+
+    function updateAllLinks() {
+      const selected = document.querySelector("input[name='transformation']:checked");
+      currentOption = selected ? selected.value : "none";
+
+      document.querySelectorAll("a").forEach(anchor => {
+        storeOriginalHref(anchor);
+        transformAnchor(anchor, currentOption);
+      });
+    }
+
+    document.querySelectorAll("input[name='transformation']").forEach(radio => {
+      radio.addEventListener("change", () => {
+        currentOption = radio.value;
+        localStorage.setItem("transformationOption", currentOption);
+        updateAllLinks();
+      });
+    });
+
+    const observer = new MutationObserver(mutationsList => {
+      mutationsList.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            if (node.matches && node.matches("a")) {
+              storeOriginalHref(node);
+              transformAnchor(node, currentOption);
+            }
+            const anchors = node.querySelectorAll && node.querySelectorAll("a");
+            if (anchors) {
+              anchors.forEach(anchor => {
+                storeOriginalHref(anchor);
+                transformAnchor(anchor, currentOption);
+              });
+            }
+          }
+        });
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedOption = localStorage.getItem("transformationOption") || "none";
+      currentOption = savedOption;
+      if (savedOption === "watchToUme") {
+        document.getElementById("option-watchToUme").checked = true;
+      } else if (savedOption === "umeToW") {
+        document.getElementById("option-umeToW").checked = true;
+      } else if (savedOption === "watchToW") {
+        document.getElementById("option-watchToW").checked = true;
+      } else {
+        document.getElementById("option-none").checked = true;
+      }
+      updateAllLinks();
+    });
+  </script>
+</body>
+</html>
+
