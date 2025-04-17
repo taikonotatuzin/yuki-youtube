@@ -2,141 +2,142 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>リンク変換対応（/watch→/w 追加版）</title>
+  <title>URL 書き換えルール 永続デモ</title>
   <style>
-    #transformation-options {
-      padding: 8px;
-      background: #efefef;
-      margin-bottom: 10px;
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f8f8f8;
+      color: #333;
     }
-    #transformation-options label {
-      margin-right: 15px;
+    h1 { font-size: 1.5rem; }
+    form { 
+      margin-bottom: 1.5rem; 
+      padding: 1rem; 
+      background-color: #fff; 
+      border: 1px solid #ddd; 
+      border-radius: 5px; 
     }
+    .form-group { margin: 0.5rem 0; }
+    label { margin-left: 0.5rem; }
+    input[type="text"] { width: 90%; padding: 0.5rem; font-size: 1rem; }
+    button { padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; }
+    .result { font-weight: bold; margin-top: 1rem; }
   </style>
 </head>
 <body>
+  <h1>URL 書き換えルール の永続設定</h1>
 
-  <div id="transformation-options">
-    <span>リンク変換を選択:</span>
-    <label>
-      <input type="radio" name="transformation" value="none" id="option-none">
-      変換なし
-    </label>
-    <label>
-      <input type="radio" name="transformation" value="watchToUme" id="option-watchToUme">
-      /watch → /ume
-    </label>
-    <label>
-      <input type="radio" name="transformation" value="watchToW" id="option-watchToW">
-      /watch → /w
-    </label>
+  <!-- 設定フォーム：ラジオボタンでどの書き換えルールを使うか選択 -->
+  <form id="configForm">
+    <div class="form-group">
+      <input type="radio" name="rewriteRule" id="none" value="none" checked>
+      <label for="none">ルールなし</label>
+    </div>
+    <div class="form-group">
+      <input type="radio" name="rewriteRule" id="watchToUme" value="watchToUme">
+      <label for="watchToUme">/watch → /ume</label>
+    </div>
+    <div class="form-group">
+      <input type="radio" name="rewriteRule" id="umeToW" value="umeToW">
+      <label for="umeToW">/ume → /w</label>
+    </div>
+    <div class="form-group">
+      <button type="button" onclick="applyRewrite()">設定を適用</button>
+    </div>
+  </form>
+
+  <!-- 入力例：テキストボックスにURLを入力 -->
+  <div class="form-group">
+    <label for="inputUrl">元のURL:</label><br>
+    <input type="text" id="inputUrl" value="https://example.com/watch/123">
   </div>
+  <p class="result">書き換え後のURL: <span id="outputUrl">ここに結果が表示されます</span></p>
 
+  <!-- ページ上のリンク例 ※こちらも自動で書き換えが適用されます -->
+  <p class="form-group">
+    ページ内のリンク例:
+    <a href="https://example.com/watch/456" id="sampleLink">リンクを確認</a>
+  </p>
+  
+  <!-- 任意に全リンクの書き換えを手動実行できるボタン -->
+  <button onclick="applyRewriteToAnchors()">リンクを自動書き換え(再読み込み後も反映)</button>
+  
   <script>
- let currentOption = "none";
+    // ① 初期設定：localStorageから保存されている書き換えルールを取得
+    // 値がない場合は "none" がデフォルトになります
+    var storedRule = localStorage.getItem('rewriteRule') || 'none';
+    
+    // rewriteConfig オブジェクト：true/falseで各ルールの有効/無効状態を管理
+    var rewriteConfig = {
+      watchToUme: (storedRule === 'watchToUme'),
+      umeToW: (storedRule === 'umeToW')
+    };
 
-    // 各リンクの元の href はdata-original-hrefに保持（初回のみ）
-    function storeOriginalHref(anchor) {
-      if (!anchor.dataset.originalHref) {
-        anchor.dataset.originalHref = anchor.getAttribute("href");
-      }
-    }
-
-    // 指定のオプションに基づき、リンクの href を変換
-    function transformAnchor(anchor, option) {
-      storeOriginalHref(anchor);
-      let original = anchor.dataset.originalHref;
-      let newHref = original;
-
-      if (option === "watchToUme" && original.indexOf("/watch?v=") !== -1) {
-        newHref = original.replace("/watch", "/ume");
-      } else if (option === "umeToW" && original.indexOf("/ume?v=") !== -1) {
-        newHref = original.replace("/ume", "/w");
-      } else if (option === "watchToW" && original.indexOf("/watch?v=") !== -1) {
-        newHref = original.replace("/watch", "/w");
-      }
-      anchor.setAttribute("href", newHref);
-    }
-
-    // ページ内の全リンクに対して変換を実施
-    function updateAllLinks() {
-      const selected = document.querySelector("input[name='transformation']:checked");
-      currentOption = selected ? selected.value : "none";
-
-      document.querySelectorAll("a").forEach(anchor => {
-        storeOriginalHref(anchor);
-        transformAnchor(anchor, currentOption);
+    // ② ページ読み込み時に、localStorage の設定に合わせてラジオボタンを更新
+    document.addEventListener("DOMContentLoaded", function() {
+      const radios = document.getElementsByName("rewriteRule");
+      radios.forEach(function(radio) {
+        if (radio.value === storedRule) {
+          radio.checked = true;
+        }
       });
-    }
-
-    // 現在のURL（window.location.href）にも変換を適用してリダイレクト
-    function transformCurrentUrl(option) {
-      let currentUrl = window.location.href;
-      let newUrl = currentUrl;
-      // 選択されたオプションに応じて、対象の文字列があれば置換
-      if (option === "watchToUme" && currentUrl.indexOf("/watch?v=") !== -1) {
-        newUrl = currentUrl.replace("/watch", "/ume");
-      } else if (option === "watchToW" && currentUrl.indexOf("/watch?v=") !== -1) {
-        newUrl = currentUrl.replace("/watch", "/w");
-      } else if (option === "umeToW" && currentUrl.indexOf("/ume?v=") !== -1) {
-        newUrl = currentUrl.replace("/ume", "/w");
-      }
-      // 新しいURLと異なる場合に限りリダイレクト
-      if (newUrl !== currentUrl) {
-        console.log("Redirecting to: ", newUrl);
-        window.location.replace(newUrl);
-      }
-    }
-
-    // ラジオボタンの選択変更時に状態を保存し、リンクおよび現在のURLを更新
-    document.querySelectorAll("input[name='transformation']").forEach(radio => {
-      radio.addEventListener("change", () => {
-        currentOption = radio.value;
-        localStorage.setItem("transformationOption", currentOption);
-        updateAllLinks();
-        transformCurrentUrl(currentOption);
-      });
+      // ページ内のリンクにも、保存されている設定で自動書き換えを適用
+      applyRewriteToAnchors();
     });
+    
+    // ③ 書き換え処理：条件に応じて URL の文字列を書き換える関数
+    function rewriteUrl(url) {
+      // 「/watch → /ume」ルールが有効の場合
+      if (rewriteConfig.watchToUme && url.includes('/watch')) {
+        return url.replace('/watch', '/ume');
+      }
+      // 「/ume → /w」ルールが有効の場合
+      if (rewriteConfig.umeToW && url.includes('/ume')) {
+        return url.replace('/ume', '/w');
+      }
+      return url;
+    }
 
-    // MutationObserverを利用して動的に追加されるリンクにも変換処理を適用
-    const observer = new MutationObserver(mutationsList => {
-      mutationsList.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            if (node.matches && node.matches("a")) {
-              storeOriginalHref(node);
-              transformAnchor(node, currentOption);
-            }
-            const anchors = node.querySelectorAll && node.querySelectorAll("a");
-            if (anchors) {
-              anchors.forEach(anchor => {
-                storeOriginalHref(anchor);
-                transformAnchor(anchor, currentOption);
-              });
-            }
-          }
-        });
-      });
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // DOM読み込み時：localStorageからオプションを復元し、リンクと現在のURLを更新
-    document.addEventListener("DOMContentLoaded", () => {
-      const savedOption = localStorage.getItem("transformationOption") || "none";
-      currentOption = savedOption;
-      if (savedOption === "watchToUme") {
-        document.getElementById("option-watchToUme").checked = true;
-      } else if (savedOption === "umeToW") {
-        document.getElementById("option-umeToW").checked = true;
-      } else if (savedOption === "watchToW") {
-        document.getElementById("option-watchToW").checked = true;
+    // ④ 設定変更時に実行：ラジオボタンの値から rewriteConfig を更新し、localStorage に保存
+    function applyRewrite() {
+      var selectedRule = document.querySelector('input[name="rewriteRule"]:checked').value;
+      if (selectedRule === "watchToUme") {
+          rewriteConfig.watchToUme = true;
+          rewriteConfig.umeToW = false;
+      } else if (selectedRule === "umeToW") {
+          rewriteConfig.watchToUme = false;
+          rewriteConfig.umeToW = true;
       } else {
-        document.getElementById("option-none").checked = true;
+          rewriteConfig.watchToUme = false;
+          rewriteConfig.umeToW = false;
       }
-      updateAllLinks();
-      transformCurrentUrl(currentOption);
-    });
+      // localStorage に設定値を保存しておけば、ページ再読み込み後も反映されます
+      localStorage.setItem('rewriteRule', selectedRule);
+      
+      // 入力URLを書き換え、結果を表示
+      var originalUrl = document.getElementById("inputUrl").value;
+      var updatedUrl = rewriteUrl(originalUrl);
+      document.getElementById("outputUrl").textContent = updatedUrl;
+      
+      // ページ内のリンクにも同じ書き換えルールを適用
+      applyRewriteToAnchors();
+    }
+    
+    // ⑤ ページ内の全リンク(アンカータグ)の href に対して書き換えルールを適用する関数
+    function applyRewriteToAnchors() {
+      // ページ内のすべてのアンカーリンクを取得
+      var anchors = document.querySelectorAll('a');
+      anchors.forEach(function(anchor) {
+        // 既にオリジナル値を保持していなければ、data-original-href 属性に保存
+        var originalHref = anchor.getAttribute('data-original-href') || anchor.href;
+        anchor.setAttribute('data-original-href', originalHref);
+        var updatedHref = rewriteUrl(originalHref);
+        anchor.href = updatedHref;
+      });
+    }
   </script>
 </body>
 </html>
+
 
