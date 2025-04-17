@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>URL 書き換えルール 永続デモ</title>
+  <title>URL 書き換えルール 永続設定とクエリ除去デモ</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -10,23 +10,40 @@
       background-color: #f8f8f8;
       color: #333;
     }
-    h1 { font-size: 1.5rem; }
-    form { 
-      margin-bottom: 1.5rem; 
-      padding: 1rem; 
-      background-color: #fff; 
-      border: 1px solid #ddd; 
-      border-radius: 5px; 
+    h1 {
+      font-size: 1.5rem;
     }
-    .form-group { margin: 0.5rem 0; }
-    label { margin-left: 0.5rem; }
-    input[type="text"] { width: 90%; padding: 0.5rem; font-size: 1rem; }
-    button { padding: 0.5rem 1rem; font-size: 1rem; cursor: pointer; }
-    .result { font-weight: bold; margin-top: 1rem; }
+    form {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .form-group {
+      margin: 0.5rem 0;
+    }
+    label {
+      margin-left: 0.5rem;
+    }
+    input[type="text"] {
+      width: 90%;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .result {
+      font-weight: bold;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
-  <h1>URL 書き換えルール の永続設定</h1>
+  <h1>URL 書き換えルール (永続設定) - /watch→/ume の特別処理</h1>
 
   <!-- 設定フォーム：ラジオボタンでどの書き換えルールを使うか選択 -->
   <form id="configForm">
@@ -50,56 +67,66 @@
   <!-- 入力例：テキストボックスにURLを入力 -->
   <div class="form-group">
     <label for="inputUrl">元のURL:</label><br>
-    <input type="text" id="inputUrl" value="https://example.com/watch/123">
+    <!-- 例としてクエリ有りの /watch URL を設定 -->
+    <input type="text" id="inputUrl" value="https://example.com/watch?foo=bar">
   </div>
   <p class="result">書き換え後のURL: <span id="outputUrl">ここに結果が表示されます</span></p>
 
   <!-- ページ上のリンク例 ※こちらも自動で書き換えが適用されます -->
   <p class="form-group">
     ページ内のリンク例:
-    <a href="https://example.com/watch/456" id="sampleLink">リンクを確認</a>
+    <a href="https://example.com/watch?baz=qux" id="sampleLink">リンクを確認</a>
   </p>
   
   <!-- 任意に全リンクの書き換えを手動実行できるボタン -->
-  <button onclick="applyRewriteToAnchors()">リンクを自動書き換え(再読み込み後も反映)</button>
+  <button onclick="applyRewriteToAnchors()">リンクの書き換えを再適用 (永続反映)</button>
   
   <script>
     // ① 初期設定：localStorageから保存されている書き換えルールを取得
-    // 値がない場合は "none" がデフォルトになります
     var storedRule = localStorage.getItem('rewriteRule') || 'none';
     
-    // rewriteConfig オブジェクト：true/falseで各ルールの有効/無効状態を管理
+    // rewriteConfig オブジェクト：true/false で各ルールの有効/無効を管理
     var rewriteConfig = {
       watchToUme: (storedRule === 'watchToUme'),
       umeToW: (storedRule === 'umeToW')
     };
 
-    // ② ページ読み込み時に、localStorage の設定に合わせてラジオボタンを更新
+    // ② ページ読み込み時に localStorage の設定に合わせてラジオボタンを更新し、
+    // ページ内のリンクにも保存された設定で自動書き換えを適用
     document.addEventListener("DOMContentLoaded", function() {
-      const radios = document.getElementsByName("rewriteRule");
-      radios.forEach(function(radio) {
+      Array.from(document.getElementsByName("rewriteRule")).forEach(function(radio) {
         if (radio.value === storedRule) {
           radio.checked = true;
         }
       });
-      // ページ内のリンクにも、保存されている設定で自動書き換えを適用
       applyRewriteToAnchors();
     });
     
-    // ③ 書き換え処理：条件に応じて URL の文字列を書き換える関数
+    // ③ 書き換え処理：状況に応じて URL の文字列を書き換える関数
     function rewriteUrl(url) {
-      // 「/watch → /ume」ルールが有効の場合
+      // /watch→/ume ルールの場合
       if (rewriteConfig.watchToUme && url.includes('/watch')) {
-        return url.replace('/watch', '/ume');
+        // クエリ文字列付きの場合は、/watch? 以降すべてを '/ume' に一括置換
+        if (url.includes('/watch?')) {
+          return url.replace(/\/watch\?.*/, '/ume');
+        } else {
+          // クエリ文字列がない場合は部分置換
+          return url.replace('/watch', '/ume');
+        }
       }
-      // 「/ume → /w」ルールが有効の場合
+      // /ume→/w ルールの場合（必要に応じてクエリ文字列も同様に処理できます）
       if (rewriteConfig.umeToW && url.includes('/ume')) {
-        return url.replace('/ume', '/w');
+        if (url.includes('/ume?')) {
+          return url.replace(/\/ume\?.*/, '/w');
+        } else {
+          return url.replace('/ume', '/w');
+        }
       }
+      // 該当ルールがなければ元のURLをそのまま返す
       return url;
     }
 
-    // ④ 設定変更時に実行：ラジオボタンの値から rewriteConfig を更新し、localStorage に保存
+    // ④ 設定変更時に実行：フォームから選択されたルールに基づいて rewriteConfig を更新し、localStorage に保存
     function applyRewrite() {
       var selectedRule = document.querySelector('input[name="rewriteRule"]:checked').value;
       if (selectedRule === "watchToUme") {
@@ -112,10 +139,10 @@
           rewriteConfig.watchToUme = false;
           rewriteConfig.umeToW = false;
       }
-      // localStorage に設定値を保存しておけば、ページ再読み込み後も反映されます
+      // 設定を localStorage に保存（これにより再読み込み後も反映される）
       localStorage.setItem('rewriteRule', selectedRule);
       
-      // 入力URLを書き換え、結果を表示
+      // テキストボックスの入力URLを書き換えて結果を表示
       var originalUrl = document.getElementById("inputUrl").value;
       var updatedUrl = rewriteUrl(originalUrl);
       document.getElementById("outputUrl").textContent = updatedUrl;
@@ -124,12 +151,11 @@
       applyRewriteToAnchors();
     }
     
-    // ⑤ ページ内の全リンク(アンカータグ)の href に対して書き換えルールを適用する関数
+    // ⑤ ページ内のすべてのアンカーリンク（<a> タグ）の href に対して書き換えを適用する関数
     function applyRewriteToAnchors() {
-      // ページ内のすべてのアンカーリンクを取得
       var anchors = document.querySelectorAll('a');
       anchors.forEach(function(anchor) {
-        // 既にオリジナル値を保持していなければ、data-original-href 属性に保存
+        // すでに元の URL を data 属性に保存していなければ保存
         var originalHref = anchor.getAttribute('data-original-href') || anchor.href;
         anchor.setAttribute('data-original-href', originalHref);
         var updatedHref = rewriteUrl(originalHref);
@@ -139,5 +165,3 @@
   </script>
 </body>
 </html>
-
-
