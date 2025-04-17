@@ -136,7 +136,7 @@ def getInfo(request):
 
 failed = "Load Failed"
 
-def hiquoVideoData(videoid):
+def getVideoData(videoid):
     t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
 
     # 推奨動画の情報（キー名の違いに対応）
@@ -206,47 +206,6 @@ def hiquoVideoData(videoid):
     } for i in recommended_videos]
     
 ]
-  def getVideoData(videoid):
-    t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
-
-    if 'recommendedvideo' in t:
-        recommended_videos = t["recommendedvideo"]
-    elif 'recommendedVideos' in t:
-        recommended_videos = t["recommendedVideos"]
-    else:
-        recommended_videos = {
-            "videoId": failed,
-            "title": failed,
-            "authorId": failed,
-            "author": failed,
-            "lengthSeconds": 0,
-            "viewCountText": "Load Failed"
-        }
-
-    return [
-        {
-            'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
-            'description_html': t["descriptionHtml"].replace("\n", "<br>"),
-            'title': t["title"],
-            'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"])),
-            'author_id': t["authorId"],
-            'author': t["author"],
-            'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
-            'view_count': t["viewCount"],
-            'like_count': t["likeCount"],
-            'subscribers_count': t["subCountText"]
-        },
-        [
-            {
-                "video_id": i["videoId"],
-                "title": i["title"],
-                "author_id": i["authorId"],
-                "author": i["author"],
-                "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
-                "view_count_text": i["viewCountText"]
-            } for i in recommended_videos
-        ]
-    ]
 
 def getSearchData(q, page):
 
@@ -452,7 +411,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
     if not(checkCookie(yuki)):
         return redirect("/")
     response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
-    video_data = hiquoVideoData(v)
+    video_data = getVideoData(v)
     '''
     return [
         {
