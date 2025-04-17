@@ -294,6 +294,11 @@ $(document).ready(function(){
   video.addEventListener('seeked', function(){
     audio.currentTime = video.currentTime;
   });
+  video.addEventListener('seeked', () => {
+      if (video.currentTime === 0) {
+        audio.currentTime = 0;
+      }
+    });
 
   // ※ 通常再生中の連続的な時間調整は行わず、
   //     ユーザー操作による再生位置変更（seeked）のみで同期します。
