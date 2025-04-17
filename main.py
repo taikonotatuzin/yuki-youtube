@@ -407,8 +407,6 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
     return [
         {
             'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
-            'highstream_url': highstream_url,
-            'audio_url': audio_url,
             'description_html': t["descriptionHtml"].replace("\n", "<br>"),
             'title': t["title"],
             'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"]))
@@ -436,8 +434,6 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "request": request,
         "videoid": v,
         "videourls": video_data[0]['video_urls'],
-        "highstream_url": video_data[0]['highstream_url'],
-        "audio_url": video_data[0]['audio_url'],
         "description": video_data[0]['description_html'],
         "video_title": video_data[0]['title'],
         "author_id": video_data[0]['author_id'],
