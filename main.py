@@ -164,6 +164,12 @@ def getVideoData(videoid):
         if stream.get("container") == "webm" and stream.get("resolution") == "1080p":
             highstream_url = stream.get("url")
             break
+    if not highstream_url:
+        for stream in adaptiveFormats:
+            if stream.get("container") == "webm" and stream.get("resolution") == "720p":
+                highstream_url = stream.get("url")
+                break
+
 
     # 音声: container == 'm4a' かつ audioQuality == 'AUDIO_QUALITY_MEDIUM' のストリーム
     for stream in adaptiveFormats:
