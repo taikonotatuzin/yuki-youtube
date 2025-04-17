@@ -322,6 +322,57 @@ $(document).ready(function(){
   </script>
 
 </script>
+    <script>
+    // グローバル変数でウェイクロックの状態を管理
+    let wakeLock = null;
+
+    // ウェイクロックを要求する非同期関数
+    async function requestWakeLock() {
+      try {
+        // 既にウェイクロックが存在しない場合に取得
+        if (!wakeLock) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('Wake Lock を取得しました');
+          
+          // ウェイクロックが予期せず解除されたときのためのイベントリスナー
+          wakeLock.addEventListener('release', () => {
+            console.log('Wake Lock が解除されました');
+            wakeLock = null;
+          });
+        }
+      } catch (error) {
+        console.error(`Wake Lock の取得に失敗しました: ${error.name}: ${error.message}`);
+      }
+    }
+
+    // ウェイクロックを解除する非同期関数
+    async function releaseWakeLock() {
+      if (wakeLock) {
+        try {
+          await wakeLock.release();
+          wakeLock = null;
+          console.log('Wake Lock を解除しました');
+        } catch (error) {
+          console.error(`Wake Lock の解除に失敗しました: ${error.name}: ${error.message}`);
+        }
+      }
+    }
+
+    // ページがロード完了したら、自動的にウェイクロックを要求する
+    window.addEventListener('load', async () => {
+      await requestWakeLock();
+    });
+
+    // ページの表示状態が変化したときの処理
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible') {
+        console.log('ページが再表示されました。lock を再取得します...');
+        await requestWakeLock();
+      } else {
+        console.log('ページが非表示になりました。lock を解除します...');
+        await releaseWakeLock();
+      }
+    });
     <audio id="audio" controls>
           <source src="{{ audio_url }}" />
         </audio>
