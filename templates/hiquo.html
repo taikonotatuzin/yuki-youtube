@@ -299,6 +299,13 @@ $(document).ready(function(){
         audio.currentTime = 0;
       }
     });
+  video.addEventListener('loadedmetadata', () => {
+    video.play().catch(error => console.error("動画の再生エラー:", error));
+});
+video.addEventListener('play', () => {
+    audio.play().catch(error => console.error("オーディオの再生エラー:", error));
+});
+
 
   // ※ 通常再生中の連続的な時間調整は行わず、
   //     ユーザー操作による再生位置変更（seeked）のみで同期します。
