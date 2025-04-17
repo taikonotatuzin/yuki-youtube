@@ -33,14 +33,16 @@
   </div>
 
   <script>
-    let currentOption = "none";
+ let currentOption = "none";
 
+    // 各リンクの元の href はdata-original-hrefに保持（初回のみ）
     function storeOriginalHref(anchor) {
       if (!anchor.dataset.originalHref) {
         anchor.dataset.originalHref = anchor.getAttribute("href");
       }
     }
 
+    // 指定のオプションに基づき、リンクの href を変換
     function transformAnchor(anchor, option) {
       storeOriginalHref(anchor);
       let original = anchor.dataset.originalHref;
@@ -48,12 +50,15 @@
 
       if (option === "watchToUme" && original.indexOf("/watch?v=") !== -1) {
         newHref = original.replace("/watch", "/ume");
+      } else if (option === "umeToW" && original.indexOf("/ume?v=") !== -1) {
+        newHref = original.replace("/ume", "/w");
       } else if (option === "watchToW" && original.indexOf("/watch?v=") !== -1) {
         newHref = original.replace("/watch", "/w");
       }
       anchor.setAttribute("href", newHref);
     }
 
+    // ページ内の全リンクに対して変換を実施
     function updateAllLinks() {
       const selected = document.querySelector("input[name='transformation']:checked");
       currentOption = selected ? selected.value : "none";
@@ -64,14 +69,36 @@
       });
     }
 
+    // 現在のURL（window.location.href）にも変換を適用してリダイレクト
+    function transformCurrentUrl(option) {
+      let currentUrl = window.location.href;
+      let newUrl = currentUrl;
+      // 選択されたオプションに応じて、対象の文字列があれば置換
+      if (option === "watchToUme" && currentUrl.indexOf("/watch?v=") !== -1) {
+        newUrl = currentUrl.replace("/watch", "/ume");
+      } else if (option === "watchToW" && currentUrl.indexOf("/watch?v=") !== -1) {
+        newUrl = currentUrl.replace("/watch", "/w");
+      } else if (option === "umeToW" && currentUrl.indexOf("/ume?v=") !== -1) {
+        newUrl = currentUrl.replace("/ume", "/w");
+      }
+      // 新しいURLと異なる場合に限りリダイレクト
+      if (newUrl !== currentUrl) {
+        console.log("Redirecting to: ", newUrl);
+        window.location.replace(newUrl);
+      }
+    }
+
+    // ラジオボタンの選択変更時に状態を保存し、リンクおよび現在のURLを更新
     document.querySelectorAll("input[name='transformation']").forEach(radio => {
       radio.addEventListener("change", () => {
         currentOption = radio.value;
         localStorage.setItem("transformationOption", currentOption);
         updateAllLinks();
+        transformCurrentUrl(currentOption);
       });
     });
 
+    // MutationObserverを利用して動的に追加されるリンクにも変換処理を適用
     const observer = new MutationObserver(mutationsList => {
       mutationsList.forEach(mutation => {
         mutation.addedNodes.forEach(node => {
@@ -93,6 +120,7 @@
     });
     observer.observe(document.body, { childList: true, subtree: true });
 
+    // DOM読み込み時：localStorageからオプションを復元し、リンクと現在のURLを更新
     document.addEventListener("DOMContentLoaded", () => {
       const savedOption = localStorage.getItem("transformationOption") || "none";
       currentOption = savedOption;
@@ -106,6 +134,7 @@
         document.getElementById("option-none").checked = true;
       }
       updateAllLinks();
+      transformCurrentUrl(currentOption);
     });
   </script>
 </body>
