@@ -274,53 +274,56 @@
       });
     </script>
     <script>
-  // 動画と音声の要素を取得
-  var video = document.getElementById('player');
-  var audio = document.getElementById('audio');
   
 <script>
-    // HTML上の video と audio 要素を取得
-    const video = document.getElementById('video');
+    const video = document.getElementById('player');
     const audio = document.getElementById('audio');
 
-    // 動画のメタデータ（再生時間など）が読み込まれたら動画を自動再生
+    // 動画と音声のメタデータ取得後に同期再生の準備をする
     video.addEventListener('loadedmetadata', () => {
+      // 音声も同時にpositionを合わせるため、動画のcurrentTimeを反映
+      audio.currentTime = video.currentTime;
+      // 動画再生開始
       video.play().catch(err => console.error("動画再生エラー:", err));
     });
 
-    // 動画が再生開始されたら音声も再生
+    // 動画が再生開始されたら音声も再生する
     video.addEventListener('play', () => {
-      // シーク位置を合わせるため、動画再生開始直前の位置で音声のcurrentTimeを調整
+      // 再生開始前の位置調整が必要な場合、ここで一致させる
       audio.currentTime = video.currentTime;
       audio.play().catch(err => console.error("音声再生エラー:", err));
+    });
+
+    // 再生中に動画と音声のズレを監視し、補正する
+    video.addEventListener('timeupdate', () => {
+      const drift = Math.abs(video.currentTime - audio.currentTime);
+      if (drift > 0.4) {  // 0.4秒以上ズレている場合
+        // 補正値として、0.1秒のオフセットをつける例
+        audio.currentTime = video.currentTime + 0.1;
+        console.log("同期補正: 動画の位置に音声を合わせました");
+      }
     });
 
     // 動画が一時停止されたとき
     video.addEventListener('pause', () => {
       audio.pause();
-      // 動画と音声の再生位置を完全に合わせるため更新
+      // 再生位置の完全な同期
       audio.currentTime = video.currentTime;
     });
 
-    // ユーザーが動画内を移動（シーク）したとき、音声側もシーク状態を合わせる
+    // ユーザーが動画内をシークした場合、音声もシークする
     video.addEventListener('seeked', () => {
       audio.currentTime = video.currentTime;
     });
 
-    // 動画の再生中に定期的に呼ばれ、両者の再生位置のズレを微調整
-    video.addEventListener('timeupdate', () => {
-      const drift = Math.abs(video.currentTime - audio.currentTime);
-      if (drift > 0.4) {  // 0.4秒以上のズレがある場合、補正を行う
-        // ズレの調整として、音声の再生位置を動画に合わせつつ微妙に遅らせる調整（0.1秒プラス）を実施
-        audio.currentTime = video.currentTime + 0.1;
-      }
-    });
-
-    // 動画が終了した場合、音声も停止・リセット
+    // 動画再生終了時：音声もリセットする
     video.addEventListener('ended', () => {
       audio.pause();
       audio.currentTime = 0;
     });
+
+    // ※必要に応じて、音声の loadedmetadata イベントも監視して、
+    // 両者が再生可能な状態であるかを確認する処理を追加する
   </script>
   </script>
 
