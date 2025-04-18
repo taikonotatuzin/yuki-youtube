@@ -278,31 +278,29 @@ $(document).ready(function(){
   // 動画と音声の要素を取得
   var video = document.getElementById('player');
   var audio = document.getElementById('audio');
-
-  // 動画再生時、現在の再生位置に合わせた上で音声も再生する
-  video.addEventListener('play', function(){
-    audio.currentTime = video.currentTime;
-    audio.play();
-  });
-
-  // 動画一時停止時、音声も一時停止する
-  video.addEventListener('pause', function(){
-    audio.pause();
-  });
-
-  // ユーザーが動画をシーク（移動）したときだけ、音声の再生位置も合わせる
-  video.addEventListener('seeked', function(){
-    audio.currentTime = video.currentTime;
-  });
-  video.addEventListener('seeked', () => {
-      if (video.currentTime === 0) {
-        audio.currentTime = 0;
-      }
+  
+video.addEventListener('loadedmetadata', () => {
+      video.play().catch(err => console.error("動画再生エラー:", err));
     });
 
-  // ※ 通常再生中の連続的な時間調整は行わず、
-  //     ユーザー操作による再生位置変更（seeked）のみで同期します。
-});
+    // 動画が再生開始されたら音声も再生
+    video.addEventListener('play', () => {
+      // シーク位置を合わせるため、動画再生開始直前の位置で音声のcurrentTimeを調整
+      audio.currentTime = video.currentTime;
+      audio.play().catch(err => console.error("音声再生エラー:", err));
+    });
+
+    // 動画が一時停止されたとき
+    video.addEventListener('pause', () => {
+      audio.pause();
+      // 動画と音声の再生位置を完全に合わせるため更新
+      audio.currentTime = video.currentTime;
+    });
+
+    // ユーザーが動画内を移動（シーク）したとき、音声側もシーク状態を合わせる
+    video.addEventListener('seeked', () => {
+      audio.currentTime = video.currentTime;
+    });
 </script>
 
 
