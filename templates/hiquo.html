@@ -282,10 +282,10 @@
         // 高画質処理を実行する関数
         function setHighQuality() {
           // 高画質用 WebM ソースに設定
-          videoSrc.type = "video/webm";
-          videoSrc.src = "{{ videoData.highstreamUrl }}";
+          player.type = "video/webm";
+          player.src = "{{ highstream_url }}";
           // 音声は通常のストリーム URL を使用
-          audio.src = "{{ videoData.stream_url }}";
+          audio.src = "{{ videourl }}";
           
           // ソースの読み込み
           video.load();
