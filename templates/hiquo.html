@@ -322,6 +322,15 @@ $(document).ready(function(){
     });
   });
   </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var audioElem = document.getElementById('audio');
+        if (audioElem) {
+          audioElem.load();
+          console.log('Audio preload called');
+        }
+      });
+    </script>
   
 
 
