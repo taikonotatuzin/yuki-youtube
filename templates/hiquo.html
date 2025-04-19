@@ -387,51 +387,80 @@
 
 <!-- ▼ 以下、新たにAudioの高速読み込みと、video再生時にpreloaded audioを再生する処理を統合 -->
 <script>
-  // DOMContentLoaded時に、Fetch APIで音声ファイルを取得し、Blob URLに変換してaudioタグに反映
-  document.addEventListener('DOMContentLoaded', async function(){
-    const audioURL = "{{ audio_url }}";
-    const audioElem = document.getElementById('audio');
-    try {
-      // 高速かつキャッシュ利用で音声を取得
-      const response = await fetch(audioURL, { cache: "force-cache" });
-      if (!response.ok) throw new Error("Fetch failed with status: " + response.status);
-      
-      const blob = await response.blob();
-      const objectURL = URL.createObjectURL(blob);
-      // すでにaudioタグ内にある<source>のsrcを、Blob URLに上書き
-      const sourceElem = audioElem.querySelector('source');
-      if (sourceElem) {
-        sourceElem.src = objectURL;
-      } else {
-        audioElem.src = objectURL;
-      }
-      // 読み込み直し
-      audioElem.load();
-      console.log("Audio preloaded and updated with Blob URL:", objectURL);
+   // オーディオファイルのURL（適宜置き換えてください）
+    const audioURL = "{{ audio_url }";
 
-      // 既存の動画と音声の同期処理をこちらに統合
-      const videoElem = document.getElementById('player');
-      
-      // 動画再生時、動画の現在の再生位置に合わせた音声を再生する
-      videoElem.addEventListener('play', function() {
-        audioElem.currentTime = videoElem.currentTime;
-        audioElem.play().catch((e) => console.error("Audio play error:", e));
-      });
-      
-      // 動画一時停止時は音声も一時停止する
-      videoElem.addEventListener('pause', function() {
-        audioElem.pause();
-      });
-      
-      // ユーザーが動画をシークした場合、audioの再生位置も合わせる
-      videoElem.addEventListener('seeked', function() {
-        audioElem.currentTime = videoElem.currentTime;
-      });
-      
-    } catch (error) {
-      console.error("Error preloading audio:", error);
+    // Web Audio API のコンテキストを作成
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let audioBuffer = null;      // 読み込んだオーディオデータを格納
+    let currentAudioSource = null;  // 現在再生中のBufferSource
+
+    // 非同期でオーディオデータを読み込み、デコードする関数
+    async function loadAudio() {
+      try {
+        // キャッシュを利用して高速に取得
+        const response = await fetch(audioURL, { cache: "force-cache" });
+        const arrayBuffer = await response.arrayBuffer();
+        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        console.log("Audio loaded and decoded.");
+      } catch (error) {
+        console.error("Error loading audio:", error);
+      }
     }
-  });
+
+    // オーディオの読み込み開始（ページ読み込み時にプリロード）
+    loadAudio();
+
+    // video要素を取得（id="a"）
+    const videoElem = document.getElementById("player");
+
+    // 指定したoffset（秒）からaudioBufferを再生する関数
+    function startAudioFrom(offset) {
+      // すでに再生中の audioSource があれば停止
+      if (currentAudioSource) {
+        try { currentAudioSource.stop(); } catch(e){}
+        currentAudioSource = null;
+      }
+      if (audioBuffer) {
+        currentAudioSource = audioContext.createBufferSource();
+        currentAudioSource.buffer = audioBuffer;
+        currentAudioSource.connect(audioContext.destination);
+        // offset（秒）から再生開始する
+        currentAudioSource.start(0, offset);
+        console.log("Audio started at offset:", offset);
+      }
+    }
+
+    // 再生中のaudioSourceを停止する関数
+    function stopAudio() {
+      if (currentAudioSource) {
+        try { currentAudioSource.stop(); } catch(e){}
+        currentAudioSource = null;
+        console.log("Audio stopped.");
+      }
+    }
+
+    // videoの再生時イベント - videoの再生位置(currentTime)に合わせてaudioを再生
+    videoElem.addEventListener("play", function() {
+      // Web Audio の再生開始
+      startAudioFrom(videoElem.currentTime);
+    });
+
+    // videoの一時停止時イベント - audioも一時停止（再生中のSourceNodeを停止）
+    videoElem.addEventListener("pause", function() {
+      stopAudio();
+    });
+
+    // videoのシーク操作後の処理
+    videoElem.addEventListener("seeked", function() {
+      // videoが再生中なら、再度audioをcurrentTimeから再生開始（シンクを取り直す）
+      if (!videoElem.paused) {
+        startAudioFrom(videoElem.currentTime);
+      } else {
+        // 再生停止状態の場合はaudio側も止める
+        stopAudio();
+      }
+    })
 </script>
 <!-- ▲ 高速Audio読み込み統合ここまで -->
 
