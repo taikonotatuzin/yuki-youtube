@@ -271,83 +271,64 @@
       });
     </script>
 
-<!-- ▼ 以下、新たにAudioの高速読み込みと、video再生時にpreloaded audioを再生する処理を統合 -->
-<script>
-   // オーディオファイルのURL（適宜置き換えてください）
-    const audioURL = "{{ audio_url }}";
-
-    // Web Audio API のコンテキストを作成
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    let audioBuffer = null;      // 読み込んだオーディオデータを格納
-    let currentAudioSource = null;  // 現在再生中のBufferSource
-
-    // 非同期でオーディオデータを読み込み、デコードする関数
-    async function loadAudio() {
-      try {
-        // キャッシュを利用して高速に取得
-        const response = await fetch(audioURL, { cache: "force-cache" });
-        const arrayBuffer = await response.arrayBuffer();
-        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-        console.log("Audio loaded and decoded.");
-      } catch (error) {
-        console.error("Error loading audio:", error);
-      }
-    }
-
-    // オーディオの読み込み開始（ページ読み込み時にプリロード）
-    loadAudio();
-
-    // video要素を取得（id="a"）
-    const videoElem = document.getElementById("player");
-
-    // 指定したoffset（秒）からaudioBufferを再生する関数
-    function startAudioFrom(offset) {
-      // すでに再生中の audioSource があれば停止
-      if (currentAudioSource) {
-        try { currentAudioSource.stop(); } catch(e){}
-        currentAudioSource = null;
-      }
-      if (audioBuffer) {
-        currentAudioSource = audioContext.createBufferSource();
-        currentAudioSource.buffer = audioBuffer;
-        currentAudioSource.connect(audioContext.destination);
-        // offset（秒）から再生開始する
-        currentAudioSource.start(0, offset);
-        console.log("Audio started at offset:", offset);
-      }
-    }
-
-    // 再生中のaudioSourceを停止する関数
-    function stopAudio() {
-      if (currentAudioSource) {
-        try { currentAudioSource.stop(); } catch(e){}
-        currentAudioSource = null;
-        console.log("Audio stopped.");
-      }
-    }
-
-    // videoの再生時イベント - videoの再生位置(currentTime)に合わせてaudioを再生
-    videoElem.addEventListener("play", function() {
-      // Web Audio の再生開始
-      startAudioFrom(videoElem.currentTime);
-    });
-
-    // videoの一時停止時イベント - audioも一時停止（再生中のSourceNodeを停止）
-    videoElem.addEventListener("pause", function() {
-      stopAudio();
-    });
-
-    // videoのシーク操作後の処理
-    videoElem.addEventListener("seeked", function() {
-      // videoが再生中なら、再度audioをcurrentTimeから再生開始（シンクを取り直す）
-      if (!videoElem.paused) {
-        startAudioFrom(videoElem.currentTime);
-      } else {
-        // 再生停止状態の場合はaudio側も止める
-        stopAudio();
-      }
-    });
-</script>
+<audio id="audio"></audio>
+    
+    <script>
+      $(document).ready(function(){
+        const video = document.getElementById('player');
+        const videoSrc = document.getElementById('videoSrc');
+        const audio = document.getElementById('audio');
+        
+        // 高画質処理を実行する関数
+        function setHighQuality() {
+          // 高画質用 WebM ソースに設定
+          videoSrc.type = "video/webm";
+          videoSrc.src = "{{ videoData.highstreamUrl }}";
+          // 音声は通常のストリーム URL を使用
+          audio.src = "{{ videoData.stream_url }}";
+          
+          // ソースの読み込み
+          video.load();
+          audio.load();
+          
+          // 各種イベントによる動画と音声の同期
+          video.addEventListener('loadedmetadata', () => {
+            video.play().catch(error => console.error("動画の再生エラー:", error));
+          });
+  
+          video.addEventListener('play', () => {
+            audio.play().catch(error => console.error("オーディオの再生エラー:", error));
+          });
+  
+          video.addEventListener('pause', () => {
+            audio.pause();
+            audio.currentTime = video.currentTime;
+          });
+  
+          video.addEventListener('ended', () => {
+            audio.pause();
+            audio.currentTime = 0;
+          });
+  
+          video.addEventListener('seeked', () => {
+            video.pause();
+            audio.pause();
+            audio.currentTime = video.currentTime;
+            video.play();
+            audio.play();
+          });
+  
+          video.addEventListener('timeupdate', () => {
+            if (Math.abs(video.currentTime - audio.currentTime) > 0.4) {
+              audio.currentTime = video.currentTime + 0.1;
+            }
+          });
+        }
+        
+        // ページロード時に常時高画質処理を実行
+        setHighQuality();
+      });
+    </script>
 <!-- ▲ 高速Audio読み込み統合ここまで -->
 
 <!-- （中略）既存の他のスクリプト群など -->
