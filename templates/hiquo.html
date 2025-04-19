@@ -17,6 +17,7 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="/js/utils/utils.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <link rel="preload" as="audio" href="{{ audio_url }}">
     <script>
       $(document).ready(function() {
         // モバイル時：ハンバーガーメニューのトグル
@@ -284,6 +285,12 @@ $(document).ready(function(){
     audio.currentTime = video.currentTime;
     audio.play();
   });
+  video.addEventListener('loadedmetadata', () => {
+  // 同期前に音声のロードを確認しておく
+  audio.load();
+  video.play().catch(error => console.error("動画の再生エラー:", error));
+});
+
 
   // 動画一時停止時、音声も一時停止する
   video.addEventListener('pause', function(){
@@ -383,9 +390,14 @@ video.addEventListener('play', () => {
     audio.play().catch(error => console.error("オーディオの再生エラー:", error));
 });
 </script>
-    <audio id="audio" controls>
-          <source src="{{ audio_url }}" />
-        </audio>
+   <!-- audioタグに preload="auto" を指定 -->
+<audio id="audio" controls preload="auto">
+  <source src="{{ audio_url }}" type="audio/mp4">
+</audio>
+
+    <!-- ヘッド内にプリロード用のタグを追加（オプションですが、早期読み込みに有効な場合があります） -->
+
+
 
   </body>
 </html>
