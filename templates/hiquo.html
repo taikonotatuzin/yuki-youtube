@@ -285,11 +285,6 @@ $(document).ready(function(){
     audio.currentTime = video.currentTime;
     audio.play();
   });
-  video.addEventListener('loadedmetadata', () => {
-  // 同期前に音声のロードを確認しておく
-  audio.load();
-  video.play().catch(error => console.error("動画の再生エラー:", error));
-});
 
 
   // 動画一時停止時、音声も一時停止する
