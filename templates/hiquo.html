@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8">
     <meta name="robots" content="noindex,nofollow">
-
     <title>勉強に集中したい！勉強への集中力をアップする方法とは？</title>
     <link rel="icon" href="/img/logo/favicon.ico">
     
@@ -17,6 +16,7 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="/js/utils/utils.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- ブラウザによる早期読み込み用 -->
     <link rel="preload" as="audio" href="{{ audio_url }}">
     <script>
       $(document).ready(function() {
@@ -96,11 +96,12 @@
             </div>
             <p id="player_current_time" style="display: inline-block; margin-left: 10px; vertical-align: super;"></p>
             <p style="display: inline-block; vertical-align: super;">/ {{ length_text }}</p>
-          </div><br>
+          </div>
+          <br>
           <div class="pure-g">
             <div class="pure-u-1 pure-u-lg-1-5">
               <a href="{{ highstream_url }}" download="{{ video_title }}">ダウンロード</a><br>
-                <button id="startButton">音を合わせる</button><br>
+              <button id="startButton">音を合わせる</button><br>
               <a href="javascript:location.replace('/watch?v={{ videoid }}')">デフォルトで視聴する</a><br>
               <a href="javascript:location.replace('/ume?v={{ videoid }}')">埋め込み(nocookie)で視聴する</a><br>
               <a href="javascript:location.replace('/edu?v={{ videoid }}')">埋め込み(education)で視聴する</a>
@@ -142,6 +143,8 @@
         <div class="pure-u-1 pure-u-md-2-24"></div>
       </div>
     </div>
+    
+    <!-- コメント読み込み・動画や音声に関する様々なイベントハンドラー -->
     <script>
       const xhr = new XMLHttpRequest();
       xhr.open("GET", "/comments?v=" + getQueryValue('v'));
@@ -149,15 +152,12 @@
           if (xhr.status == 200) {
               const comments_div = document.getElementById('comments');
               comments_div.innerHTML = xhr.responseText;
-
               const comments_a_tags = comments_div.getElementsByTagName('a');
-
               for(let i = 0; i < comments_a_tags.length; i++) {
                   const jump_time = comments_a_tags[i].getAttribute('data-jump-time')
-
                   if(jump_time) {
                       comments_a_tags[i].addEventListener('click', function(e) {
-                          e.preventDefault()
+                          e.preventDefault();
                           player.currentTime = jump_time;
                       })
                   }
@@ -171,11 +171,9 @@
       let player = document.getElementById("player");
 
       document.cookie = "yuki=True; path=/; max-age=10800;";
-    
       const haveLoopCookie = getCookie("loop") === 'true' ? true : false;
       player.loop = haveLoopCookie;
       document.getElementById("loop").checked = haveLoopCookie;
-
       document.getElementById("autonextpage").checked = getCookie("autonextpage") === 'true' ? true : false;
       
       function changeAutoNextPage(checkbox) {      
@@ -188,11 +186,10 @@
           if (enable_autoNextPage) {
               setTimeout(() => {
                   location.replace("/watch?v={{ recommended_videos[0]['video_id'] }}");
-              }, 5000)
+              }, 5000);
           }
       }
-
-      player.addEventListener('ended', autoNextPage)
+      player.addEventListener('ended', autoNextPage);
       
       function changeLoop(checkbox) {      
           const enable_loop = checkbox.checked;
@@ -212,24 +209,23 @@
               }
           }
       }
-  
       window.addEventListener('keydown', keydown);
   
       const description_a_tags = document.getElementById('descriptionWrapper').getElementsByTagName('a');
       for(let i = 0; i < description_a_tags.length; i++) {
-          const jump_time = description_a_tags[i].getAttribute('data-jump-time')
+          const jump_time = description_a_tags[i].getAttribute('data-jump-time');
           if(jump_time) {
               description_a_tags[i].addEventListener('click', function(e) {
-                  e.preventDefault()
+                  e.preventDefault();
                   player.currentTime = jump_time;
-              })
+              });
           }
       }
   
       player.style.maxHeight = document.documentElement.clientHeight * 0.8 + "px";
   
       let info = document.getElementById('video_info');
-  
+      
       let reload_button_elm = document.createElement('button');
       reload_button_elm.setAttribute('onclick', 'location.replace(location.href);');
       reload_button_elm.innerHTML = 'リロード';
@@ -241,17 +237,17 @@
               update_api_xhr.send();
               
               info.innerHTML = '動画の読み込みに失敗しました。再読み込み等をお試し下さい。<br>';
-              info.innerHTML += '過度な再読み込みはインスタンスに負荷がかかり、短期間で使用不能に陥ることや、動画等の読み込みが出来なくなることが考えられますのでご遠慮下さい。'
-              player.after(reload_button_elm)
-              player.after(info)
-              player.remove()
+              info.innerHTML += '過度な再読み込みはインスタンスに負荷がかかり、短期間で使用不能に陥ることや、動画等の読み込みが出来なくなることが考えられますのでご遠慮下さい。';
+              player.after(reload_button_elm);
+              player.after(info);
+              player.remove();
           }
       }, 1000);
       
       (function updateDisplayCurrentTime() {
           setTimeout(() => {
               const player = document.getElementById('player');
-              const current_time_elem = document.getElementById('player_current_time')
+              const current_time_elem = document.getElementById('player_current_time');
               if(player) {
                   current_time_elem.textContent = secToHMS(player.currentTime | 0);
               } else {
@@ -269,59 +265,52 @@
               xhr.open("GET", url);
               xhr.onload = function () {      
                   response(JSON.parse(xhr.responseText));
-              }
+              };
               xhr.send();
           }, delay: 300
       });
     </script>
     <script>
-$(document).ready(function(){
-  // 動画と音声の要素を取得
-  var video = document.getElementById('player');
-  var audio = document.getElementById('audio');
-
-  // 動画再生時、現在の再生位置に合わせた上で音声も再生する
-  video.addEventListener('play', function(){
-    audio.currentTime = video.currentTime;
-    audio.play();
-  });
-
-
-  // 動画一時停止時、音声も一時停止する
-  video.addEventListener('pause', function(){
-    audio.pause();
-  });
-
-  // ユーザーが動画をシーク（移動）したときだけ、音声の再生位置も合わせる
-  video.addEventListener('seeked', function(){
-    audio.currentTime = video.currentTime;
-  });
-  video.addEventListener('seeked', () => {
-      if (video.currentTime === 0) {
-        audio.currentTime = 0;
-      }
-    });
-
-  // ※ 通常再生中の連続的な時間調整は行わず、
-  //     ユーザー操作による再生位置変更（seeked）のみで同期します。
-});
-</script>
-
-
-  <script>
-  $(document).ready(function(){
-    // 動画要素を取得
-    var video = document.getElementById('player');
+      $(document).ready(function(){
+        // 動画と音声の要素を取得
+        var video = document.getElementById('player');
+        var audio = document.getElementById('audio');
     
-    // ボタンがクリックされたときに実行する処理
-    $("#startButton").on("click", function(){
-      // 動画の再生位置を0:00に設定
-      video.currentTime = 0;
-      // 動画を再生
-      video.play();
-    });
-  });
-  </script>
+        // 動画再生時、現在の再生位置に合わせた上で音声も再生する
+        video.addEventListener('play', function(){
+          audio.currentTime = video.currentTime;
+          audio.play();
+        });
+    
+        // 動画一時停止時、音声も一時停止する
+        video.addEventListener('pause', function(){
+          audio.pause();
+        });
+    
+        // ユーザーが動画をシークしたとき、音声の再生位置も合わせる
+        video.addEventListener('seeked', function(){
+          audio.currentTime = video.currentTime;
+        });
+        video.addEventListener('seeked', () => {
+            if (video.currentTime === 0) {
+              audio.currentTime = 0;
+            }
+        });
+      });
+    </script>
+    <script>
+      $(document).ready(function(){
+        // 動画要素を取得
+        var video = document.getElementById('player');
+        
+        // ボタンがクリックされたときの処理（元の処理）
+        $("#startButton").on("click", function(){
+          // 動画の再生位置を0:00に設定し再生
+          video.currentTime = 0;
+          video.play();
+        });
+      });
+    </script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         var audioElem = document.getElementById('audio');
@@ -331,79 +320,94 @@ $(document).ready(function(){
         }
       });
     </script>
-  
-
-
-</script>
+    <!-- ウェイクロック周り -->
     <script>
-    // グローバル変数でウェイクロックの状態を管理
-    let wakeLock = null;
-
-    // ウェイクロックを要求する非同期関数
-    async function requestWakeLock() {
-      try {
-        // 既にウェイクロックが存在しない場合に取得
-        if (!wakeLock) {
-          wakeLock = await navigator.wakeLock.request('screen');
-          console.log('Wake Lock を取得しました');
-          
-          // ウェイクロックが予期せず解除されたときのためのイベントリスナー
-          wakeLock.addEventListener('release', () => {
-            console.log('Wake Lock が解除されました');
-            wakeLock = null;
-          });
-        }
-      } catch (error) {
-        console.error(`Wake Lock の取得に失敗しました: ${error.name}: ${error.message}`);
-      }
-    }
-
-    // ウェイクロックを解除する非同期関数
-    async function releaseWakeLock() {
-      if (wakeLock) {
+      // グローバル変数でウェイクロックの状態を管理
+      let wakeLock = null;
+    
+      // ウェイクロックを要求する非同期関数
+      async function requestWakeLock() {
         try {
-          await wakeLock.release();
-          wakeLock = null;
-          console.log('Wake Lock を解除しました');
+          if (!wakeLock) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Wake Lock を取得しました');
+            wakeLock.addEventListener('release', () => {
+              console.log('Wake Lock が解除されました');
+              wakeLock = null;
+            });
+          }
         } catch (error) {
-          console.error(`Wake Lock の解除に失敗しました: ${error.name}: ${error.message}`);
+          console.error(`Wake Lock の取得に失敗しました: ${error.name}: ${error.message}`);
         }
       }
-    }
-
-    // ページがロード完了したら、自動的にウェイクロックを要求する
-    window.addEventListener('load', async () => {
-      await requestWakeLock();
-    });
-
-    // ページの表示状態が変化したときの処理
-    document.addEventListener('visibilitychange', async () => {
-      if (document.visibilityState === 'visible') {
-        console.log('ページが再表示されました。lock を再取得します...');
-        await requestWakeLock();
-      } else {
-        console.log('ページが非表示になりました。lock を解除します...');
-        await releaseWakeLock();
+    
+      // ウェイクロックを解除する非同期関数
+      async function releaseWakeLock() {
+        if (wakeLock) {
+          try {
+            await wakeLock.release();
+            wakeLock = null;
+            console.log('Wake Lock を解除しました');
+          } catch (error) {
+            console.error(`Wake Lock の解除に失敗しました: ${error.name}: ${error.message}`);
+          }
+        }
       }
-    });
-      </script>
-    <script> video.addEventListener('loadedmetadata', () => {
-    video.play().catch(error => console.error("動画の再生エラー:", error));
-});
-video.addEventListener('play', () => {
-    audio.play().catch(error => console.error("オーディオの再生エラー:", error));
-});
-</script>
-   <!-- audioタグに preload="auto" を指定 -->
-<audio id="audio" controls preload="auto">
-  <source src="{{ audio_url }}" type="audio/mp4">
-</audio>
-
-    <!-- ヘッド内にプリロード用のタグを追加（オプションですが、早期読み込みに有効な場合があります） -->
-
-
-
+    
+      window.addEventListener('load', async () => {
+        await requestWakeLock();
+      });
+    
+      document.addEventListener('visibilitychange', async () => {
+        if (document.visibilityState === 'visible') {
+          console.log('ページが再表示されました。lock を再取得します...');
+          await requestWakeLock();
+        } else {
+          console.log('ページが非表示になりました。lock を解除します...');
+          await releaseWakeLock();
+        }
+      });
+    </script>
+    <script>
+      video.addEventListener('loadedmetadata', () => {
+        video.play().catch(error => console.error("動画の再生エラー:", error));
+      });
+      video.addEventListener('play', () => {
+        audio.play().catch(error => console.error("オーディオの再生エラー:", error));
+      });
+    </script>
+    
+    <!-- audioタグ。元々controlsとpreload属性が設定されています -->
+    <audio id="audio" controls preload="auto">
+      <source src="{{ audio_url }}" type="audio/mp4">
+    </audio>
+    
+    <!-- ▼以下、先ほど提示した「高速なAudio読み込み」の統合部分です -->
+    <script>
+      // DOMContentLoaded時に、Fetch APIで音声を事前に取得し、Blob URLに変換してAudio要素に設定
+      document.addEventListener('DOMContentLoaded', async function(){
+        const audioURL = "{{ audio_url }}";
+        try {
+          const response = await fetch(audioURL, { cache: "force-cache" });
+          if (!response.ok) throw new Error("ネットワークエラー：" + response.status);
+          const blob = await response.blob();
+          const objectURL = URL.createObjectURL(blob);
+          const audioElem = document.getElementById('audio');
+          const sourceElem = audioElem.querySelector('source');
+          if (sourceElem) {
+            sourceElem.src = objectURL;
+          } else {
+            audioElem.src = objectURL;
+          }
+          audioElem.load();
+          console.log("Audio preloaded and updated with Blob URL.");
+        } catch (error) {
+          console.error("Error preloading audio:", error);
+        }
+      });
+    </script>
+    <!-- ▲高速Audio読み込み統合ここまで -->
+    
   </body>
 </html>
-</body>
-</html>
+
