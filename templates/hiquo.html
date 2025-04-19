@@ -383,30 +383,65 @@
     </audio>
     
     <!-- ▼以下、先ほど提示した「高速なAudio読み込み」の統合部分です -->
-    <script>
-      // DOMContentLoaded時に、Fetch APIで音声を事前に取得し、Blob URLに変換してAudio要素に設定
-      document.addEventListener('DOMContentLoaded', async function(){
-        const audioURL = "{{ audio_url }}";
-        try {
-          const response = await fetch(audioURL, { cache: "force-cache" });
-          if (!response.ok) throw new Error("ネットワークエラー：" + response.status);
-          const blob = await response.blob();
-          const objectURL = URL.createObjectURL(blob);
-          const audioElem = document.getElementById('audio');
-          const sourceElem = audioElem.querySelector('source');
-          if (sourceElem) {
-            sourceElem.src = objectURL;
-          } else {
-            audioElem.src = objectURL;
-          }
-          audioElem.load();
-          console.log("Audio preloaded and updated with Blob URL.");
-        } catch (error) {
-          console.error("Error preloading audio:", error);
-        }
+   <!-- （中略）既存のHTMLコードや各種スクリプト -->
+
+<!-- audioタグ。既存ではcontrolsとpreloadが設定されています -->
+<audio id="audio" controls preload="auto">
+  <source src="{{ audio_url }}" type="audio/mp4">
+</audio>
+
+<!-- ▼ 以下、新たにAudioの高速読み込みと、video再生時にpreloaded audioを再生する処理を統合 -->
+<script>
+  // DOMContentLoaded時に、Fetch APIで音声ファイルを取得し、Blob URLに変換してaudioタグに反映
+  document.addEventListener('DOMContentLoaded', async function(){
+    const audioURL = "{{ audio_url }}";
+    const audioElem = document.getElementById('audio');
+    try {
+      // 高速かつキャッシュ利用で音声を取得
+      const response = await fetch(audioURL, { cache: "force-cache" });
+      if (!response.ok) throw new Error("Fetch failed with status: " + response.status);
+      
+      const blob = await response.blob();
+      const objectURL = URL.createObjectURL(blob);
+      // すでにaudioタグ内にある<source>のsrcを、Blob URLに上書き
+      const sourceElem = audioElem.querySelector('source');
+      if (sourceElem) {
+        sourceElem.src = objectURL;
+      } else {
+        audioElem.src = objectURL;
+      }
+      // 読み込み直し
+      audioElem.load();
+      console.log("Audio preloaded and updated with Blob URL:", objectURL);
+
+      // 既存の動画と音声の同期処理をこちらに統合
+      const videoElem = document.getElementById('player');
+      
+      // 動画再生時、動画の現在の再生位置に合わせた音声を再生する
+      videoElem.addEventListener('play', function() {
+        audioElem.currentTime = videoElem.currentTime;
+        audioElem.play().catch((e) => console.error("Audio play error:", e));
       });
-    </script>
-    <!-- ▲高速Audio読み込み統合ここまで -->
+      
+      // 動画一時停止時は音声も一時停止する
+      videoElem.addEventListener('pause', function() {
+        audioElem.pause();
+      });
+      
+      // ユーザーが動画をシークした場合、audioの再生位置も合わせる
+      videoElem.addEventListener('seeked', function() {
+        audioElem.currentTime = videoElem.currentTime;
+      });
+      
+    } catch (error) {
+      console.error("Error preloading audio:", error);
+    }
+  });
+</script>
+<!-- ▲ 高速Audio読み込み統合ここまで -->
+
+<!-- （中略）既存の他のスクリプト群など -->
+
     
   </body>
 </html>
