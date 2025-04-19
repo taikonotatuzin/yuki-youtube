@@ -74,7 +74,7 @@
               
               {# もし高画質ストリームが取得できていれば、そちらを優先的に追加 #}
               {% if highstream_url %}
-              <source src="{{ highstream_url }}" type="video/webm">
+              <source id="videosrc" src="{{ highstream_url }}" type="video/webm">
               {% endif %}
               {# もし別途音声ストリームが取得できていれば、同時に追加（※単体で再生されるわけではなく、MSE等で合成する必要がある場合は専用の再生ロジックが必要） #}
               {% if audio_url %}
@@ -282,8 +282,8 @@
         // 高画質処理を実行する関数
         function setHighQuality() {
           // 高画質用 WebM ソースに設定
-          player.type = "video/webm";
-          player.src = "{{ highstream_url }}";
+          videosrc.type = "video/webm";
+          videosrc.src = "{{ highstream_url }}";
           // 音声は通常のストリーム URL を使用
           audio.src = "{{ audio_url }}";
           
