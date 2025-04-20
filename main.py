@@ -490,14 +490,13 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "proxy":proxy
     })
   
-サンプル。
 @app.get('/www', response_class=HTMLResponse)
 def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     # v: video_id
     if not(checkCookie(yuki)):
         return redirect("/")
     response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
-    video_data = gettVideoData(v)
+    video_data = getVideoData(v)
     '''
     return [
         {
