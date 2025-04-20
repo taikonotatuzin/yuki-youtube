@@ -106,7 +106,7 @@
           <br>
           <div class="pure-g">
             <div class="pure-u-1 pure-u-lg-1-5">
-              <button id="reloadButton">音を合わせる</button><br>
+              <button id="restartBtn">音を合わせる</button><br>
               <a href="{{ highstream_url }}" download="{{ video_title }}">ダウンロード</a><br>
               <a href="javascript:location.replace('/watch?v={{ videoid }}')">デフォルトで視聴する</a><br>
               <a href="javascript:location.replace('/ume?v={{ videoid }}')">埋め込み(nocookie)で視聴する</a><br>
@@ -333,7 +333,7 @@
     audio.load();
 });
      </script>
-    script>
+    <script>
     // ボタン要素を取得
     const restartBtn = document.getElementById("restartBtn");
 
