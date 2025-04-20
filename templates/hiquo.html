@@ -275,8 +275,10 @@
     </script>
 
 <script>
-        const video = document.getElementById('player');
-        const audio = document.getElementById('audio');
+       $(document).ready(function(){
+          // 動画と音声の要素を取得
+          var video = document.getElementById('player');
+          var audio = document.getElementById('audio');
 
        video.addEventListener('play', () => {
             audio.play().catch(error => {
@@ -307,13 +309,6 @@
                 audio.currentTime = video.currentTime;
             }
         });
-
-document.getElementById('reloadButton').addEventListener('click', function() {
-    const video = document.getElementById('player');
-    const audio = document.getElementById('audio');
-    
-    video.load();
-    audio.load();
 });
     </script>
      <!-- ウェイクロック周り -->
