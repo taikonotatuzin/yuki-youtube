@@ -275,7 +275,7 @@
     </script>
 
 <script>
-        const video = document.getElementById('video');
+        const video = document.getElementById('player');
         const audio = document.getElementById('audio');
 
        video.addEventListener('play', () => {
@@ -309,7 +309,7 @@
         });
 
 document.getElementById('reloadButton').addEventListener('click', function() {
-    const video = document.getElementById('video');
+    const video = document.getElementById('player');
     const audio = document.getElementById('audio');
     
     video.load();
@@ -317,53 +317,7 @@ document.getElementById('reloadButton').addEventListener('click', function() {
 });
     </script>
      <!-- ウェイクロック周り -->
-     <script>
-       // グローバル変数でウェイクロックの状態を管理
-       let wakeLock = null;
-     
-       // ウェイクロックを要求する非同期関数
-       async function requestWakeLock() {
-         try {
-           if (!wakeLock) {
-             wakeLock = await navigator.wakeLock.request('screen');
-             console.log('Wake Lock を取得しました');
-             wakeLock.addEventListener('release', () => {
-               console.log('Wake Lock が解除されました');
-               wakeLock = null;
-             });
-           }
-         } catch (error) {
-           console.error(`Wake Lock の取得に失敗しました: ${error.name}: ${error.message}`);
-         }
-       }
-     
-       // ウェイクロックを解除する非同期関数
-       async function releaseWakeLock() {
-         if (wakeLock) {
-           try {
-             await wakeLock.release();
-             wakeLock = null;
-             console.log('Wake Lock を解除しました');
-           } catch (error) {
-             console.error(`Wake Lock の解除に失敗しました: ${error.name}: ${error.message}`);
-           }
-         }
-       }
-     
-       window.addEventListener('load', async () => {
-         await requestWakeLock();
-       });
-     
-       document.addEventListener('visibilitychange', async () => {
-         if (document.visibilityState === 'visible') {
-           console.log('ページが再表示されました。lock を再取得します...');
-           await requestWakeLock();
-         } else {
-           console.log('ページが非表示になりました。lock を解除します...');
-           await releaseWakeLock();
-         }
-       });
-     </script>
+
      <script>
        video.addEventListener('loadedmetadata', () => {
          video.play().catch(error => console.error("動画の再生エラー:", error));
