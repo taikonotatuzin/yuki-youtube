@@ -321,13 +321,15 @@
          audio.play().catch(error => console.error("オーディオの再生エラー:", error));
        });
      </script>
-     <script>document.getElementById('reloadButton').addEventListener('click', function() {
+     <script>
+    document.getElementById('reloadButton').addEventListener('click', function() {
     const video = document.getElementById('video');
     const audio = document.getElementById('audio');
     
     video.load();
     audio.load();
-});</script>
+});
+     </script>
      <!-- ▼以下、先ほど提示した「高速なAudio読み込み」の統合部分です -->
     <!-- （中略）既存のHTMLコードや各種スクリプト -->
  
