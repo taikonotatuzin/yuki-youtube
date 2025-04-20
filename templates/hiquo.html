@@ -18,6 +18,9 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <!-- ブラウザによる早期読み込み用 -->
     <link rel="preload" as="audio" href="{{ audio_url }}">
+    <style>  #audio {
+        display: none;
+    }</style>
     <script>
       $(document).ready(function() {
         // モバイル時：ハンバーガーメニューのトグル
@@ -272,55 +275,47 @@
     </script>
 
 <script>
-       $(document).ready(function(){
-         // 動画と音声の要素を取得
-         var video = document.getElementById('player');
-         var audio = document.getElementById('audio');
-     
-         // 動画再生時、現在の再生位置に合わせた上で音声も再生する
-         video.addEventListener('play', function(){
-           audio.currentTime = video.currentTime;
-           audio.play();
-         });
-     
-         // 動画一時停止時、音声も一時停止する
-         video.addEventListener('pause', function(){
-           audio.pause();
-         });
-     
-         // ユーザーが動画をシークしたとき、音声の再生位置も合わせる
-         video.addEventListener('seeked', function(){
-           audio.currentTime = video.currentTime;
-         });
-         video.addEventListener('seeked', () => {
-             if (video.currentTime === 0) {
-               audio.currentTime = 0;
-             }
-         });
-       });
-     </script>
-     <script>
-       $(document).ready(function(){
-         // 動画要素を取得
-         var video = document.getElementById('player');
-         
-         // ボタンがクリックされたときの処理（元の処理）
-         $("#startButton").on("click", function(){
-           // 動画の再生位置を0:00に設定し再生
-           video.currentTime = 0;
-           video.play();
-         });
-       });
-     </script>
-     <script>
-       document.addEventListener('DOMContentLoaded', function() {
-         var audioElem = document.getElementById('audio');
-         if (audioElem) {
-           audioElem.load();
-           console.log('Audio preload called');
-         }
-       });
-     </script>
+        const video = document.getElementById('video');
+        const audio = document.getElementById('audio');
+
+       video.addEventListener('play', () => {
+            audio.play().catch(error => {
+                console.error("オーディオの再生エラー:", error);
+            });
+        });
+
+        video.addEventListener('pause', () => {
+            audio.pause();
+            audio.currentTime = video.currentTime;
+        });
+
+        video.addEventListener('ended', () => {
+            audio.pause();
+            audio.currentTime = 0; 
+        });
+      
+        video.addEventListener('seeked', () => {
+            video.pause();
+            audio.pause();
+            audio.currentTime = video.currentTime;
+            video.play();
+            audio.play();
+        });
+      
+        video.addEventListener('timeupdate', () => {
+            if (Math.abs(video.currentTime - audio.currentTime) > 0.5) {
+                audio.currentTime = video.currentTime;
+            }
+        });
+
+document.getElementById('reloadButton').addEventListener('click', function() {
+    const video = document.getElementById('video');
+    const audio = document.getElementById('audio');
+    
+    video.load();
+    audio.load();
+});
+    </script>
      <!-- ウェイクロック周り -->
      <script>
        // グローバル変数でウェイクロックの状態を管理
@@ -382,8 +377,8 @@
     <!-- （中略）既存のHTMLコードや各種スクリプト -->
  
  <!-- audioタグ。既存ではcontrolsとpreloadが設定されています -->
- <audio id="audio" controls preload="auto">
-   <source src="{{ audio_url }}" type="audio/mp4">
+ <audio id="audio" controls>
+   <source src="{{ audio_url }}">
  </audio>
 <!-- （中略）既存の他のスクリプト群など -->
 
