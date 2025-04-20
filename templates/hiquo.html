@@ -90,6 +90,9 @@
               <p id="video_info">お使いのブラウザは動画の再生に対応していません。</p>
             </video>
           </div>
+           <audio id="audio" controls>
+   <source src={{ audio_url }}">
+ </audio>
           <div class="h-box">
             <h1>{{ video_title }}</h1>
             <p style="display: inline-block; margin-right: 10px; vertical-align: super;">{{ view_count }}回視聴</p>
@@ -330,13 +333,26 @@
     audio.load();
 });
      </script>
+    script>
+    // ボタン要素を取得
+    const restartBtn = document.getElementById("restartBtn");
+
+    // ボタンにクリックイベントリスナーを設定
+    restartBtn.addEventListener("click", () => {
+      // audio要素を取得
+      const audioPlayer = document.getElementById("audioPlayer");
+
+      // 再生位置を先頭(0秒)にリセット
+      audioPlayer.currentTime = 0;
+
+      // 音声を再生（再起動）
+      audioPlayer.play();
+    });
+  </script>
      <!-- ▼以下、先ほど提示した「高速なAudio読み込み」の統合部分です -->
     <!-- （中略）既存のHTMLコードや各種スクリプト -->
  
- <!-- audioタグ。既存ではcontrolsとpreloadが設定されています -->
- <audio id="audio" controls>
-   <source src={{ audio_url }}">
- </audio>
+ <!-- audioタグ。既存ではcontrolsとpreloadが設定されています --
 <!-- （中略）既存の他のスクリプト群など -->
 
     
