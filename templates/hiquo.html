@@ -340,13 +340,15 @@
     // ボタンにクリックイベントリスナーを設定
     restartBtn.addEventListener("click", () => {
       // audio要素を取得
-      const audioPlayer = document.getElementById("audioPlayer");
+      const audioPlayer = document.getElementById("audio");
+      const videoPlayer = document.getElementById("player");
 
       // 再生位置を先頭(0秒)にリセット
-      audioPlayer.currentTime = 0;
+      audio.currentTime = 0;
+      video.currentTime = 0;
 
       // 音声を再生（再起動）
-      audioPlayer.play();
+      audio.play();
     });
   </script>
      <!-- ▼以下、先ほど提示した「高速なAudio読み込み」の統合部分です -->
