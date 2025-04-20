@@ -290,11 +290,6 @@
                 console.error("オーディオの再生エラー:", error);
             });
         });
-         video.addEventListener('play', () => {
-            audio.load().catch(error => {
-                console.error("オーディオの再生エラー:", error);
-            });
-        });
 
         video.addEventListener('pause', () => {
             audio.pause();
