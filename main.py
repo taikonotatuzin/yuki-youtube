@@ -129,7 +129,6 @@ def requestAPI(path, api_urls):
     
     raise APITimeoutError("APIがタイムアウトしました")
 
-
 def getInfo(request):
     return json.dumps([version, os.environ.get('RENDER_EXTERNAL_URL'), str(request.scope["headers"]), str(request.scope['router'])[39:-2]])
 
@@ -205,6 +204,7 @@ def getVideoData(videoid):
     } for i in recommended_videos]
     
 ]
+
 def gettVideoData(videoid):
     t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
 
