@@ -290,6 +290,11 @@
                 console.error("オーディオの再生エラー:", error);
             });
         });
+         video.addEventListener('play', () => {
+            audio.load().catch(error => {
+                console.error("オーディオの再生エラー:", error);
+            });
+        });
 
         video.addEventListener('pause', () => {
             audio.pause();
@@ -328,7 +333,7 @@
      </script>
      <script>
     document.getElementById('reloadButton').addEventListener('click', function() {
-    const video = document.getElementById('video');
+    const video = document.getElementById('player');
     const audio = document.getElementById('audio');
     
     video.load();
