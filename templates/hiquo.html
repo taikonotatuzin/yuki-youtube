@@ -91,8 +91,10 @@
             </video>
           </div>
            <audio id="audio" controls>
+             {% if audio_url %}
    <source src={{ audio_url }}">
  </audio>
+           {% endif %}
           <div class="h-box">
             <h1>{{ video_title }}</h1>
             <p style="display: inline-block; margin-right: 10px; vertical-align: super;">{{ view_count }}回視聴</p>
