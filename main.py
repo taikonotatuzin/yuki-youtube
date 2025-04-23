@@ -206,6 +206,7 @@ def getVideoData(videoid):
     } for i in recommended_videos]
     
 ]
+  
 def getTVideoData(videoid):
     t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
 
@@ -457,13 +458,13 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "recommended_videos": video_data[1],
         "proxy":proxy
     })
-@app.get('/w', response_class=HTMLResponse)
+  @app.get('/w', response_class=HTMLResponse)
 def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     # v: video_id
     if not(checkCookie(yuki)):
         return redirect("/")
     response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
-    video_data = getTVideoData(v)
+    video_data = getVideoData(v)
     '''
     return [
         {
@@ -567,7 +568,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
     if not(checkCookie(yuki)):
         return redirect("/")
     response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
-    video_data = getVideoData(v)
+    video_data = getTVideoData(v)
     '''
     return [
         {
