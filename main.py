@@ -177,7 +177,7 @@ def getVideoData(videoid):
             audio_url = stream.get("url")
             break
 
-     adaptive = t.get('adaptiveFormats', [])
+    adaptive = t.get('adaptiveFormats', [])
     streamUrls = [
         {
             'url': stream['url'],
