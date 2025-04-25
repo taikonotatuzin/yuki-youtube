@@ -127,7 +127,7 @@
     if (videoData.streamUrls && videoData.streamUrls.length > 0) {
       videoData.streamUrls.forEach(stream => {
         const option = document.createElement('option');
-        option.value = stream.url;
+        option.value = streamUrls;
         option.setAttribute('data-resolution', stream.resolution);
         option.textContent = stream.resolution;
         qualitySelect.appendChild(option);
