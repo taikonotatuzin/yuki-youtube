@@ -183,7 +183,7 @@ def getVideoData(videoid):
             'url': stream['url'],
             'resolution': stream['resolution']
         }]
-    for stream in adaptive
+    for stream in adaptive:
     if stream.get('container') == 'webm' and stream.get('resolution')
 
     return [
