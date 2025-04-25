@@ -109,15 +109,31 @@
                         </div>
                     </div>
                     <div class="pure-u-1 pure-u-lg-1-5">
-			            <% if (videoData.streamUrls && videoData.streamUrls.length > 0) { %>
-        <div class="control-section mb-4">
-            <label class="block mb-2">画質選択:
-                <select id="qualitySelect" class="w-full bg-gray-800 text-white p-2 rounded">
-                    <% videoData.streamUrls.forEach(stream => { %>
-                    <option value="<%= stream.url %>" data-resolution="<%= stream.resolution %>"><%= stream.resolution %></option>
-                    <% }); %>
-                </select>
-            </label>
+			    <div class="bg-gray-900 text-white p-6">
+  <!-- 動的に生成するためのコンテナ -->
+  <div class="control-section mb-4">
+    <label class="block mb-2">
+      画質選択:
+      <select id="qualitySelect" class="w-full bg-gray-800 text-white p-2 rounded">
+        <!-- EJS の場合はサーバーサイドで option タグを生成しますが、
+             以下は JavaScript によりクライアントサイドで動的に生成します -->
+      </select>
+    </label>
+  </div></div>
+<script>
+    // 上記 EJS での forEach の代替として、JavaScript で <option> を動的に作成
+    const qualitySelect = document.getElementById('qualitySelect');
+    
+    if (videoData.streamUrls && videoData.streamUrls.length > 0) {
+      videoData.streamUrls.forEach(stream => {
+        const option = document.createElement('option');
+        option.value = stream.url;
+        option.setAttribute('data-resolution', stream.resolution);
+        option.textContent = stream.resolution;
+        qualitySelect.appendChild(option);
+      });
+    }
+  </script>
                         <label for="autonextpage">自動で次の動画に遷移<input id="autonextpage" type="checkbox" onchange="changeAutoNextPage(this)"></label><br>
                         <label for="loop">ループ再生<input id="loop" type="checkbox" onchange="changeLoop(this)"></label>
                     
