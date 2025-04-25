@@ -177,15 +177,15 @@ def getVideoData(videoid):
             audio_url = stream.get("url")
             break
 
-    adaptive = t.get('adaptiveFormats', [])
+     adaptive = t.get('adaptiveFormats', [])
     streamUrls = [
         {
             'url': stream['url'],
             'resolution': stream['resolution']
-        }]
-    for stream in adaptive:
-    if stream.get('container') == 'webm' and stream.get('resolution')
-
+        }
+        for stream in adaptive
+        if stream.get('container') == 'webm' and stream.get('resolution')
+    ]
     return [
       {
         # 既存処理（ここでは formatStreams のURLを逆順にして上位2件を使用）
