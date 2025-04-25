@@ -109,6 +109,12 @@
                         </div>
                     </div>
                     <div class="pure-u-1 pure-u-lg-1-5">
+			    <select id="videoQuality">
+  <% stream.Urls.forEach(function(item) { %>
+    <option value="<%= item.url %>"><%= item.resolution %></option>
+  <% }); %>
+</select>
+
   <!-- 動的に生成するためのコンテナ -->
   <select id="videoQuality"></select>
 
@@ -123,7 +129,7 @@
 
   let optionsHtml = "";
   data.forEach(item => {
-    optionsHtml += `<option value="${item.url}">${item.resolution}</option>`;
+    optionsHtml += `<option value="{{item.url}}">${item.resolution}</option>`;
   });
 
   document.getElementById("videoQuality").innerHTML = optionsHtml;
