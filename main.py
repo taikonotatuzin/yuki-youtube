@@ -201,7 +201,7 @@ def getVideoData(videoid):
         'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
         'view_count': t["viewCount"],
         'like_count': t["likeCount"],
-        'subscribers_count': t["subCountText"]
+        'subscribers_count': t["subCountText"],
         'streamUrls': streamUrls
     },
 
