@@ -177,6 +177,15 @@ def getVideoData(videoid):
             audio_url = stream.get("url")
             break
 
+    adaptive = t.get('adaptiveFormats', [])
+    streamUrls = [
+        {
+            'url': stream['url'],
+            'resolution': stream['resolution']
+        }
+    for stream in adaptive
+    if stream.get('container') == 'webm' and stream.get('resolution')
+
     return [
       {
         # 既存処理（ここでは formatStreams のURLを逆順にして上位2件を使用）
@@ -193,6 +202,7 @@ def getVideoData(videoid):
         'view_count': t["viewCount"],
         'like_count': t["likeCount"],
         'subscribers_count': t["subCountText"]
+        'streamUrls': streamUrls
     },
 
     [
@@ -509,7 +519,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "proxy":proxy
     })
   
-@app.get('/edu', response_class=HTMLResponse)
+@app.get('/ww', response_class=HTMLResponse)
 def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     # v: video_id
     if not(checkCookie(yuki)):
@@ -529,6 +539,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
             'view_count': t["viewCount"],
             'like_count': t["likeCount"],
             'subscribers_count': t["subCountText"]
+            'streamUrls': streamUrls
         },
         [
             {
@@ -542,7 +553,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
     ]
     '''
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
-    return template('edu.html', {
+    return template('watch.html', {
         "request": request,
         "videoid": v,
         "videourls": video_data[0]['video_urls'],
@@ -555,6 +566,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "view_count": video_data[0]['view_count'],
         "like_count": video_data[0]['like_count'],
         "subscribers_count": video_data[0]['subscribers_count'],
+        "streamUrls": video_data[0]['streamUrls'],
         "recommended_videos": video_data[1],
         "proxy":proxy
     })
