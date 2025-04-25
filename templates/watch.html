@@ -117,7 +117,7 @@
   const selectElem = document.getElementById("video1");
   let optionsHTML = "";
 
-  stream.Urls.forEach(item => {
+  streamUrls.url.forEach(item => {
     optionsHTML += `<option value="${item.url}">${item.resolution}</option>`;
   });
 
