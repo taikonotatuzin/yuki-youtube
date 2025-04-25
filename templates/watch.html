@@ -109,6 +109,15 @@
                         </div>
                     </div>
                     <div class="pure-u-1 pure-u-lg-1-5">
+			            <% if (videoData.streamUrls && videoData.streamUrls.length > 0) { %>
+        <div class="control-section mb-4">
+            <label class="block mb-2">画質選択:
+                <select id="qualitySelect" class="w-full bg-gray-800 text-white p-2 rounded">
+                    <% videoData.streamUrls.forEach(stream => { %>
+                    <option value="<%= stream.url %>" data-resolution="<%= stream.resolution %>"><%= stream.resolution %></option>
+                    <% }); %>
+                </select>
+            </label>
                         <label for="autonextpage">自動で次の動画に遷移<input id="autonextpage" type="checkbox" onchange="changeAutoNextPage(this)"></label><br>
                         <label for="loop">ループ再生<input id="loop" type="checkbox" onchange="changeLoop(this)"></label>
                     
