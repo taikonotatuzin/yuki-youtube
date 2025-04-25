@@ -118,22 +118,7 @@
   <!-- 動的に生成するためのコンテナ -->
   <select id="videoQuality"></select>
 
-<script>
-  const data = [
-    { url: "https://rr3---sn-hgn7ynek.googlevideo.com/videoplayback?...(144pのURL)...", resolution: "144p" },
-    { url: "https://rr3---sn-hgn7ynek.googlevideo.com/videoplayback?...(240pのURL)...", resolution: "240p" },
-    { url: "https://rr3---sn-hgn7ynek.googlevideo.com/videoplayback?...(360pのURL)...", resolution: "360p" },
-    { url: "https://rr3---sn-hgn7ynek.googlevideo.com/videoplayback?...(480pのURL)...", resolution: "480p" },
-    { url: "https://rr3---sn-hgn7ynek.googlevideo.com/videoplayback?...(720pのURL)...", resolution: "720p" }
-  ];
 
-  let optionsHtml = "";
-  data.forEach(item => {
-    optionsHtml += `<option value="{{item.url}}">${item.resolution}</option>`;
-  });
-
-  document.getElementById("videoQuality").innerHTML = optionsHtml;
-</script>
                         <label for="autonextpage">自動で次の動画に遷移<input id="autonextpage" type="checkbox" onchange="changeAutoNextPage(this)"></label><br>
                         <label for="loop">ループ再生<input id="loop" type="checkbox" onchange="changeLoop(this)"></label>
                     
