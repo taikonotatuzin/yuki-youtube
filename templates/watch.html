@@ -120,7 +120,12 @@
     </label>
   </div>
 <script>
-    // 上記 EJS での forEach の代替として、JavaScript で <option> を動的に作成
+    const videoData = {
+      streamUrls: [
+       "{{ streamUrls }}"
+      ]
+    };
+	// 上記 EJS での forEach の代替として、JavaScript で <option> を動的に作成
     const qualitySelect = document.getElementById('qualitySelect');
     
     if (videoData.streamUrls && videoData.streamUrls.length > 0) {
