@@ -109,15 +109,28 @@
                         </div>
                     </div>
                     <div class="pure-u-1 pure-u-lg-1-5">
-			    <select id="videoQuality">
-  <% stream.Urls.forEach(function(item) { %>
-    <option value="<%= item.url %>"><%= item.resolution %></option>
-  <% }); %>
-</select>
+			 <select id="videoQuality"></select>
 
-  <!-- 動的に生成するためのコンテナ -->
-  <select id="videoQuality"></select>
+<script>
+  // stream.Urls が以下のような形式であると仮定します
+  // stream.Urls = [
+  //   { url: "https://rr3---sn-hgn7ynek.googlevideo.com/videoplayback?...(144pのURL)...", resolution: "144p" },
+  //   { url: "https://rr3---sn-hgn7ynek.googlevideo.com/videoplayback?...(240pのURL)...", resolution: "240p" },
+  //   { url: "https://rr3---sn-hgn7ynek.googlevideo.com/videoplayback?...(360pのURL)...", resolution: "360p" },
+  //   { url: "https://rr3---sn-hgn7ynek.googlevideo.com/videoplayback?...(480pのURL)...", resolution: "480p" },
+  //   { url: "https://rr3---sn-hgn7ynek.googlevideo.com/videoplayback?...(720pのURL)...", resolution: "720p" }
+  // ];
 
+  // 実際に stream.Urls から option タグを動的に生成する例
+  const selectElem = document.getElementById("videoQuality");
+  let optionsHTML = "";
+
+  stream.Urls.forEach(item => {
+    optionsHTML += `<option value="${item.url}">${item.resolution}</option>`;
+  });
+
+  selectElem.innerHTML = optionsHTML;
+</script>
 
                         <label for="autonextpage">自動で次の動画に遷移<input id="autonextpage" type="checkbox" onchange="changeAutoNextPage(this)"></label><br>
                         <label for="loop">ループ再生<input id="loop" type="checkbox" onchange="changeLoop(this)"></label>
