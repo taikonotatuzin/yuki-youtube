@@ -372,6 +372,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         return redirect("/")
     response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
     video_data = getVideoData(v)
+    template_name = "ume.html" if request.cookies.get("ume_toggle", "false") == "true" else "video.html"
     '''
     return [
         {
@@ -399,7 +400,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
     ]
     '''
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
-    return template('video.html', {
+    return template(template_name, {
         "request": request,
         "videoid": v,
         "videourls": video_data[0]['video_urls'],
@@ -827,6 +828,18 @@ def list_page(response: Response, request: Request):
 @app.get("/set", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("set.html", {"request": request})
+@app.get('/toggle_template', response_class=HTMLResponse)
+def toggle_template(request: Request, response: Response):
+    # 現在のクッキーの状態を取得（なければ "false" とする）
+    current_state = request.cookies.get("ume_toggle", "false")
+    # 状態を反転（"true" なら "false"、そうでなければ "true"）
+    new_state = "false" if current_state == "true" else "true"
+    # クッキーの有効期限を長く設定（例：5年）
+    response.set_cookie(key="ume_toggle", value=new_state, max_age=60 * 60 * 24 * 365 * 5, httponly=False)
+    # リファラーがあればそのページにリダイレクト、なければ "/" にリダイレクト
+    referer = request.headers.get("referer", "/")
+    return redirect(referer)
+
 
 
 
