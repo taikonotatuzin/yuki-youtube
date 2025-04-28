@@ -2,131 +2,59 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>全ページ用 URL 置換 UI</title>
+  <title>Ume Template 切替ページ</title>
   <style>
-    /* UI のスタイル設定 */
-    .replacement-ui {
-      position: fixed;
-      bottom: 10px;
-      right: 10px;
-      background: rgba(0, 0, 0, 0.7);
-      color: #fff;
-      padding: 10px;
-      border-radius: 5px;
-      font-family: sans-serif;
-      font-size: 14px;
-      z-index: 9999;
+    body {
+      font-family: Arial, sans-serif;
+      margin: 50px;
     }
-    .replacement-ui button {
-      margin: 5px;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 3px;
-      background: #444;
-      color: #fff;
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
       cursor: pointer;
     }
-    .replacement-ui button:hover {
-      background: #666;
+    .status {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
     }
   </style>
 </head>
 <body>
-  <h1>全ページ用 URL 置換機能</h1>
-  <p>このスクリプトはすべてのページで稼働し、選択したモードに合わせて URL 中の「/watch」と「/ume」を置換します。</p>
-  
-  <!-- UI 部分：右下にオン／オフ用のボタンを表示 -->
-  <div class="replacement-ui">
-    <div><strong>URL 置換モード：</strong></div>
-    <button id="btn-watch-ume">/watch → /ume</button>
-    <button id="btn-ume-watch">/ume → /watch</button>
-  </div>
+  <h1>Ume Template 切替ページ</h1>
+  <p>現在のテンプレートの状態: <span id="status">読み込み中...</span></p>
+  <button id="toggleBtn">Toggle Ume Template</button>
 
   <script>
-    (function () {
-      'use strict';
+    // クッキーから指定の名前の値を取得する関数
+    function getCookieValue(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    }
 
-      // localStorage に保存するキー名
-      const STORAGE_KEY = 'urlReplacementMode';
+    // 状態表示を更新する
+    function updateStatus() {
+      const toggleState = getCookieValue("ume_toggle") || "false";
+      document.getElementById("status").textContent =
+        (toggleState === "true") ? "UMe Mode ON" : "UMe Mode OFF";
+    }
 
-      // 利用可能なモード
-      const MODE_WATCH_TO_UME = 'watchToUme';   // /watch → /ume に置換するモード
-      const MODE_UME_TO_WATCH = 'umeToWatch';     // /ume → /watch に置換するモード
-
-      // 現在のモードを取得（未設定ならデフォルトは MODE_WATCH_TO_UME）
-      function getMode() {
-        let mode = localStorage.getItem(STORAGE_KEY);
-        if (mode !== MODE_WATCH_TO_UME && mode !== MODE_UME_TO_WATCH) {
-          mode = MODE_WATCH_TO_UME;
-          localStorage.setItem(STORAGE_KEY, mode);
-        }
-        return mode;
-      }
-
-      // モードを変更して localStorage に保存、即時反映のため page リロード
-      function setMode(newMode) {
-        if (newMode === MODE_WATCH_TO_UME || newMode === MODE_UME_TO_WATCH) {
-          localStorage.setItem(STORAGE_KEY, newMode);
+    // ボタンを押すとサーバーの /toggle_template にアクセスして状態を反転
+    document.getElementById("toggleBtn").addEventListener("click", function() {
+      fetch('/toggle_template')
+        .then(response => {
+          // サーバーがリダイレクトしても問題なく動作するようにリロード
           location.reload();
-        }
-      }
-
-      // URL 内の文字列を置換するユーティリティ関数
-      function replaceUrl(url, from, to) {
-        return url.replace(from, to);
-      }
-
-      // 現在の URL に対して置換処理を実施
-      function performUrlReplacement() {
-        const mode = getMode();
-        const currentUrl = window.location.href;
-        let newUrl = currentUrl;
-
-        if (mode === MODE_WATCH_TO_UME && currentUrl.indexOf('/watch') !== -1) {
-          newUrl = replaceUrl(currentUrl, '/watch', '/ume');
-        } else if (mode === MODE_UME_TO_WATCH && currentUrl.indexOf('/ume') !== -1) {
-          newUrl = replaceUrl(currentUrl, '/ume', '/watch');
-        }
-
-        // URL が置換された場合、history.replaceState を利用して URL を書き換える
-        if (newUrl !== currentUrl) {
-          history.replaceState(null, '', newUrl);
-        }
-      }
-
-      // ページ内のリンクを更新する処理
-      function updateLinks() {
-        const links = document.querySelectorAll('a[href]');
-        links.forEach(link => {
-          if (getMode() === MODE_WATCH_TO_UME && link.href.indexOf('/watch') !== -1) {
-            link.href = replaceUrl(link.href, '/watch', '/ume');
-          } else if (getMode() === MODE_UME_TO_WATCH && link.href.indexOf('/ume') !== -1) {
-            link.href = replaceUrl(link.href, '/ume', '/watch');
-          }
+        })
+        .catch(error => {
+          console.error("エラーが発生しました:", error);
         });
-      }
+    });
 
-      // 各ボタンのクリックイベント設定
-      document.getElementById('btn-watch-ume').addEventListener('click', function () {
-        setMode(MODE_WATCH_TO_UME);
-      });
-      document.getElementById('btn-ume-watch').addEventListener('click', function () {
-        setMode(MODE_UME_TO_WATCH);
-      });
-
-      // ページ読み込み時に URL 置換とリンク更新を実施
-      window.addEventListener('load', () => {
-        performUrlReplacement();
-        updateLinks();
-      });
-
-      // 動的に追加された要素やリンクにも対応するため MutationObserver を利用
-      const observer = new MutationObserver(() => {
-        updateLinks();
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-    })();
+    // ページ読み込み時に現在の状態を表示する
+    updateStatus();
   </script>
 </body>
 </html>
-
