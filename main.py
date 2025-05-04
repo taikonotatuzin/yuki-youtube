@@ -825,23 +825,9 @@ def list_page(response: Response, request: Request):
 @app.get("/game", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("proxy.html", {"request": request})
-@app.get("/set", response_class=HTMLResponse)
+@app.get("/and", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("set.html", {"request": request})
-@app.get('/toggle_template', response_class=HTMLResponse)
-def toggle_template(request: Request, response: Response):
-    # 現在のクッキーの状態を取得（なければ "false" とする）
-    current_state = request.cookies.get("ume_toggle", "false")
-    # 状態を反転（"true" なら "false"、そうでなければ "true"）
-    new_state = "false" if current_state == "true" else "true"
-    # クッキーの有効期限を長く設定（例：5年）
-    response.set_cookie(key="ume_toggle", value=new_state, max_age=60 * 60 * 24 * 365 * 5, httponly=False)
-    # リファラーがあればそのページにリダイレクト、なければ "/" にリダイレクト
-    referer = request.headers.get("referer", "/")
-    return redirect(referer)
-
-
-
+    return template("android.html", {"request": request})
 
 @app.exception_handler(500)
 def error500(request: Request, __):
