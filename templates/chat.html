@@ -645,23 +645,14 @@
       }
     });
     
-    logoutButton.addEventListener("click", async () => {
-      const user = auth.currentUser;
-      if (user) {
-        const userStatusRef = ref(dbRT, "status/" + user.uid);
-        try {
-          await remove(userStatusRef);
-        } catch (error) {
-          console.error("オンライン情報削除エラー:", error);
-        }
-      }
-      try {
-        await signOut(auth);
-        console.log("ログアウト成功");
-      } catch (error) {
-        alert("ログアウトエラー: " + error.message);
-      }
-    });
+        logoutButton.addEventListener("click", async () => {
+       try {
+         await signOut(auth);
+         console.log("ログアウト成功");
+       } catch (error) {
+         alert("ログアウトエラー: " + error.message);
+       }
+     });
     
     // Firestore を利用したチャットメッセージ取得／更新＆古いメッセージ自動削除
     const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
