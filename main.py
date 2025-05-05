@@ -834,6 +834,9 @@ def list_page(response: Response, request: Request):
 @app.get("/and", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("android.html", {"request": request})
+@app.get("/cone", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("cone.html", {"request": request})
 @app.get("/chat", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("chat.html", {"request": request})
