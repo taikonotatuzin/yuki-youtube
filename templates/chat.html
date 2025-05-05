@@ -224,6 +224,17 @@
     #profile-settings button:hover {
       background-color: #27ae60;
     }
+    /* 話題表示エリア用のCSS */
+    #chat-topic {
+      background: linear-gradient(135deg, #63a4ff, #83eaf1);
+      color: #fff;
+      text-align: center;
+      padding: 10px 20px;
+      font-size: 20px;
+      border-radius: 8px;
+      margin: 10px 0;
+      box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
@@ -263,6 +274,9 @@
     <h2>チャットルーム</h2>
     <h3>試験段階のチャットです。リアルタイム通信しています！</h3>
     
+    <!-- 話題表示エリア（/topic コマンドで更新）-->
+    <div id="chat-topic" style="display:none;"></div>
+    
     <div id="chat-box"></div>
     <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
     <button id="sendButton">送信</button>
@@ -276,6 +290,7 @@
         <li><code>/color [カラーコード]</code>: 表示名のカラーを変更します。（例: <code>/color #fff</code>）</li>
         <li><code>/omi</code>: おみくじを引きます。重み付き確率により結果が決定され、実行者の名前が表示されます。</li>
         <li><code>/roll [最大値]</code>: サイコロ振り。指定した最大値までのランダムな数字を生成します。（例: <code>/roll 6</code>）</li>
+        <li><code>/topic [話題]</code>: 「ねむい」専用。チャットルームの話題を更新します。</li>
       </ul>
     </div>
     <div id="command-summary">
@@ -288,7 +303,7 @@
           <li><code>/mute [ユーザー名] [期間]</code>: 「ねむい」専用。指定したユーザーを指定期間ミュートします。（例: <code>/mute taro 10m</code>）</li>
           <li><code>/unmute [ユーザー名]</code>: 「ねむい」専用。指定したユーザーのミュート状態を解除します。</li>
         </ul>
-        </div>
+    </div>
     
     <!-- プロフィール更新フォーム -->
     <div id="profile-settings">
@@ -637,7 +652,8 @@
         return;
       }
       
-      // 以下、/delete, /color, /mute, /unmute, /omi, /roll の各コマンド
+      // 以下、/delete, /color, /mute, /unmute, … の各コマンド
+      
       if (messageText.startsWith("/delete ")) {
         if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
           const parts = messageText.split(" ");
@@ -758,6 +774,26 @@
         } else {
           alert(`${targetName} はミュート状態ではありません。`);
         }
+        messageInput.value = "";
+        return;
+      }
+      
+      // ★ /topic コマンド ★
+      // 「ねむい」専用。入力例： /topic 今日のチャレンジ！
+      if (messageText.startsWith("/topic ")) {
+        if (userBaseName.split("#")[0] !== "ねむい") {
+          alert("この操作は権限がありません。");
+          return;
+        }
+        const topicText = messageText.substring("/topic ".length).trim();
+        if (topicText === "") {
+          alert("話題を入力してください。");
+          return;
+        }
+        const topicDiv = document.getElementById("chat-topic");
+        topicDiv.textContent = topicText;
+        topicDiv.style.display = "block";
+        alert("話題が更新されました！");
         messageInput.value = "";
         return;
       }
@@ -939,3 +975,4 @@
   </script>
 </body>
 </html>
+
