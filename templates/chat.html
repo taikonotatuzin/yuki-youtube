@@ -163,6 +163,38 @@
       box-shadow: 0 0 5px rgba(52,152,219,0.5);
       transition: box-shadow 0.3s ease, border 0.3s ease;
     }
+     /* コマンド一覧（サマリー）: 白を基調とした動きのあるデザイン */
+    #command-summary {
+      background-color: #fff;
+      border: 2px solid #3498db;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      animation: fadeInUp 1s ease;
+    }
+    #command-summary h3 {
+      margin-top: 0;
+      color: #3498db;
+    }
+    #command-summary ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    #command-summary li {
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+    #command-summary code {
+      background-color: #f1f1f1;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 90%;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
   
   <!-- Firebase やチャットの動作に関するスクリプト -->
@@ -563,6 +595,17 @@
     <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
     <button id="sendButton">送信</button>
     <button id="logoutButton">ログアウト</button>
+    <div id="command-summary">
+      <h3>コマンド一覧と使用方法</h3>
+      <ul>
+        <li><code>/adminadd [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者に追加します。</li>
+        <li><code>/admin</code>: 「ねむい」専用。現在の擬似管理者一覧を表示します。</li>
+        <li><code>/adminre [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者から外します。</li>
+        <li><code>/delete [ユーザー名]</code>: 「ねむい」または擬似管理者専用。指定したユーザーのメッセージを削除します。</li>
+        <li><code>/color [カラーコード]</code>: 表示名のカラーを変更します。（例: <code>/color #fff</code>）</li>
+        <li><code>RESET1234</code>: 「ねむい」または擬似管理者専用。全チャットメッセージを一括削除します。</li>
+      </ul>
+    </div>
     
     <script>
       if (!sessionStorage.getItem("reloaded")) {
