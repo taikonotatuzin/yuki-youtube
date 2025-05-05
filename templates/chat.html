@@ -32,14 +32,14 @@
     });
   </script>
   
-  <!-- CSS（白を基調とした動きのあるデザイン + 返信引用部のスタイル追加） -->
+  <!-- CSS -->
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       background-color: #fff;
     }
-    /* チャット用エリア: 上部が top-bar に被らないように margin-top を確保 */
+    /* チャット用エリア */
     #chat-section {
       margin-top: 0px;
       padding: 20px;
@@ -76,7 +76,6 @@
       white-space: pre-wrap;
       margin-bottom: 5px;
     }
-    /* 返信された引用部分 */
     .quote {
       color: #888;
       font-style: italic;
@@ -97,7 +96,6 @@
       font-size: 16px;
       resize: vertical;
     }
-    /* 返信ボタン */
     .reply-button {
       position: absolute;
       top: 5px;
@@ -154,7 +152,6 @@
       box-shadow: 0 0 5px rgba(52,152,219,0.5);
       transition: box-shadow 0.3s ease, border 0.3s ease;
     }
-    /* コマンド一覧（サマリー） */
     #command-summary {
       background-color: #fff;
       border: 2px solid #3498db;
@@ -186,8 +183,6 @@
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
-    /* 削除ボタンのスタイル */
     .delete-button {
       font-size: 12px;
       padding: 2px 4px;
@@ -204,7 +199,6 @@
     .delete-button:hover {
       background-color: #c0392b;
     }
-    
     /* プロフィール更新フォーム */
     #profile-settings {
       margin: 20px 0;
@@ -284,23 +278,12 @@
         <li><code>/roll [最大値]</code>: サイコロ振り。指定した最大値までのランダムな数字を生成します。（例: <code>/roll 6</code>）</li>
       </ul>
     </div>
-       <div id="command-summary">
-       <h3>管理者専用のコマンド</h3>
-       <ul>
-         <li><code>/adminadd [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者に追加します。</li>
-         <li><code>/admin</code>: 「ねむい」専用。現在の擬似管理者一覧を表示します。</li>
-         <li><code>/adminre [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者から外します。</li>
-         <li><code>/delete [ユーザー名]</code>: 「ねむい」または擬似管理者専用。指定したユーザーのメッセージを削除します。</li>
-         <li><code>/mute [ユーザー名] [期間]</code>: 「ねむい」専用。指定したユーザーを指定期間ミュートします。（例: <code>/mute taro 10m</code>）</li>
-         <li><code>/unmute [ユーザー名]</code>: 「ねむい」専用。指定したユーザーのミュート状態を解除します。</li>
-       </ul>
     
-    <!-- プロフィール更新フォーム（名前、パスワード、色） -->
+    <!-- プロフィール更新フォーム（名前・パスワード・色の更新） -->
     <div id="profile-settings">
       <h3>プロフィール更新</h3>
       <input type="text" id="newName" placeholder="新しい名前">
       <input type="password" id="newPassword" placeholder="新しいパスワード">
-      <!-- 色選択用：標準色の選択 -->
       <select id="newColor">
         <option value="">-- 色を選択 --</option>
         <option value="#000000">黒</option>
@@ -315,7 +298,7 @@
     </div>
     
     <script>
-      // ページは一度だけ自動リロード
+      // ページは一度だけ自動リロード（テスト用）
       if (!sessionStorage.getItem("reloaded")) {
         sessionStorage.setItem("reloaded", "true");
         setTimeout(function(){ location.reload(); }, 1000);
@@ -405,7 +388,7 @@
       }
       const email = generateEmailFromName(name);
       const forcedId = generateForcedId();
-      // 初回は強制的に "ねむい" はそのまま、それ以外は "名前#forcedId" とする
+      // 「ねむい」の場合はID付与せず、それ以外は "name#forcedId" とする
       const fullName = (name === "ねむい") ? name : `${name}#${forcedId}`;
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -462,7 +445,6 @@
         document.getElementById("user-auth").style.display = "none";
         document.getElementById("chat-section").style.display = "block";
         setupPresence(user);
-        // ログイン時、チャットボックスを下部へスクロール
         setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 200);
       } else {
         document.getElementById("user-auth").style.display = "block";
@@ -492,7 +474,6 @@
       return false;
     }
     
-    // /omi 用 重み付き確率
     const fortuneOptions = [
       { name: "重大な欠陥を発見‼︎直ちに使用します", weight: 1 },
       { name: "極大吉", weight: 2 },
@@ -517,7 +498,7 @@
       return options[options.length - 1].name;
     }
     
-    // プロフィール更新処理（名前・パスワード・色の更新）
+    // プロフィール更新処理【名前・パスワード・色の更新】
     updateProfileButton.addEventListener("click", async () => {
       const newName = document.getElementById("newName").value.trim();
       const newPassword = document.getElementById("newPassword").value;
@@ -530,20 +511,34 @@
       }
       
       try {
-        // 既存の表示名から名前と色を抽出
+        // 現在の displayName 例："Alice#1234" または "Alice#1234|#FF0000"
         const currentDisplay = user.displayName;
-        const parts = currentDisplay.split("|");
-        const currentName = parts[0];
-        const currentColor = parts.length > 1 ? parts[1] : "";
+        // まず、パイプ(|)で色の情報を分離
+        const [mainPart, currentColor = ""] = currentDisplay.split("|");
+        // 次に、mainPart を '#' で分割して名前と強制IDを取得
+        let [currentName, forcedId = ""] = mainPart.split("#");
         
-        // 新しい名前が入力されていなければ既存の名前を維持
-        const finalName = newName !== "" ? newName : currentName;
-        // 新しい色が選択されていればそれを、なければ既存の色をそのまま使用
+        // 管理者名「ねむい」の場合はそのまま（IDつかず）
+        let finalName;
+        if (currentName === "ねむい") {
+          finalName = "ねむい";
+        } else {
+          // 新しい名前があれば使用、なければ現在の名前を使用
+          let namePart = newName !== "" ? newName : currentName;
+          // すでにIDが存在していればそれを維持、なければ新たに生成（ただし通常はsignup時に必ずIDが付与されるはず）
+          if (namePart !== "ねむい") {
+            forcedId = forcedId || generateForcedId();
+            finalName = `${namePart}#${forcedId}`;
+          } else {
+            finalName = "ねむい";
+          }
+        }
+        // 色は、新しく選択されたものがあればそれを、それ以外は既存の色をそのまま
         const finalColor = newColor !== "" ? newColor : currentColor;
-        // 色情報があるなら「name|color」、なければ「name」
+        // 更新後の displayName の生成（色がある場合は "|色" を追加）
         const finalDisplay = finalColor !== "" ? `${finalName}|${finalColor}` : finalName;
         
-        // プロフィール更新（名前・色の更新）
+        // プロフィール更新（名前/ID/色）
         await updateProfile(user, { displayName: finalDisplay });
         alert("名前・色が更新されました。");
         
@@ -553,7 +548,7 @@
           alert("パスワードが更新されました。");
         }
         
-        // 更新後、フォームをクリア
+        // 更新後フォームをクリア
         document.getElementById("newName").value = "";
         document.getElementById("newPassword").value = "";
         document.getElementById("newColor").value = "";
@@ -570,14 +565,14 @@
         alert("まずログインしてください。");
         return;
       }
-      const userBaseName = user.displayName.split("|")[0];
+      const userBaseName = user.displayName.split("|")[0].split("#")[0];
       
       if (isMuted(userBaseName)) {
         alert("あなたはミュート中です。ミュート解除後に送信してください。");
         return;
       }
       
-      // 既存のコマンド処理（/adminadd, /admin, /adminre, /delete, CLEAR_CHAT_PASSWORD, /color, /mute, /unmute, /omi, /roll）・・・
+      // 既存の各コマンドの処理（/adminadd, /admin, /adminre, /delete, CLEAR_CHAT_PASSWORD, /color, /mute, /unmute, /omi, /roll）
       if (messageText.startsWith("/adminadd ")) {
         if (userBaseName !== "ねむい") {
           alert("この操作は権限がありません。");
@@ -662,10 +657,10 @@
           return;
         }
         const currentDisplayName = user.displayName || "名無し";
-        const namePart = currentDisplayName.split("|")[0];
-        const newDisplayName = namePart + "|" + newColor;
+        const namePart = currentDisplayName.split("|")[0].split("#")[0];
+        const finalDisplay = `${namePart}#${(namePart!=="ねむい" ? generateForcedId() : "")}|${newColor}`;
         try {
-          await updateProfile(user, { displayName: newDisplayName });
+          await updateProfile(user, { displayName: finalDisplay });
           alert("名前の色が変更されました");
         } catch (error) {
           alert("名前の色更新エラー: " + error.message);
@@ -676,7 +671,7 @@
       if (messageText.startsWith("/mute ")) {
         if (userBaseName !== "ねむい") { alert("この操作は権限がありません。"); return; }
         const parts = messageText.split(" ");
-        if (parts.length < 2) { alert("使い方: /mute [ユーザー名] [期間]（期間例: 10m, 30s）"); return; }
+        if (parts.length < 2) { alert("使い方: /mute [ユーザー名] [期間]（例: 10m, 30s）"); return; }
         const targetName = parts[1].trim();
         let durationMs = 300000;
         if (parts.length >= 3) {
@@ -796,17 +791,17 @@
           nameDiv.appendChild(span);
         } else {
           const span = document.createElement("span");
-          if (pseudoAdmins.has(namePart)) {
-            span.textContent = namePart + " (擬似管理者)";
+          if (pseudoAdmins.has(namePart.split("#")[0])) {
+            span.textContent = namePart.split("#")[0] + " (擬似管理者)";
           } else {
-            span.textContent = namePart;
+            span.textContent = namePart.split("#")[0];
           }
           if (colorCode) { span.style.color = colorCode; }
           nameDiv.appendChild(span);
         }
         messageContainer.appendChild(nameDiv);
-
-        // 自分のメッセージの場合、削除ボタンを追加（返信ボタンの左隣）
+        
+        // 自分のメッセージの場合、削除ボタンを追加
         const currentUser = auth.currentUser;
         if (currentUser && msg.uid === currentUser.uid) {
           const deleteButton = document.createElement("button");
@@ -824,13 +819,13 @@
           messageContainer.appendChild(deleteButton);
         }
         
-        // 返信ボタン → クリックで引用文を入力欄に挿入
+        // 返信ボタンの設定
         const replyButton = document.createElement("button");
         replyButton.className = "reply-button";
         replyButton.textContent = "返信";
         replyButton.onclick = function() {
           let lines = msg.text.split("\n");
-          // すでに引用されている場合、最初の行を除外
+          // すでに引用された部分があれば（最初の行が ">" で始まっていれば）除外
           if (lines.length && lines[0].trim().startsWith(">")) {
             lines.shift();
           }
@@ -844,7 +839,7 @@
         };
         messageContainer.appendChild(replyButton);
         
-        // メッセージ本文の表示
+        // メッセージ本文の表示（各行ごとに処理）
         const textDiv = document.createElement("div");
         textDiv.className = "message-text";
         let lines = msg.text.split("\n");
@@ -858,7 +853,7 @@
         });
         messageContainer.appendChild(textDiv);
         
-        // タイムスタンプの表示
+        // タイムスタンプ
         if (msg.timestamp) {
           let dateObj;
           if (typeof msg.timestamp.toDate === "function") {
