@@ -19,12 +19,9 @@
   <!-- jQuery 動作（ハンバーガーメニュー・スクロール時のトップバー縮小） -->
   <script>
     $(document).ready(function() {
-      // モバイル時：ハンバーガーメニューのトグル（#top-nav では max-height を操作）
       $("#hamburger").click(function() {
         $("#top-nav").toggleClass("show");
       });
-      
-      // スクロールによるトップバーの縮小効果
       $(window).on("scroll", function() {
         if($(window).scrollTop() > 50) {
           $("#top-bar").addClass("scrolled");
@@ -37,84 +34,71 @@
   
   <!-- 動きのある CSS -->
   <style>
-       body {
+    body {
       font-family: Arial, sans-serif;
       margin: 0;
       background-color: #fff;
     }
-	  /* 各メッセージ用のボックススタイル */
-.message-box {
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-bottom: 10px;
-  background: #fff;
-  border-radius: 5px;
-}
-
-/* メッセージコンテナを iframe のような枠線と背景に */
-.message-container {
-  border: 1px solid #ccc;
-  background-color: #f5f5f5;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 4px;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* 送信者名は太字で表示 */
-.message-name {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-/* メッセージ本文：改行を保持して表示 */
-.message-text {
-  white-space: pre-wrap;
-  margin-bottom: 5px;
-}
-
-/* タイムスタンプ */
-.message-time {
-  font-size: 0.8em;
-  color: gray;
-  text-align: right;
-}
-
-/* 削除ボタン：右寄せのスタイル */
-.delete-button {
-  float: right;
-  background-color: #e74c3c;
-  color: #fff;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 0.8em;
-  transition: background-color 0.3s ease;
-  margin-top: 5px;
-}
-.delete-button:hover {
-  background-color: #c0392b;
-}
-
-.delete-button:hover {
-  background-color: #c0392b;
-}
-
-
-    
-    /* 入力エリア用スタイル */
+    /* 各メッセージ用のボックススタイル */
+    .message-box {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #fff;
+      border-radius: 5px;
+    }
+    /* メッセージコンテナ */
+    .message-container {
+      border: 1px solid #ccc;
+      background-color: #f5f5f5;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    /* 送信者名 */
+    .message-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    /* メッセージ本文 */
+    .message-text {
+      white-space: pre-wrap;
+      margin-bottom: 5px;
+    }
+    /* タイムスタンプ */
+    .message-time {
+      font-size: 0.8em;
+      color: gray;
+      text-align: right;
+    }
+    /* 削除ボタン */
+    .delete-button {
+      float: right;
+      background-color: #e74c3c;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8em;
+      transition: background-color 0.3s ease;
+      margin-top: 5px;
+    }
+    .delete-button:hover {
+      background-color: #c0392b;
+    }
+    /* 入力エリア */
     textarea {
       margin: 5px;
       padding: 10px;
-      width: calc(100% - 22px); /* 両サイドの余白分を引いて幅を設定 */
+      width: calc(100% - 22px);
       height: 100px;
       border: 1px solid #ccc;
       border-radius: 4px;
       font-size: 16px;
-      resize: vertical; /* ユーザーによる縦方向のサイズ変更を許可 */
+      resize: vertical;
     }
-    
     /* チャットボックス */
     #chat-box {
       border: 1px solid #ccc;
@@ -126,33 +110,27 @@
       animation: backgroundPulse 10s ease infinite;
       background-size: 200% 200%;
     }
-    
-    /* チャットメッセージのフェードイン */
+    /* フェードインアニメーション */
     .message {
       padding: 3px 0;
       opacity: 0;
       animation: fadeIn 0.5s ease forwards;
     }
-    
     .message-time {
       font-size: 0.8em;
       color: gray;
       margin-left: 5px;
     }
-    
-    /* アニメーション定義 */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
     @keyframes backgroundPulse {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    
-    /* ボタンのスタイル */
+    /* ボタン */
     button {
       background-color: #3498db;
       color: #fff;
@@ -162,23 +140,19 @@
       cursor: pointer;
       transition: background-color 0.3s ease, transform 0.2s ease;
     }
-    
     button:hover {
       background-color: #2980b9;
       transform: scale(1.05);
     }
-    
-    /* サインアップ／ログインおよびチャットエリアの読み込みアニメーション */
+    /* 読み込みアニメーション */
     #user-auth, #chat-section {
       animation: slideIn 0.6s ease-out;
     }
-    
     @keyframes slideIn {
       from { opacity: 0; transform: translateY(-20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
-    /* 虹色の名前（管理者と同等の演出） */
+    /* 虹色の名前（本物の管理者） */
     .rainbow-name {
       background: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet);
       background-size: 400% 400%;
@@ -186,14 +160,12 @@
       -webkit-text-fill-color: transparent;
       animation: rainbow 5s linear infinite;
     }
-    
     @keyframes rainbow {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    
-    /* 入力フィールドのフォーカス時エフェクト */
+    /* フォーカス時エフェクト */
     textarea:focus,
     #signupName:focus, 
     #signupPassword:focus, 
@@ -204,15 +176,12 @@
       box-shadow: 0 0 5px rgba(52,152,219,0.5);
       transition: box-shadow 0.3s ease, border 0.3s ease;
     }
-
   </style>
-	<!-- 送信日時用のスタイル（任意で好みに合わせて調整） -->
-
   
   <!-- Firebase やチャットの動作に関するスクリプト -->
   <script type="module">
     // Firebase の必要なモジュールをインポート
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import {
       getAuth,
       createUserWithEmailAndPassword,
@@ -233,28 +202,33 @@
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
     
     // Firebase プロジェクトの設定
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCjsdIC6rDslXnm6N_q4Z308zL8_FwSlsI",
-  authDomain: "chat-siken2.firebaseapp.com",
-  projectId: "chat-siken2",
-  storageBucket: "chat-siken2.firebasestorage.app",
-  messagingSenderId: "381735974784",
-  appId: "1:381735974784:web:1708b0c08d911878bf3365",
-  measurementId: "G-BMQZ337ZRJ"
-};
-    
+    const firebaseConfig = {
+      apiKey: "AIzaSyBy2-A1aPIJ5sgdIkdtVP8M3ejYWh1SUU4",
+      authDomain: "chat-chat-2518e.firebaseapp.com",
+      projectId: "chat-chat-2518e",
+      storageBucket: "chat-chat-2518e.firebasestorage.app",
+      messagingSenderId: "465019906626",
+      appId: "1:465019906626:web:1de95eec38a8bbf5c65bdb",
+      measurementId: "G-HVV4XD4D6J"
+    };
+
     // Firebase の初期化
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    
+    // 定数：メッセージ数の上限
+    const MAX_MESSAGES = 50;
+    
+    // グローバル変数：疑似管理者リスト
+    let pseudoAdmins = [];
     
     // サインイン用：名前から生成する一意のメールアドレス
     function generateEmailFromName(name) {
       return name.trim().toLowerCase().replace(/\s+/g, "") + "@chatapp.local";
     }
     
-    // 強制的なIDを生成する関数（4桁のランダムな数字）
+    // 強制的なIDを生成（4桁のランダムな数字）
     function generateForcedId() {
       return Math.floor(1000 + Math.random() * 9000).toString();
     }
@@ -328,36 +302,121 @@ const firebaseConfig = {
         alert("まずログインしてください。");
         return;
       }
-	if (messageText.startsWith("/delete ")) {
-    if (user.displayName === "ねむい") {
-      const parts = messageText.split(" ");
-      if (parts.length < 2) {
-        alert("使い方: /delete [ユーザー名]");
+      
+      // 現在のユーザーの基本名（付加情報があれば除去）
+      const userBaseName = user.displayName.split("|")[0];
+      
+      // 疑似管理者コマンド（/adminadd, /admin, /adminre）は「ねむい」専用のまま
+      if (messageText.startsWith("/adminadd ")) {
+        if (userBaseName !== "ねむい") {
+          alert("この操作は権限がありません。");
+          return;
+        }
+        const parts = messageText.split(" ");
+        if (parts.length < 2) {
+          alert("使い方: /adminadd [名前]");
+          return;
+        }
+        const targetName = parts[1].trim();
+        if (!pseudoAdmins.includes(targetName)) {
+          pseudoAdmins.push(targetName);
+          alert(`擬似管理者に追加しました: ${targetName}`);
+        } else {
+          alert(`${targetName} は既に擬似管理者です。`);
+        }
+        messageInput.value = "";
         return;
       }
-      const targetName = parts[1].trim();
-      try {
-        const chatCollection = collection(db, "chat");
-        const snapshot = await getDocs(chatCollection);
-        snapshot.forEach(async (docSnap) => {
-          const msg = docSnap.data();
-          if (msg.name && msg.name.startsWith(targetName)) {
-            await deleteDoc(docSnap.ref);
-          }
-        });
-        console.log(`ユーザー「${targetName}」のメッセージを削除しました。`);
-      } catch (error) {
-        alert("メッセージ削除エラー: " + error.message);
-      }
-      messageInput.value = "";
-      return;
-    } else {
-      alert("この操作は権限がありません。");
-      return;
-    }
-  }
       
-      // /color コマンドの処理
+      if (messageText === "/admin") {
+        if (userBaseName !== "ねむい") {
+          alert("この操作は権限がありません。");
+          return;
+        }
+        if (pseudoAdmins.length === 0) {
+          alert("現在、擬似管理者は設定されていません。");
+        } else {
+          alert("現在の擬似管理者: " + pseudoAdmins.join(", "));
+        }
+        messageInput.value = "";
+        return;
+      }
+      
+      if (messageText.startsWith("/adminre ")) {
+        if (userBaseName !== "ねむい") {
+          alert("この操作は権限がありません。");
+          return;
+        }
+        const parts = messageText.split(" ");
+        if (parts.length < 2) {
+          alert("使い方: /adminre [名前]");
+          return;
+        }
+        const targetName = parts[1].trim();
+        if (pseudoAdmins.includes(targetName)) {
+          pseudoAdmins = pseudoAdmins.filter(name => name !== targetName);
+          alert(`擬似管理者から外しました: ${targetName}`);
+        } else {
+          alert(`${targetName} は擬似管理者ではありません。`);
+        }
+        messageInput.value = "";
+        return;
+      }
+      
+      // /delete コマンド（対象ユーザーのメッセージを削除）
+      if (messageText.startsWith("/delete ")) {
+        // 「ねむい」または疑似管理者であれば権限あり
+        if (userBaseName === "ねむい" || pseudoAdmins.includes(userBaseName)) {
+          const parts = messageText.split(" ");
+          if (parts.length < 2) {
+            alert("使い方: /delete [ユーザー名]");
+            return;
+          }
+          const targetName = parts[1].trim();
+          try {
+            const chatCollection = collection(db, "chat");
+            const snapshot = await getDocs(chatCollection);
+            snapshot.forEach(async (docSnap) => {
+              const msg = docSnap.data();
+              if (msg.name && msg.name.startsWith(targetName)) {
+                await deleteDoc(docSnap.ref);
+              }
+            });
+            console.log(`ユーザー「${targetName}」のメッセージを削除しました。`);
+          } catch (error) {
+            alert("メッセージ削除エラー: " + error.message);
+          }
+          messageInput.value = "";
+          return;
+        } else {
+          alert("この操作は権限がありません。");
+          return;
+        }
+      }
+      
+      // 全チャット削除（RESET1234 コマンド）
+      if (messageText === CLEAR_CHAT_PASSWORD) {
+        if (userBaseName === "ねむい" || pseudoAdmins.includes(userBaseName)) {
+          try {
+            const chatCollection = collection(db, "chat");
+            const snapshot = await getDocs(chatCollection);
+            for (const docSnap of snapshot.docs) {
+              await deleteDoc(docSnap.ref);
+            }
+            chatBox.innerHTML = "";
+            console.log("全ての発言を削除しました。");
+            messageInput.value = "";
+          } catch (error) {
+            alert("チャット削除エラー: " + error.message);
+          }
+          return;
+        } else {
+          alert("この操作は権限がありません。");
+          return;
+        }
+      }
+      
+      // /color コマンド
       if (messageText.startsWith("/color ")) {
         const parts = messageText.split(" ");
         if (parts.length < 2) {
@@ -380,28 +439,6 @@ const firebaseConfig = {
         }
         messageInput.value = "";
         return;
-      }
-      
-      // 管理者（名前が「ねむい」）による全チャット削除コマンド
-      if (messageText === CLEAR_CHAT_PASSWORD) {
-        if (user.displayName === "ねむい") {
-          try {
-            const chatCollection = collection(db, "chat");
-            const snapshot = await getDocs(chatCollection);
-            for (const docSnap of snapshot.docs) {
-              await deleteDoc(docSnap.ref);
-            }
-            chatBox.innerHTML = "";
-            console.log("全ての発言を削除しました。");
-            messageInput.value = "";
-          } catch (error) {
-            alert("チャット削除エラー: " + error.message);
-          }
-          return;
-        } else {
-          alert("この操作は権限がありません。");
-          return;
-        }
       }
       
       // 通常のメッセージ送信処理
@@ -427,72 +464,85 @@ const firebaseConfig = {
         alert("ログアウトエラー: " + error.message);
       }
     });
-// 昇順（古い順～新しい順）でメッセージを取得
-const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
-onSnapshot(chatQuery, (snapshot) => {
-  chatBox.innerHTML = "";
-  snapshot.forEach((doc) => {
-    const msg = doc.data();
-
-    // メッセージコンテナ（iframe風の枠線・背景）の作成
-    const messageContainer = document.createElement("div");
-    messageContainer.className = "message-container";
-
-    // 送信者名の表示用Div
-    const nameDiv = document.createElement("div");
-    nameDiv.className = "message-name";
-
-    let displayName = msg.name || "名無し";
-    let namePart = displayName;
-    let colorCode = "";
-    if (displayName.includes("|")) {
-      [namePart, colorCode] = displayName.split("|");
-    }
-    if (namePart === "ねむい") {
-      const span = document.createElement("span");
-      span.className = "rainbow-name";
-      span.textContent = namePart;
-      nameDiv.appendChild(span);
-    } else {
-      const span = document.createElement("span");
-      span.textContent = namePart;
-      if (colorCode) {
-        span.style.color = colorCode;
+    
+    // 古いメッセージの自動削除とチャット表示更新（昇順で取得）
+    const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
+    onSnapshot(chatQuery, async (snapshot) => {
+      // メッセージ数の上限を超えた場合、古いメッセージを削除
+      if (snapshot.docs.length > MAX_MESSAGES) {
+        const deleteCount = snapshot.docs.length - MAX_MESSAGES;
+        for (let i = 0; i < deleteCount; i++) {
+          try {
+            await deleteDoc(snapshot.docs[i].ref);
+          } catch (err) {
+            console.error("古いメッセージの削除エラー:", err);
+          }
+        }
       }
-      nameDiv.appendChild(span);
-    }
-    messageContainer.appendChild(nameDiv);
-
-    // メッセージ本文の表示用Div
-    const textDiv = document.createElement("div");
-    textDiv.className = "message-text";
-    textDiv.textContent = msg.text;
-    messageContainer.appendChild(textDiv);
-
-
-    // タイムスタンプがある場合
-    if (msg.timestamp) {
-      let dateObj;
-      if (typeof msg.timestamp.toDate === "function") {
-        dateObj = msg.timestamp.toDate();
-      } else {
-        dateObj = new Date(msg.timestamp);
-      }
-      const timeDiv = document.createElement("div");
-      timeDiv.className = "message-time";
-      timeDiv.textContent = dateObj.toLocaleString();
-      messageContainer.appendChild(timeDiv);
-    }
-
-
-    // チャットボックスにメッセージコンテナを追加
-    chatBox.appendChild(messageContainer);
-  });
-  // 最新メッセージが下部に表示されるようスクロール
-  chatBox.scrollTop = chatBox.scrollHeight;
-});
-
-
+      
+      // チャット表示の更新
+      chatBox.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const msg = doc.data();
+        // メッセージコンテナの作成
+        const messageContainer = document.createElement("div");
+        messageContainer.className = "message-container";
+        
+        // 送信者名の表示
+        const nameDiv = document.createElement("div");
+        nameDiv.className = "message-name";
+        
+        let displayName = msg.name || "名無し";
+        let namePart = displayName;
+        let colorCode = "";
+        if (displayName.includes("|")) {
+          [namePart, colorCode] = displayName.split("|");
+        }
+        // 「ねむい」は虹色表示、それ以外で疑似管理者に登録済みなら (擬似管理者) を付加
+        if (namePart === "ねむい") {
+          const span = document.createElement("span");
+          span.className = "rainbow-name";
+          span.textContent = namePart;
+          nameDiv.appendChild(span);
+        } else {
+          const span = document.createElement("span");
+          if (pseudoAdmins.includes(namePart)) {
+            span.textContent = namePart + " (擬似管理者)";
+          } else {
+            span.textContent = namePart;
+          }
+          if (colorCode) {
+            span.style.color = colorCode;
+          }
+          nameDiv.appendChild(span);
+        }
+        messageContainer.appendChild(nameDiv);
+        
+        // メッセージ本文の表示
+        const textDiv = document.createElement("div");
+        textDiv.className = "message-text";
+        textDiv.textContent = msg.text;
+        messageContainer.appendChild(textDiv);
+        
+        // タイムスタンプの表示
+        if (msg.timestamp) {
+          let dateObj;
+          if (typeof msg.timestamp.toDate === "function") {
+            dateObj = msg.timestamp.toDate();
+          } else {
+            dateObj = new Date(msg.timestamp);
+          }
+          const timeDiv = document.createElement("div");
+          timeDiv.className = "message-time";
+          timeDiv.textContent = dateObj.toLocaleString();
+          messageContainer.appendChild(timeDiv);
+        }
+        
+        // チャットボックスに追加
+        chatBox.appendChild(messageContainer);
+      });
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
   </script>
 </head>
 <body>
@@ -531,17 +581,16 @@ onSnapshot(chatQuery, (snapshot) => {
   
   <!-- チャット用エリア -->
   <div id="chat-section" style="display:none;">
-<h2>チャットルーム</h2>
-  <h3>まだ試験段階ですので温かい目で見守ってください。リアルタイムでチャットができます!!</h3>
-  <div id="chat-box"></div>
-  
-  <!-- 入力部分を textarea に変更 -->
-  <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
-  
-  <button id="sendButton">送信</button>
-  <button id="logoutButton">ログアウト</button>
-</body>
-    <!-- ページが一度だけ自動リロード -->
+    <h2>チャットルーム</h2>
+    <h3>まだ試験段階ですので温かい目で見守ってください。リアルタイムでチャットができます!!</h3>
+    <div id="chat-box"></div>
+    
+    <!-- 入力部分 -->
+    <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
+    <button id="sendButton">送信</button>
+    <button id="logoutButton">ログアウト</button>
+    
+    <!-- ページ一度だけ自動リロード -->
     <script>
       if (!sessionStorage.getItem("reloaded")) {
         sessionStorage.setItem("reloaded", "true");
