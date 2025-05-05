@@ -188,6 +188,22 @@
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
+        .delete-button {
+      font-size: 12px;
+      padding: 2px 4px;
+      background-color: #e74c3c;
+      border: 1px solid #e74c3c;
+      border-radius: 3px;
+      color: #fff;
+      cursor: pointer;
+      margin-right: 5px; /* 返信ボタンとの間隔 */
+      position: absolute;
+      top: 5px;
+      right: 70px; /* 返信ボタンの左隣に配置するため調整 */
+    }
+    .delete-button:hover {
+      background-color: #c0392b;
+    }
   </style>
 </head>
 <body>
@@ -697,18 +713,34 @@
         }
         messageContainer.appendChild(nameDiv);
         
+            const currentUser = auth.currentUser;
+        if (currentUser && msg.uid === currentUser.uid) {
+          const deleteButton = document.createElement("button");
+          deleteButton.className = "delete-button";
+          deleteButton.textContent = "削除";
+          deleteButton.onclick = async function() {
+            if (confirm("このメッセージを削除してよろしいですか？")) {
+              try {
+                await deleteDoc(doc.ref);
+              } catch (err) {
+                console.error("メッセージ削除エラー:", err);
+              }
+            }
+          };
+          messageContainer.appendChild(deleteButton);
+        }
+        
         // 返信ボタン → クリックでメッセージ入力欄に引用文を挿入
         const replyButton = document.createElement("button");
         replyButton.className = "reply-button";
         replyButton.textContent = "返信";
         replyButton.onclick = function() {
-          // 入力エリアに引用文を挿入（各行の先頭に ">" を付ける）
           messageInput.value = `> ${msg.name}: ${msg.text}\n` + messageInput.value;
           messageInput.focus();
         };
         messageContainer.appendChild(replyButton);
         
-        // メッセージ本文 → 改行ごとに分割し、「>」で始まる行は引用用スタイル (.quote)
+        // メッセージ本文（改行ごとに分割し、引用部分はスタイル付与）
         const textDiv = document.createElement("div");
         textDiv.className = "message-text";
         let lines = msg.text.split("\n");
