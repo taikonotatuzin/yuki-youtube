@@ -32,7 +32,7 @@
     });
   </script>
   
-  <!-- CSS（白を基調とし、動きのあるデザイン） -->
+  <!-- CSS（白を基調とした動きのあるデザイン） -->
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -106,6 +106,7 @@
       margin-bottom: 10px;
       border-radius: 4px;
       box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+      position: relative;
     }
     .message-name {
       font-weight: bold;
@@ -172,6 +173,21 @@
       box-shadow: 0 0 5px rgba(52,152,219,0.5);
       transition: box-shadow 0.3s ease, border 0.3s ease;
     }
+    /* 返信ボタン */
+    .reply-button {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 12px;
+      padding: 2px 4px;
+      background-color: #eee;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .reply-button:hover {
+      background-color: #ddd;
+    }
     /* コマンド一覧（サマリー） */
     #command-summary {
       background-color: #fff;
@@ -220,7 +236,7 @@
     </nav>
   </header>
   
-  <!-- サインアップ／ログイン用 -->
+  <!-- サインアップ／ログイン用エリア -->
   <div id="user-auth">
     <div id="signup">
       <h3>サインアップ</h3>
@@ -257,11 +273,10 @@
         <li><code>/adminre [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者から外します。</li>
         <li><code>/delete [ユーザー名]</code>: 「ねむい」または擬似管理者専用。指定したユーザーのメッセージを削除します。</li>
         <li><code>/color [カラーコード]</code>: 表示名のカラーを変更します。（例: <code>/color #fff</code>）</li>
-        <li><code>RESET1234</code>: 「ねむい」または擬似管理者専用。全チャットメッセージを一括削除します。</li>
-        <li><code>/mute [ユーザー名] [期間]</code>: 「ねむい」専用。指定したユーザーを指定期間ミュートします。期間例：<code>10m</code> (10分) や <code>30s</code> (30秒)。</li>
+        <li><code>/mute [ユーザー名] [期間]</code>: 「ねむい」専用。指定したユーザーを指定期間ミュートします。（例: <code>/mute taro 10m</code>）</li>
         <li><code>/unmute [ユーザー名]</code>: 「ねむい」専用。指定したユーザーのミュート状態を解除します。</li>
-        <li><code>/omi</code>: おみくじを引き、ランダムに運勢（大吉、吉、中吉、小吉、末吉、凶、大凶）を表示します。</li>
-        <li><code>/roll [最大値]</code>: 指定された最大値までのランダムな数字（サイコロ振り）を生成します。例: <code>/roll 6</code>。</li>
+        <li><code>/omi</code>: おみくじを引きます。結果はコード内の重み付き確率で決定され、実行者の名前も表示されます。</li>
+        <li><code>/roll [最大値]</code>: 指定された最大値までのランダムな数字（サイコロ振り）を生成します。例: <code>/roll 6</code>。実行者の名前も表示されます。</li>
       </ul>
     </div>
     
@@ -276,10 +291,6 @@
   
   <!-- メインスクリプト -->
   <script type="module">
-    /*
-      ※ 本コードでは、Firestore をチャットメッセージ保存先、
-         Firebase Realtime Database をオンライン状態 (presence) 管理に利用しています。
-    */
     // Firebase モジュールのインポート
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import {
@@ -310,8 +321,7 @@
       remove
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
     
-   // Firebase プロジェクトの設定（実際の値に置き換えてください）
-    const firebaseConfig = {
+      const firebaseConfig = {
       apiKey: "AIzaSyBy2-A1aPIJ5sgdIkdtVP8M3ejYWh1SUU4",
        authDomain: "chat-chat-2518e.firebaseapp.com",
        projectId: "chat-chat-2518e",
@@ -321,6 +331,7 @@
        measurementId: "G-HVV4XD4D6J"
     };
 
+
     // Firebase 初期化
     const appFB = initializeApp(firebaseConfig);
     const auth = getAuth(appFB);
@@ -329,9 +340,9 @@
 
     // 定数：メッセージ保存上限
     const MAX_MESSAGES = 50;
-    // グローバル変数：擬似管理者 (Set 使用)
+    // グローバル変数：擬似管理者（Set 使用）
     let pseudoAdmins = new Set();
-    // グローバル変数：ミュート情報 (オブジェクト形式, キー: ユーザー名, 値: ミュート解除時間: タイムスタンプ)
+    // グローバル変数：ミュート情報（キー: ユーザー名, 値: ミュート解除時刻）
     let mutedUsers = {};
 
     // ユーザー名から一意のメール生成
@@ -364,7 +375,6 @@
       }
       const email    = generateEmailFromName(name);
       const forcedId = generateForcedId();
-      // 「ねむい」なら強制ID無し、それ以外は「名前#ID」
       const fullName = (name === "ねむい") ? name : `${name}#${forcedId}`;
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -418,7 +428,7 @@
       });
     }
 
-    // 認証状態の監視 (ログイン時はチャット＆presence 開始)
+    // 認証状態の監視
     onAuthStateChanged(auth, (user) => {
       if (user) {
         document.getElementById("user-auth").style.display = "none";
@@ -430,17 +440,38 @@
       }
     });
 
-    // メッセージ送信前にミュート状態チェック
+    // ミュート状態のチェック
     function isMuted(userBaseName) {
       if (mutedUsers[userBaseName]) {
         if (Date.now() < mutedUsers[userBaseName]) {
           return true;
         } else {
-          // ミュート期間が過ぎたら解除
           delete mutedUsers[userBaseName];
         }
       }
       return false;
+    }
+
+    // /omi 用：重み付き確率設定
+    const fortuneOptions = [
+      { name: "大吉", weight: 10 },
+      { name: "吉",   weight: 20 },
+      { name: "中吉", weight: 20 },
+      { name: "小吉", weight: 20 },
+      { name: "末吉", weight: 15 },
+      { name: "凶",   weight: 10 },
+      { name: "大凶", weight: 5 }
+    ];
+    function weightedRandom(options) {
+      let totalWeight = options.reduce((sum, opt) => sum + opt.weight, 0);
+      let rand = Math.random() * totalWeight;
+      for (let opt of options) {
+        if (rand < opt.weight) {
+          return opt.name;
+        }
+        rand -= opt.weight;
+      }
+      return options[options.length - 1].name;
     }
 
     // 各種コマンドおよびメッセージ送信処理
@@ -452,16 +483,15 @@
         alert("まずログインしてください。");
         return;
       }
-      
       const userBaseName = user.displayName.split("|")[0];
       
-      // ミュート状態なら送信ブロック
+      // ミュート状態なら送信不可
       if (isMuted(userBaseName)) {
         alert("あなたはミュート中です。ミュート解除後に送信してください。");
         return;
       }
       
-      // /adminadd, /admin, /adminre, /delete, /color, RESET1234 は既存の処理
+      // 既存の管理者/ユーザー用コマンド
       if (messageText.startsWith("/adminadd ")) {
         if (userBaseName !== "ねむい") {
           alert("この操作は権限がありません。");
@@ -586,8 +616,9 @@
         messageInput.value = "";
         return;
       }
-      // --- 新規コマンドの実装 ---
-      // /mute コマンド：指定ユーザーを指定期間ミュート (管理者専用)
+      
+      // --- 新規コマンド ---
+      // /mute コマンド
       if (messageText.startsWith("/mute ")) {
         if (userBaseName !== "ねむい") {
           alert("この操作は権限がありません。");
@@ -595,11 +626,11 @@
         }
         const parts = messageText.split(" ");
         if (parts.length < 2) {
-          alert("使い方: /mute [ユーザー名] [期間]（期間例: 10m または 30s）");
+          alert("使い方: /mute [ユーザー名] [期間]（期間例: 10m, 30s）");
           return;
         }
         const targetName = parts[1].trim();
-        let durationMs = 300000; // デフォルト 5 分 (300,000 ms)
+        let durationMs = 300000;
         if (parts.length >= 3) {
           let dur = parts[2].trim();
           if (dur.endsWith("m")) {
@@ -607,17 +638,16 @@
           } else if (dur.endsWith("s")) {
             durationMs = parseFloat(dur.slice(0, -1)) * 1000;
           } else {
-            // 数値だけの場合は分とみなす
             durationMs = parseFloat(dur) * 60000;
           }
         }
-        const expireTime = Date.now() + durationMs;
-        mutedUsers[targetName] = expireTime;
+        mutedUsers[targetName] = Date.now() + durationMs;
         alert(`${targetName} を ${durationMs/60000} 分 (または ${durationMs/1000} 秒) ミュートしました。`);
         messageInput.value = "";
         return;
       }
-      // /unmute コマンド：指定ユーザーのミュート解除 (管理者専用)
+      
+      // /unmute コマンド
       if (messageText.startsWith("/unmute ")) {
         if (userBaseName !== "ねむい") {
           alert("この操作は権限がありません。");
@@ -638,13 +668,13 @@
         messageInput.value = "";
         return;
       }
-      // /omi コマンド：おみくじを引く
+      
+      // /omi コマンド：おみくじ（重み付き確率、実行者名付き）
       if (messageText.startsWith("/omi")) {
-        const fortunes = ["大吉", "吉", "中吉", "小吉", "末吉", "凶", "大凶"];
-        const result = fortunes[Math.floor(Math.random() * fortunes.length)];
+        const result = weightedRandom(fortuneOptions);
         try {
           await addDoc(collection(db, "chat"), {
-            text: `おみくじ結果: ${result}`,
+            text: `【おみくじ】${userBaseName}さんの結果：${result}`,
             name: "システム",
             uid: "system",
             timestamp: new Date()
@@ -655,7 +685,8 @@
         messageInput.value = "";
         return;
       }
-      // /roll コマンド：サイコロ振り (最大値指定、未指定なら6)
+      
+      // /roll コマンド：サイコロ振り（最大値指定、実行者名付き）
       if (messageText.startsWith("/roll")) {
         const parts = messageText.split(" ");
         let max = 6;
@@ -668,7 +699,7 @@
         const rollResult = Math.floor(Math.random() * max) + 1;
         try {
           await addDoc(collection(db, "chat"), {
-            text: `ロール結果: ${rollResult} (1～${max})`,
+            text: `【ロール】${userBaseName}さんの結果：${rollResult} (1～${max})`,
             name: "システム",
             uid: "system",
             timestamp: new Date()
@@ -680,7 +711,7 @@
         return;
       }
       
-      // 通常のメッセージ送信処理
+      // 通常のメッセージ送信
       try {
         await addDoc(collection(db, "chat"), {
           text: messageText,
@@ -713,7 +744,7 @@
       }
     });
 
-    // Firestore を利用したチャットメッセージ取得・更新／古いメッセージ自動削除
+    // Firestore を利用したチャットメッセージの取得・更新／古いメッセージ自動削除
     const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
     onSnapshot(chatQuery, async (snapshot) => {
       if (snapshot.docs.length > MAX_MESSAGES) {
@@ -732,6 +763,7 @@
         const messageContainer = document.createElement("div");
         messageContainer.className = "message-container";
         
+        // 送信者名表示
         const nameDiv = document.createElement("div");
         nameDiv.className = "message-name";
         let displayName = msg.name || "名無し";
@@ -759,11 +791,23 @@
         }
         messageContainer.appendChild(nameDiv);
         
+        // 返信ボタン（右上）
+        const replyButton = document.createElement("button");
+        replyButton.className = "reply-button";
+        replyButton.textContent = "返信";
+        replyButton.onclick = function() {
+          messageInput.value = `> ${msg.name}: ${msg.text}\n`;
+          messageInput.focus();
+        };
+        messageContainer.appendChild(replyButton);
+        
+        // メッセージ本文
         const textDiv = document.createElement("div");
         textDiv.className = "message-text";
         textDiv.textContent = msg.text;
         messageContainer.appendChild(textDiv);
         
+        // タイムスタンプ
         if (msg.timestamp) {
           let dateObj;
           if (typeof msg.timestamp.toDate === "function") {
@@ -783,3 +827,5 @@
   </script>
 </body>
 </html>
+
+   
