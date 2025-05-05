@@ -2,21 +2,21 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>勉強に集中したい!!勉強への集中力をアップする方法とは？</title>
+  <title>Realtime Database を用いたオンライン管理付きチャット</title>
   <link rel="icon" href="/img/logo/favicon.ico">
   <link rel="stylesheet" href="/css/empty.css">
   <link rel="stylesheet" href="/css/pure-min.css">
   <link rel="stylesheet" href="/css/grids-responsive-min.css">
   <link rel="stylesheet" href="/css/ionicons.min.css">
   <link rel="stylesheet" href="/css/default.css">
-  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
-  
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-  
-  <!-- jQuery 動作（ハンバーガーメニュー・スクロール時のトップバー縮小） -->
+
+  <!-- jQuery 動作 -->
   <script>
     $(document).ready(function() {
       $("#hamburger").click(function() {
@@ -31,20 +31,13 @@
       });
     });
   </script>
-  
-  <!-- 動きのある CSS -->
+
+  <!-- CSS -->
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       background-color: #fff;
-    }
-    .message-box {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
-      background: #fff;
-      border-radius: 5px;
     }
     .message-container {
       border: 1px solid #ccc;
@@ -52,7 +45,7 @@
       padding: 10px;
       margin-bottom: 10px;
       border-radius: 4px;
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
     }
     .message-name {
       font-weight: bold;
@@ -66,21 +59,6 @@
       font-size: 0.8em;
       color: gray;
       text-align: right;
-    }
-    .delete-button {
-      float: right;
-      background-color: #e74c3c;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 0.8em;
-      transition: background-color 0.3s ease;
-      margin-top: 5px;
-    }
-    .delete-button:hover {
-      background-color: #c0392b;
     }
     textarea {
       margin: 5px;
@@ -101,20 +79,6 @@
       background: #f9f9f9;
       animation: backgroundPulse 10s ease infinite;
       background-size: 200% 200%;
-    }
-    .message {
-      padding: 3px 0;
-      opacity: 0;
-      animation: fadeIn 0.5s ease forwards;
-    }
-    .message-time {
-      font-size: 0.8em;
-      color: gray;
-      margin-left: 5px;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     @keyframes backgroundPulse {
       0% { background-position: 0% 50%; }
@@ -154,19 +118,78 @@
       100% { background-position: 0% 50%; }
     }
     textarea:focus,
-    #signupName:focus, 
-    #signupPassword:focus, 
-    #loginName:focus, 
+    #signupName:focus,
+    #signupPassword:focus,
+    #loginName:focus,
     #loginPassword:focus {
       outline: none;
       border: 1px solid #3498db;
       box-shadow: 0 0 5px rgba(52,152,219,0.5);
       transition: box-shadow 0.3s ease, border 0.3s ease;
     }
+    /* オンラインユーザー表示用 */
+    #online-status {
+      cursor: pointer;
+      text-decoration: underline;
+      margin: 5px 10px;
+    }
   </style>
-  
-  <!-- Firebase やチャットの動作に関するスクリプト -->
+</head>
+<body>
+  <header id="top-bar">
+    <div class="navbar-logo">
+      <a href="/"><img src="/img/logo/th.png" alt="Logo"></a>
+    </div>
+    <div id="hamburger">&#9776;</div>
+    <nav id="top-nav">
+      <a href="/bbs">掲示板</a>
+      <a href="/proxypage">Proxy</a>
+      <a href="/others">その他</a>
+      <a href="/sitsumon">回答よろ</a>&emsp;
+    </nav>
+  </header>
+
+  <!-- サインアップ／ログイン用 -->
+  <div id="user-auth">
+    <div id="signup">
+      <h3>サインアップ</h3>
+      <h4>アカウントを作成してください。名前とパスワードはしっかり覚えておきましょう！</h4>
+      <input type="text" id="signupName" placeholder="名前">
+      <input type="password" id="signupPassword" placeholder="パスワード">
+      <button id="signupButton">サインアップ</button>
+    </div>
+    <div id="login">
+      <h3>ログイン</h3>
+      <h4>作成したアカウントでログインできます。なりすましはやめましょう！</h4>
+      <input type="text" id="loginName" placeholder="名前">
+      <input type="password" id="loginPassword" placeholder="パスワード">
+      <button id="loginButton">ログイン</button>
+    </div>
+  </div>
+
+  <!-- チャット用 -->
+  <div id="chat-section" style="display:none;">
+    <h2>チャットルーム</h2>
+    <h3>試験段階のチャットです。リアルタイムで通信しています！</h3>
+    <!-- オンラインユーザー表示（クリックで一覧表示） -->
+    <div id="online-status">オンライン: 0 人</div>
+    <div id="chat-box"></div>
+    <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
+    <button id="sendButton">送信</button>
+    <button id="logoutButton">ログアウト</button>
+    
+    <script>
+      // ページは一度だけ自動リロード
+      if (!sessionStorage.getItem("reloaded")) {
+        sessionStorage.setItem("reloaded", "true");
+        setTimeout(function(){ location.reload(); }, 1000);
+      }
+    </script>
+  </div>
+
+  <!-- メインスクリプト -->
   <script type="module">
+    // Firebase モジュールのインポート
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import {
       getAuth,
@@ -186,8 +209,17 @@
       query,
       orderBy
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-    
-    // Firebase プロジェクトの設定（実際の値に置き換えてください）
+    import {
+      getDatabase,
+      ref,
+      onDisconnect,
+      set,
+      serverTimestamp,
+      onValue,
+      remove
+    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+   // Firebase プロジェクトの設定（実際の値に置き換えてください）
     const firebaseConfig = {
       apiKey: "AIzaSyBy2-A1aPIJ5sgdIkdtVP8M3ejYWh1SUU4",
        authDomain: "chat-chat-2518e.firebaseapp.com",
@@ -198,36 +230,39 @@
        measurementId: "G-HVV4XD4D6J"
     };
 
+
+    // Firebase 初期化
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    
+    const dbRT = getDatabase(app);
+
     // 定数：メッセージ数の上限
     const MAX_MESSAGES = 50;
-    
-    // グローバル変数：疑似管理者の管理に Set を使用
+
+    // グローバル変数：擬似管理者は（後で Set を用いた管理とする）
     let pseudoAdmins = new Set();
-    
-    // 名前から生成する一意のメールアドレス
+
+    // ユーザー名から一意のメールアドレス生成
     function generateEmailFromName(name) {
       return name.trim().toLowerCase().replace(/\s+/g, "") + "@chatapp.local";
     }
-    
-    // 強制的なID生成（4桁のランダム数字）
+
+    // 4桁のランダム数字で強制 ID 生成
     function generateForcedId() {
       return Math.floor(1000 + Math.random() * 9000).toString();
     }
-    
+
     const CLEAR_CHAT_PASSWORD = "RESET1234";
-    
-    // DOM の各要素取得
-    const signupButton   = document.getElementById("signupButton");
-    const loginButton    = document.getElementById("loginButton");
-    const logoutButton   = document.getElementById("logoutButton");
-    const sendButton     = document.getElementById("sendButton");
-    const chatBox        = document.getElementById("chat-box");
-    const messageInput   = document.getElementById("messageInput");
-    
+
+    // DOM 要素の取得
+    const signupButton  = document.getElementById("signupButton");
+    const loginButton   = document.getElementById("loginButton");
+    const logoutButton  = document.getElementById("logoutButton");
+    const sendButton    = document.getElementById("sendButton");
+    const chatBox       = document.getElementById("chat-box");
+    const messageInput  = document.getElementById("messageInput");
+
     // サインアップ処理
     signupButton.addEventListener("click", async () => {
       const name     = document.getElementById("signupName").value;
@@ -238,9 +273,8 @@
       }
       const email    = generateEmailFromName(name);
       const forcedId = generateForcedId();
-      // 「ねむい」は強制ID無し、それ以外は「名前#ID」
+      // 「ねむい」のみ強制ID無し、それ以外は「名前#ID」
       const fullName = (name === "ねむい") ? name : `${name}#${forcedId}`;
-    
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: fullName });
@@ -249,7 +283,7 @@
         alert("サインアップエラー: " + error.message);
       }
     });
-    
+
     // ログイン処理
     loginButton.addEventListener("click", async () => {
       const name     = document.getElementById("loginName").value;
@@ -266,19 +300,58 @@
         alert("ログインエラー: " + error.message);
       }
     });
-    
-    // 認証状態の監視
+
+    // オンライン状態の管理：Realtime Database を使用
+    function setupPresence(user) {
+      const userStatusRef = ref(dbRT, "status/" + user.uid);
+      // オンラインになった場合の情報
+      set(userStatusRef, {
+        displayName: user.displayName,
+        status: "online",
+        last_changed: serverTimestamp()
+      });
+      // 接続が切れた場合、自動で offline とする
+      onDisconnect(userStatusRef).set({
+        displayName: user.displayName,
+        status: "offline",
+        last_changed: serverTimestamp()
+      });
+    }
+
+    // オンラインユーザー一覧を Realtime Database から更新（リアルタイム更新）
+    const statusRef = ref(dbRT, "status");
+    onValue(statusRef, (snapshot) => {
+      const data = snapshot.val();
+      const onlineUsers = [];
+      for (const uid in data) {
+        if (data[uid].status === "online") {
+          onlineUsers.push(data[uid].displayName);
+        }
+      }
+      const onlineStatusDiv = document.getElementById("online-status");
+      onlineStatusDiv.innerText = "オンライン: " + onlineUsers.length + " 人";
+      onlineStatusDiv.onclick = () => {
+        if (onlineUsers.length > 0) {
+          alert("オンライン中のユーザー:\n" + onlineUsers.join("\n"));
+        } else {
+          alert("オンライン中のユーザーはいません。");
+        }
+      };
+    });
+
+    // 認証状態の監視：ログイン時はチャットと存在情報の管理を開始
     onAuthStateChanged(auth, (user) => {
       if (user) {
         document.getElementById("user-auth").style.display = "none";
         document.getElementById("chat-section").style.display = "block";
+        setupPresence(user);
       } else {
         document.getElementById("user-auth").style.display = "block";
         document.getElementById("chat-section").style.display = "none";
       }
     });
-    
-    // メッセージ送信処理
+
+    // 各種コマンドおよびメッセージ送信処理
     sendButton.addEventListener("click", async () => {
       const messageText = messageInput.value;
       if (messageText.trim() === "") return;
@@ -287,11 +360,11 @@
         alert("まずログインしてください。");
         return;
       }
-      
-      // 現在のユーザーの基本名（付加情報があれば除去）
+
+      // ユーザーの基本名（付加情報抜き出し）
       const userBaseName = user.displayName.split("|")[0];
-      
-      // 擬似管理者専用コマンド（/adminadd, /admin, /adminre）
+
+      // 擬似管理者専用コマンド (/adminadd, /admin, /adminre)
       if (messageText.startsWith("/adminadd ")) {
         if (userBaseName !== "ねむい") {
           alert("この操作は権限がありません。");
@@ -312,7 +385,6 @@
         messageInput.value = "";
         return;
       }
-      
       if (messageText === "/admin") {
         if (userBaseName !== "ねむい") {
           alert("この操作は権限がありません。");
@@ -326,7 +398,6 @@
         messageInput.value = "";
         return;
       }
-      
       if (messageText.startsWith("/adminre ")) {
         if (userBaseName !== "ねむい") {
           alert("この操作は権限がありません。");
@@ -347,8 +418,8 @@
         messageInput.value = "";
         return;
       }
-      
-      // /delete コマンド：対象ユーザーのメッセージ削除
+
+      // /delete コマンド：対象ユーザーのメッセージを削除（ねむいまたは擬似管理者のみ実施可能）
       if (messageText.startsWith("/delete ")) {
         if (userBaseName === "ねむい" || pseudoAdmins.has(userBaseName)) {
           const parts = messageText.split(" ");
@@ -377,7 +448,7 @@
           return;
         }
       }
-      
+
       // 全チャット削除（RESET1234 コマンド）
       if (messageText === CLEAR_CHAT_PASSWORD) {
         if (userBaseName === "ねむい" || pseudoAdmins.has(userBaseName)) {
@@ -399,7 +470,7 @@
           return;
         }
       }
-      
+
       // /color コマンド
       if (messageText.startsWith("/color ")) {
         const parts = messageText.split(" ");
@@ -424,8 +495,8 @@
         messageInput.value = "";
         return;
       }
-      
-      // 通常のメッセージ送信
+
+      // 通常のメッセージ送信処理
       try {
         await addDoc(collection(db, "chat"), {
           text: messageText,
@@ -438,9 +509,18 @@
         alert("メッセージ送信エラー: " + error.message);
       }
     });
-    
-    // ログアウト処理
+
+    // ログアウト処理時に Realtime Database 上のオンライン情報を削除
     logoutButton.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const userStatusRef = ref(dbRT, "status/" + user.uid);
+        try {
+          await remove(userStatusRef);
+        } catch (error) {
+          console.error("オンライン情報削除エラー:", error);
+        }
+      }
       try {
         await signOut(auth);
         console.log("ログアウト成功");
@@ -448,8 +528,8 @@
         alert("ログアウトエラー: " + error.message);
       }
     });
-    
-    // 古いメッセージの自動削除とチャットの更新（昇順）
+
+    // チャットの表示更新および古いメッセージ自動削除（昇順）
     const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
     onSnapshot(chatQuery, async (snapshot) => {
       if (snapshot.docs.length > MAX_MESSAGES) {
@@ -462,14 +542,11 @@
           }
         }
       }
-      
       chatBox.innerHTML = "";
       snapshot.forEach((doc) => {
         const msg = doc.data();
         const messageContainer = document.createElement("div");
         messageContainer.className = "message-container";
-        
-        // 送信者名表示部分
         const nameDiv = document.createElement("div");
         nameDiv.className = "message-name";
         let displayName = msg.name || "名無し";
@@ -478,7 +555,6 @@
         if (displayName.includes("|")) {
           [namePart, colorCode] = displayName.split("|");
         }
-        // 「ねむい」は虹色表示。その他で、Set に存在すれば「(擬似管理者)」を追記。
         if (namePart === "ねむい") {
           const span = document.createElement("span");
           span.className = "rainbow-name";
@@ -497,12 +573,10 @@
           nameDiv.appendChild(span);
         }
         messageContainer.appendChild(nameDiv);
-        
         const textDiv = document.createElement("div");
         textDiv.className = "message-text";
         textDiv.textContent = msg.text;
         messageContainer.appendChild(textDiv);
-        
         if (msg.timestamp) {
           let dateObj;
           if (typeof msg.timestamp.toDate === "function") {
@@ -515,62 +589,10 @@
           timeDiv.textContent = dateObj.toLocaleString();
           messageContainer.appendChild(timeDiv);
         }
-        
         chatBox.appendChild(messageContainer);
       });
       chatBox.scrollTop = chatBox.scrollHeight;
     });
   </script>
-</head>
-<body>
-  <header id="top-bar">
-    <div class="navbar-logo">
-      <a href="/"><img src="/img/logo/th.png" alt="Logo"></a>
-    </div>
-    <div id="hamburger">&#9776;</div>
-    <nav id="top-nav">
-      <a href="/bbs">掲示板</a>
-      <a href="/proxypage">Proxy</a>
-      <a href="/others">その他</a>
-      <a href="/sitsumon">回答よろ</a>&emsp;
-    </nav>
-  </header>
-  
-  <!-- サインアップ／ログイン用エリア -->
-  <div id="user-auth">
-    <div id="signup">
-      <h3>サインアップ</h3>
-      <h4>ここでアカウントを作ってください、名前とパスワードはしっかり覚えておきましょう!!</h4>
-      <input type="text" id="signupName" placeholder="名前">
-      <input type="password" id="signupPassword" placeholder="パスワード">
-      <button id="signupButton">サインアップ</button>
-    </div>
-    <div id="login">
-      <h3>ログイン</h3>
-      <h4>ここで作ったアカウントを使うことができます、なりすましは絶対にやめましょう!!</h4>
-      <input type="text" id="loginName" placeholder="名前">
-      <input type="password" id="loginPassword" placeholder="パスワード">
-      <button id="loginButton">ログイン</button>
-    </div>
-  </div>
-  
-  <!-- チャット用エリア -->
-  <div id="chat-section" style="display:none;">
-    <h2>チャットルーム</h2>
-    <h3>まだ試験段階ですので温かい目で見守ってください。リアルタイムでチャットができます!!</h3>
-    <div id="chat-box"></div>
-    
-    <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
-    <button id="sendButton">送信</button>
-    <button id="logoutButton">ログアウト</button>
-    
-    <script>
-      if (!sessionStorage.getItem("reloaded")) {
-        sessionStorage.setItem("reloaded", "true");
-        setTimeout(function(){ location.reload(); }, 1000);
-      }
-    </script>
-  </div>
-  
 </body>
 </html>
