@@ -186,6 +186,7 @@
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    
     /* 削除ボタンのスタイル */
     .delete-button {
       font-size: 12px;
@@ -195,14 +196,15 @@
       border-radius: 3px;
       color: #fff;
       cursor: pointer;
-      margin-right: 5px; /* 返信ボタンとの間隔 */
+      margin-right: 5px;
       position: absolute;
       top: 5px;
-      right: 70px; /* 返信ボタンの左隣に配置するため調整 */
+      right: 70px;
     }
     .delete-button:hover {
       background-color: #c0392b;
     }
+    
     /* プロフィール更新フォーム */
     #profile-settings {
       margin: 20px 0;
@@ -211,7 +213,7 @@
       border-radius: 4px;
       background-color: #f0f0f0;
     }
-    #profile-settings input {
+    #profile-settings input, #profile-settings select {
       margin: 5px 0;
       padding: 5px;
       width: 200px;
@@ -279,7 +281,7 @@
         <li><code>/delete [ユーザー名]</code>: 「ねむい」または擬似管理者専用。指定したユーザーのメッセージを削除します。</li>
         <li><code>/color [カラーコード]</code>: 表示名のカラーを変更します。（例: <code>/color #fff</code>）</li>
         <li><code>/omi</code>: おみくじを引きます。重み付き確率により結果が決定され、実行者の名前が表示されます。</li>
-        <li><code>/roll [最大値]</code>: 指定された最大値までのランダムな数字（サイコロ振り）を生成します。例: <code>/roll 6</code>。実行者の名前が表示されます。</li>
+        <li><code>/roll [最大値]</code>: サイコロ振り。指定した最大値までのランダムな数字を生成します。（例: <code>/roll 6</code>）</li>
       </ul>
     </div>
        <div id="command-summary">
@@ -293,11 +295,22 @@
          <li><code>/unmute [ユーザー名]</code>: 「ねむい」専用。指定したユーザーのミュート状態を解除します。</li>
        </ul>
     
-    <!-- プロフィール更新フォーム -->
+    <!-- プロフィール更新フォーム（名前、パスワード、色） -->
     <div id="profile-settings">
       <h3>プロフィール更新</h3>
       <input type="text" id="newName" placeholder="新しい名前">
       <input type="password" id="newPassword" placeholder="新しいパスワード">
+      <!-- 色選択用：標準色の選択 -->
+      <select id="newColor">
+        <option value="">-- 色を選択 --</option>
+        <option value="#000000">黒</option>
+        <option value="#FF0000">赤</option>
+        <option value="#0000FF">青</option>
+        <option value="#00FF00">緑</option>
+        <option value="#FFA500">オレンジ</option>
+        <option value="#800080">紫</option>
+        <option value="#808080">灰色</option>
+      </select>
       <button id="updateProfileButton">更新</button>
     </div>
     
@@ -380,7 +393,7 @@
     const chatBox      = document.getElementById("chat-box");
     const messageInput = document.getElementById("messageInput");
     
-    // プロフィール更新用のボタン
+    // プロフィール更新用ボタン
     const updateProfileButton = document.getElementById("updateProfileButton");
     
     signupButton.addEventListener("click", async () => {
@@ -392,6 +405,7 @@
       }
       const email = generateEmailFromName(name);
       const forcedId = generateForcedId();
+      // 初回は強制的に "ねむい" はそのまま、それ以外は "名前#forcedId" とする
       const fullName = (name === "ねむい") ? name : `${name}#${forcedId}`;
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -442,12 +456,13 @@
         }
       });
     }
+    
     onAuthStateChanged(auth, (user) => {
       if (user) {
         document.getElementById("user-auth").style.display = "none";
         document.getElementById("chat-section").style.display = "block";
         setupPresence(user);
-        // ログイン時にチャットボックスを自動で最下部までスクロール（200ms後に実行）
+        // ログイン時、チャットボックスを下部へスクロール
         setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 200);
       } else {
         document.getElementById("user-auth").style.display = "block";
@@ -502,28 +517,46 @@
       return options[options.length - 1].name;
     }
     
-    // プロフィール更新処理（名前・パスワードの変更）
+    // プロフィール更新処理（名前・パスワード・色の更新）
     updateProfileButton.addEventListener("click", async () => {
       const newName = document.getElementById("newName").value.trim();
       const newPassword = document.getElementById("newPassword").value;
+      const newColor = document.getElementById("newColor").value; // 選択された色
+      
       const user = auth.currentUser;
       if (!user) {
         alert("ログインしてください。");
         return;
       }
+      
       try {
-        if (newName) {
-          await updateProfile(user, { displayName: newName });
-          alert("名前が更新されました。");
-        }
+        // 既存の表示名から名前と色を抽出
+        const currentDisplay = user.displayName;
+        const parts = currentDisplay.split("|");
+        const currentName = parts[0];
+        const currentColor = parts.length > 1 ? parts[1] : "";
+        
+        // 新しい名前が入力されていなければ既存の名前を維持
+        const finalName = newName !== "" ? newName : currentName;
+        // 新しい色が選択されていればそれを、なければ既存の色をそのまま使用
+        const finalColor = newColor !== "" ? newColor : currentColor;
+        // 色情報があるなら「name|color」、なければ「name」
+        const finalDisplay = finalColor !== "" ? `${finalName}|${finalColor}` : finalName;
+        
+        // プロフィール更新（名前・色の更新）
+        await updateProfile(user, { displayName: finalDisplay });
+        alert("名前・色が更新されました。");
+        
+        // パスワード更新（入力されていれば）
         if (newPassword) {
-          // updatePassword 関数でパスワードの更新
           await updatePassword(user, newPassword);
           alert("パスワードが更新されました。");
         }
-        // 更新後フォームをクリア
+        
+        // 更新後、フォームをクリア
         document.getElementById("newName").value = "";
         document.getElementById("newPassword").value = "";
+        document.getElementById("newColor").value = "";
       } catch (error) {
         alert("更新に失敗しました：" + error.message);
       }
@@ -544,7 +577,7 @@
         return;
       }
       
-      // 既存のコマンド
+      // 既存のコマンド処理（/adminadd, /admin, /adminre, /delete, CLEAR_CHAT_PASSWORD, /color, /mute, /unmute, /omi, /roll）・・・
       if (messageText.startsWith("/adminadd ")) {
         if (userBaseName !== "ねむい") {
           alert("この操作は権限がありません。");
@@ -640,14 +673,12 @@
         messageInput.value = "";
         return;
       }
-      
-      // 新規コマンド：/mute
       if (messageText.startsWith("/mute ")) {
         if (userBaseName !== "ねむい") { alert("この操作は権限がありません。"); return; }
         const parts = messageText.split(" ");
         if (parts.length < 2) { alert("使い方: /mute [ユーザー名] [期間]（期間例: 10m, 30s）"); return; }
         const targetName = parts[1].trim();
-        let durationMs = 300000; // デフォルト 5分
+        let durationMs = 300000;
         if (parts.length >= 3) {
           let dur = parts[2].trim();
           if (dur.endsWith("m")) { durationMs = parseFloat(dur.slice(0,-1)) * 60000; }
@@ -659,8 +690,6 @@
         messageInput.value = "";
         return;
       }
-      
-      // 新規コマンド：/unmute
       if (messageText.startsWith("/unmute ")) {
         if (userBaseName !== "ねむい") { alert("この操作は権限がありません。"); return; }
         const parts = messageText.split(" ");
@@ -673,8 +702,6 @@
         messageInput.value = "";
         return;
       }
-      
-      // 新規コマンド：/omi おみくじ（実行者名付き）
       if (messageText.startsWith("/omi")) {
         const result = weightedRandom(fortuneOptions);
         try {
@@ -690,8 +717,6 @@
         messageInput.value = "";
         return;
       }
-      
-      // 新規コマンド：/roll サイコロ振り（実行者名付き）
       if (messageText.startsWith("/roll")) {
         const parts = messageText.split(" ");
         let max = 6;
@@ -737,7 +762,6 @@
       }
     });
     
-    // Firestore を利用したチャットメッセージ取得／更新＆古いメッセージ自動削除
     const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
     onSnapshot(chatQuery, async (snapshot) => {
       if (snapshot.docs.length > MAX_MESSAGES) {
@@ -806,7 +830,7 @@
         replyButton.textContent = "返信";
         replyButton.onclick = function() {
           let lines = msg.text.split("\n");
-          // すでに引用されている場合は最初の行を除外
+          // すでに引用されている場合、最初の行を除外
           if (lines.length && lines[0].trim().startsWith(">")) {
             lines.shift();
           }
@@ -820,7 +844,7 @@
         };
         messageContainer.appendChild(replyButton);
         
-        // メッセージ本文（改行ごとに分割し、引用部分はスタイル付与）
+        // メッセージ本文の表示
         const textDiv = document.createElement("div");
         textDiv.className = "message-text";
         let lines = msg.text.split("\n");
