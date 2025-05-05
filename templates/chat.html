@@ -273,6 +273,21 @@
     <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
     <button id="sendButton">送信</button>
     <button id="logoutButton">ログアウト</button>
+    <div id="profile-settings">
+      <h3>プロフィール更新</h3>
+      <!-- 色選択用：標準色の選択 -->
+      <select id="newColor">
+        <option value="">-- 色を選択 --</option>
+        <option value="#000000">黒</option>
+        <option value="#FF0000">赤</option>
+        <option value="#0000FF">青</option>
+        <option value="#00FF00">緑</option>
+        <option value="#FFA500">オレンジ</option>
+        <option value="#800080">紫</option>
+        <option value="#808080">灰色</option>
+      </select>
+      <button id="updateProfileButton">更新</button>
+    </div>
     
     <!-- コマンド一覧 -->
     <div id="command-summary">
@@ -294,23 +309,10 @@
          <li><code>/mute [ユーザー名] [期間]</code>: 「ねむい」専用。指定したユーザーを指定期間ミュートします。（例: <code>/mute taro 10m</code>）</li>
          <li><code>/unmute [ユーザー名]</code>: 「ねむい」専用。指定したユーザーのミュート状態を解除します。</li>
        </ul>
+       </div>
     
     <!-- プロフィール更新フォーム（名前、パスワード、色） -->
-    <div id="profile-settings">
-      <h3>プロフィール更新</h3>
-      <!-- 色選択用：標準色の選択 -->
-      <select id="newColor">
-        <option value="">-- 色を選択 --</option>
-        <option value="#000000">黒</option>
-        <option value="#FF0000">赤</option>
-        <option value="#0000FF">青</option>
-        <option value="#00FF00">緑</option>
-        <option value="#FFA500">オレンジ</option>
-        <option value="#800080">紫</option>
-        <option value="#808080">灰色</option>
-      </select>
-      <button id="updateProfileButton">更新</button>
-    </div>
+    
     
     <script>
       // ページは一度だけ自動リロード
