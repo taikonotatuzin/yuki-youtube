@@ -34,6 +34,21 @@
     #modeSelect {
       margin: 20px;
     }
+    /* ゲームルールを表示するエリア */
+    #gameRules {
+      background-color: #fff;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      text-align: left;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #gameRules h2 {
+      margin-top: 0;
+    }
     canvas {
       background: #00bfff; /* 青い背景 */
       display: block;
@@ -48,7 +63,26 @@
 </head>
 <body>
   <h1>Connect Four</h1>
-  <!-- モード選択エリア（ゲーム開始前） -->
+
+  <!-- ゲームルール表示エリア -->
+  <div id="gameRules">
+    <h2>ゲームルール</h2>
+    <ul>
+      <li><strong>ゲーム概要：</strong>コネクトフォーは2人のプレイヤーまたはプレイヤーとCPUが対戦するターン制ボードゲームです。盤面は7列×6行のグリッドになっており、交互に自分の駒（Player 1は赤、Player 2またはCPUは黄色）を配置します。</li>
+      <li><strong>駒の配置：</strong>各ターン、選択された列の中で一番下の空セルに駒が落ちます。すでにその列が埋まっている場合は、別の列を選ぶ必要があります。</li>
+      <li><strong>勝利条件：</strong>自分の駒が横・縦・斜めのいずれかで連続4つ並んだら勝利です。配置後、各方向に4つ揃っているかチェックします。</li>
+      <li><strong>引き分け：</strong>盤面のすべてのセルが埋まり、どちらも連続4つを作れなかった場合は引き分けとなります。</li>
+      <li><strong>対戦モード：</strong>
+        <ul>
+          <li>【対人プレイ】：2人のプレイヤーが同じデバイスで交互に駒を落とします。</li>
+          <li>【CPU対戦】：Player 1（赤）が人間のプレイヤーとなり、Player 2の役割はCPU（黄色）が担当します。CPUは自動で駒を落とし、特にPlayer 1が次の一手で勝利できる可能性がある場合、その列へ駒を置いて防御します。</li>
+        </ul>
+      </li>
+      <li><strong>操作方法：</strong>PCではキャンバス上をクリック、スマホ・タブレットではタッチ操作で任意の列に駒を落とすことができます。</li>
+    </ul>
+  </div>
+
+  <!-- モード選択エリア -->
   <div id="modeSelect">
     <button id="pvpBtn">対人プレイ</button>
     <button id="pvcBtn">CPU対戦</button>
@@ -222,17 +256,17 @@
       e.preventDefault();
     });
 
-    // CPU の駒を自動で落とす（防御重視の戦略）
+    // CPU の駒を自動で落とす（防御重視の戦略：Player 1が次の一手で勝利できる場合、その手をブロック）
     function cpuMove() {
       setTimeout(() => {
         if (gameOver) return;
         
-        // 防御：Player 1 (red) が次の一手で勝てるかを各列ごとにシミュレーション
+        // 防御：Player 1 (red)が次の一手で勝てるかどうか、各列をシミュレーション
         let blockColumn = null;
         for (let c = 0; c < cols; c++) {
           let availableRow = getAvailableRow(c);
           if (availableRow !== -1) {
-            // 一旦赤がここに置いたと仮定してシミュレーション
+            // シミュレーションとして、ここにPlayer 1の駒を置いた場合の勝利をチェック
             board[availableRow][c] = 1;
             if (checkWin(availableRow, c, 1)) {
               blockColumn = c;
@@ -243,7 +277,7 @@
           }
         }
         
-        // 有効な列のリストを作成
+        // 有効な列をリストアップ
         let availableCols = [];
         for (let c = 0; c < cols; c++) {
           if (getAvailableRow(c) !== -1) {
@@ -251,12 +285,12 @@
           }
         }
         
-        // ブロックする列が見つかればそれを選択、なければランダムに選ぶ
+        // ブロックすべき列があればその列を、なければランダムに選択
         let targetCol = (blockColumn !== null) ? blockColumn 
                                                : availableCols[Math.floor(Math.random() * availableCols.length)];
         
         let row = getAvailableRow(targetCol);
-        if (row === -1) return; // 万が一
+        if (row === -1) return;
         board[row][targetCol] = currentPlayer;
         drawBoard();
         
