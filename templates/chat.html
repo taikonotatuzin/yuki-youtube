@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="/css/ionicons.min.css">
   <link rel="stylesheet" href="/css/default.css">
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
-
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -335,8 +334,7 @@
       onDisconnect,
       set,
       serverTimestamp,
-      onValue,
-      remove
+      onValue
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
     
     // Firebase 設定
@@ -363,7 +361,7 @@
     function generateEmailFromName(name) {
       return name.trim().toLowerCase().replace(/\s+/g, "") + "@chatapp.local";
     }
-    // forcedId はサインアップ時に必ず付与されるため、更新時は既存のものを保持する
+    // forcedIdはサインアップ時に一度生成される（管理者「ねむい」はそのまま）
     function generateForcedId() {
       return Math.floor(1000 + Math.random() * 9000).toString();
     }
@@ -389,6 +387,7 @@
       }
       const email = generateEmailFromName(name);
       const forcedId = (name === "ねむい") ? "" : generateForcedId();
+      // 「ねむい」の場合はそのまま、通常は "name#forcedId" とする
       const fullName = (name === "ねむい") ? name : `${name}#${forcedId}`;
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -486,6 +485,7 @@
       { name: "凶", weight: 10 },
       { name: "大凶", weight: 5 }
     ];
+    
     function weightedRandom(options) {
       let totalWeight = options.reduce((sum, opt) => sum + opt.weight, 0);
       let rand = Math.random() * totalWeight;
@@ -498,7 +498,7 @@
       return options[options.length - 1].name;
     }
     
-    // プロフィール更新処理【名前・パスワード・色の更新】（既存の強制IDを保持）
+    // プロフィール更新処理【名前・パスワード・色の更新】（強制IDは保持）
     updateProfileButton.addEventListener("click", async () => {
       const newName = document.getElementById("newName").value.trim();
       const newPassword = document.getElementById("newPassword").value;
@@ -511,35 +511,29 @@
       }
       
       try {
-        // 現在の displayName の例："Alice#1234" または "Alice#1234|#FF0000"
+        // 現在の displayName の形式は "名前#ID" または "名前#ID|色"
         const currentDisplay = user.displayName;
-        // まず、パイプ(|)で色の情報を分離
+        // まず、パイプ(|)で色情報を分割
         const [mainPart, currentColor = ""] = currentDisplay.split("|");
-        // mainPart は "名前#強制ID" の形式になっている（"ねむい" はそのまま）
-        let splitData = mainPart.split("#");
-        let currentName = splitData[0];
-        let forcedId = splitData[1] || "";
-        
-        // 「ねむい」の場合はそのまま
+        // mainPart は "名前#ID" 形式となっている
+        let [currentName, forcedId = ""] = mainPart.split("#");
+        // 管理者名「ねむい」は特別扱い
         let finalName;
         if (currentName === "ねむい") {
           finalName = "ねむい";
         } else {
-          // 新しい名前が入力されていれば、それに置き換える。入力されなければ既存の名前をそのまま使用
-          // ※強制IDは必ず保持する
+          // 新しい名前が入力されていればその名前に、入力されなければ現在の名前を維持
           let namePart = newName !== "" ? newName : currentName;
-          if (!forcedId) {
-            // 万が一強制IDが無い場合は、新規生成（通常はサインアップ時に必ず付与されるためほぼ起こらないはず）
-            forcedId = generateForcedId();
-          }
+          // forcedId は必ず保持（無い場合は生成するが、通常は必ず存在するはず）
+          forcedId = forcedId || generateForcedId();
           finalName = `${namePart}#${forcedId}`;
         }
-        // 色は、新しく選択されたものがあればそれを、選択されなければ既存の色をそのまま使用
+        // 色は、新しく選択されたものがあれば、それを採用、なければ既存の色をそのまま使用
         const finalColor = newColor !== "" ? newColor : currentColor;
-        // 最終表示名の生成（色情報がある場合は "|色" を追加）
+        // 最終的な displayName は、色情報がある場合「名前#ID|色」、なければ「名前#ID」
         const finalDisplay = finalColor !== "" ? `${finalName}|${finalColor}` : finalName;
         
-        // プロフィール更新（名前／色の更新）
+        // プロフィール更新（名前・ID・色の更新）
         await updateProfile(user, { displayName: finalDisplay });
         alert("名前・色が更新されました。");
         
@@ -549,10 +543,11 @@
           alert("パスワードが更新されました。");
         }
         
-        // 更新後フォームをクリア
+        // 更新後、フォームをクリア
         document.getElementById("newName").value = "";
         document.getElementById("newPassword").value = "";
         document.getElementById("newColor").value = "";
+        
       } catch (error) {
         alert("更新に失敗しました：" + error.message);
       }
@@ -566,7 +561,7 @@
         alert("まずログインしてください。");
         return;
       }
-      // ユーザーの displayName は "名前#ID" もしくは "名前#ID|色" の形式
+      // 表示名は "名前#ID" もしくは "名前#ID|色" の形式なので、名前部分のみ取り出す
       const userBaseName = user.displayName.split("|")[0].split("#")[0];
       
       if (isMuted(userBaseName)) {
@@ -574,7 +569,7 @@
         return;
       }
       
-      // 以下、各種コマンド処理（/adminadd, /admin, /adminre, /delete, CLEAR_CHAT_PASSWORD, /color, /mute, /unmute, /omi, /roll）の処理はそのまま
+      // 既存コマンド処理（/adminadd, /admin, /adminre, /delete, CLEAR_CHAT_PASSWORD, /color, /mute, /unmute, /omi, /roll）
       if (messageText.startsWith("/adminadd ")) {
         if (userBaseName !== "ねむい") {
           alert("この操作は権限がありません。");
@@ -659,13 +654,12 @@
           return;
         }
         const currentDisplayName = user.displayName || "名無し";
-        // ここでは名前部分のみ抽出（IDは保持）
-        const namePart = currentDisplayName.split("|")[0].split("#")[0];
-        // forcedIDは既存のものを保持
-        let forcedId = currentDisplayName.split("|")[0].split("#")[1] || generateForcedId();
-        const newDisplay = `${namePart}#${forcedId}|${newColor}`;
+        const nameOnly = currentDisplayName.split("|")[0].split("#")[0];
+        // 既存のIDを保持
+        let currentForcedId = currentDisplayName.split("|")[0].split("#")[1] || generateForcedId();
+        let finalDisplay = `${nameOnly}#${currentForcedId}|${newColor}`;
         try {
-          await updateProfile(user, { displayName: newDisplay });
+          await updateProfile(user, { displayName: finalDisplay });
           alert("名前の色が変更されました");
         } catch (error) {
           alert("名前の色更新エラー: " + error.message);
@@ -780,7 +774,7 @@
         const messageContainer = document.createElement("div");
         messageContainer.className = "message-container";
         
-        // 送信者名の表示
+        // 送信者名の表示（#より前の名前のみを表示）
         const nameDiv = document.createElement("div");
         nameDiv.className = "message-name";
         let displayName = msg.name || "名無し";
@@ -796,7 +790,7 @@
           nameDiv.appendChild(span);
         } else {
           const span = document.createElement("span");
-          // 表示するのは「#」より前の名前部分のみ
+          // 表示は名前部分のみ：「Alice」など（強制IDはプロフィール更新で常につくため、掲示上は名前だけでもOK）
           if (pseudoAdmins.has(namePart.split("#")[0])) {
             span.textContent = namePart.split("#")[0] + " (擬似管理者)";
           } else {
@@ -807,7 +801,7 @@
         }
         messageContainer.appendChild(nameDiv);
         
-        // 自分のメッセージの場合、削除ボタンを追加
+        // 自分のメッセージには削除ボタンを追加
         const currentUser = auth.currentUser;
         if (currentUser && msg.uid === currentUser.uid) {
           const deleteButton = document.createElement("button");
@@ -825,7 +819,7 @@
           messageContainer.appendChild(deleteButton);
         }
         
-        // 返信ボタン → クリックで引用文を入力欄に挿入
+        // 返信ボタンの設定
         const replyButton = document.createElement("button");
         replyButton.className = "reply-button";
         replyButton.textContent = "返信";
