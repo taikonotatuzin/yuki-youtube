@@ -385,6 +385,22 @@
         }
       });
     }
+    onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById("user-auth").style.display = "none";
+    document.getElementById("chat-section").style.display = "block";
+    setupPresence(user);
+    // ログイン時にチャットボックスを自動で最下部までスクロール（200ms後に実行）
+    setTimeout(() => {
+      const chatBox = document.getElementById("chat-box");
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }, 200);
+  } else {
+    document.getElementById("user-auth").style.display = "block";
+    document.getElementById("chat-section").style.display = "none";
+  }
+});
+
     
     onAuthStateChanged(auth, (user) => {
       if (user) {
