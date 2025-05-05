@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/css/ionicons.min.css">
   <link rel="stylesheet" href="/css/default.css">
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+  
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -278,7 +279,7 @@
       </ul>
     </div>
     
-    <!-- プロフィール更新フォーム（名前・パスワード・色の更新） -->
+    <!-- プロフィール更新フォーム -->
     <div id="profile-settings">
       <h3>プロフィール更新</h3>
       <input type="text" id="newName" placeholder="新しい名前">
@@ -300,7 +301,7 @@
       // ページは一度だけ自動リロード（テスト用）
       if (!sessionStorage.getItem("reloaded")) {
         sessionStorage.setItem("reloaded", "true");
-        setTimeout(function(){ location.reload(); }, 1000);
+        setTimeout(function() { location.reload(); }, 1000);
       }
     </script>
   </div>
@@ -361,7 +362,7 @@
     function generateEmailFromName(name) {
       return name.trim().toLowerCase().replace(/\s+/g, "") + "@chatapp.local";
     }
-    // forcedIdはサインアップ時に一度生成される（管理者「ねむい」はそのまま）
+    // 強制IDはサインアップ時に一度生成され、その後は保持される
     function generateForcedId() {
       return Math.floor(1000 + Math.random() * 9000).toString();
     }
@@ -386,8 +387,8 @@
         return;
       }
       const email = generateEmailFromName(name);
+      // 「ねむい」ならIDは付けず、それ以外は生成したIDを付与
       const forcedId = (name === "ねむい") ? "" : generateForcedId();
-      // 「ねむい」の場合はそのまま、通常は "name#forcedId" とする
       const fullName = (name === "ねむい") ? name : `${name}#${forcedId}`;
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -498,7 +499,7 @@
       return options[options.length - 1].name;
     }
     
-    // プロフィール更新処理【名前・パスワード・色の更新】（強制IDは保持）
+    // プロフィール更新処理【名前・パスワード・色の更新】（IDを保持して名前を更新）
     updateProfileButton.addEventListener("click", async () => {
       const newName = document.getElementById("newName").value.trim();
       const newPassword = document.getElementById("newPassword").value;
@@ -511,29 +512,28 @@
       }
       
       try {
-        // 現在の displayName の形式は "名前#ID" または "名前#ID|色"
+        // 現在の displayName は "名前#ID" または "名前#ID|色" の形式
         const currentDisplay = user.displayName;
-        // まず、パイプ(|)で色情報を分割
+        // 色部分を分離
         const [mainPart, currentColor = ""] = currentDisplay.split("|");
-        // mainPart は "名前#ID" 形式となっている
+        // mainPart は "名前#ID" 形式
         let [currentName, forcedId = ""] = mainPart.split("#");
-        // 管理者名「ねむい」は特別扱い
+        
         let finalName;
         if (currentName === "ねむい") {
           finalName = "ねむい";
         } else {
-          // 新しい名前が入力されていればその名前に、入力されなければ現在の名前を維持
+          // 新しい名前が入力されれば置き換え、なければ現状の名前を維持（forcedIdは保持）
           let namePart = newName !== "" ? newName : currentName;
-          // forcedId は必ず保持（無い場合は生成するが、通常は必ず存在するはず）
           forcedId = forcedId || generateForcedId();
           finalName = `${namePart}#${forcedId}`;
         }
-        // 色は、新しく選択されたものがあれば、それを採用、なければ既存の色をそのまま使用
+        
+        // 色は、新しい色が選択されていればそれを、なければ現状の色を保持
         const finalColor = newColor !== "" ? newColor : currentColor;
-        // 最終的な displayName は、色情報がある場合「名前#ID|色」、なければ「名前#ID」
         const finalDisplay = finalColor !== "" ? `${finalName}|${finalColor}` : finalName;
         
-        // プロフィール更新（名前・ID・色の更新）
+        // プロフィール更新
         await updateProfile(user, { displayName: finalDisplay });
         alert("名前・色が更新されました。");
         
@@ -547,7 +547,6 @@
         document.getElementById("newName").value = "";
         document.getElementById("newPassword").value = "";
         document.getElementById("newColor").value = "";
-        
       } catch (error) {
         alert("更新に失敗しました：" + error.message);
       }
@@ -561,17 +560,17 @@
         alert("まずログインしてください。");
         return;
       }
-      // 表示名は "名前#ID" もしくは "名前#ID|色" の形式なので、名前部分のみ取り出す
-      const userBaseName = user.displayName.split("|")[0].split("#")[0];
+      // 掲示場で表示する際は、名前とIDの両方を表示（displayNameの「|」以降は色情報）
+      const userBaseName = user.displayName.split("|")[0];
       
-      if (isMuted(userBaseName)) {
+      if (isMuted(userBaseName.split("#")[0])) {
         alert("あなたはミュート中です。ミュート解除後に送信してください。");
         return;
       }
       
-      // 既存コマンド処理（/adminadd, /admin, /adminre, /delete, CLEAR_CHAT_PASSWORD, /color, /mute, /unmute, /omi, /roll）
+      // 各コマンド処理（省略）...
       if (messageText.startsWith("/adminadd ")) {
-        if (userBaseName !== "ねむい") {
+        if (userBaseName.split("#")[0] !== "ねむい") {
           alert("この操作は権限がありません。");
           return;
         }
@@ -588,14 +587,14 @@
         return;
       }
       if (messageText === "/admin") {
-        if (userBaseName !== "ねむい") { alert("この操作は権限がありません。"); return; }
+        if (userBaseName.split("#")[0] !== "ねむい") { alert("この操作は権限がありません。"); return; }
         if (pseudoAdmins.size === 0) { alert("現在、擬似管理者は設定されていません。"); }
         else { alert("現在の擬似管理者: " + Array.from(pseudoAdmins).join(", ")); }
         messageInput.value = "";
         return;
       }
       if (messageText.startsWith("/adminre ")) {
-        if (userBaseName !== "ねむい") { alert("この操作は権限がありません。"); return; }
+        if (userBaseName.split("#")[0] !== "ねむい") { alert("この操作は権限がありません。"); return; }
         const parts = messageText.split(" ");
         if (parts.length < 2) { alert("使い方: /adminre [名前]"); return; }
         const targetName = parts[1].trim();
@@ -607,7 +606,7 @@
         return;
       }
       if (messageText.startsWith("/delete ")) {
-        if (userBaseName === "ねむい" || pseudoAdmins.has(userBaseName)) {
+        if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
           const parts = messageText.split(" ");
           if (parts.length < 2) { alert("使い方: /delete [ユーザー名]"); return; }
           const targetName = parts[1].trim();
@@ -629,7 +628,7 @@
         } else { alert("この操作は権限がありません。"); return; }
       }
       if (messageText === CLEAR_CHAT_PASSWORD) {
-        if (userBaseName === "ねむい" || pseudoAdmins.has(userBaseName)) {
+        if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
           try {
             const chatCollection = collection(db, "chat");
             const snapshot = await getDocs(chatCollection);
@@ -655,7 +654,6 @@
         }
         const currentDisplayName = user.displayName || "名無し";
         const nameOnly = currentDisplayName.split("|")[0].split("#")[0];
-        // 既存のIDを保持
         let currentForcedId = currentDisplayName.split("|")[0].split("#")[1] || generateForcedId();
         let finalDisplay = `${nameOnly}#${currentForcedId}|${newColor}`;
         try {
@@ -668,7 +666,7 @@
         return;
       }
       if (messageText.startsWith("/mute ")) {
-        if (userBaseName !== "ねむい") { alert("この操作は権限がありません。"); return; }
+        if (userBaseName.split("#")[0] !== "ねむい") { alert("この操作は権限がありません。"); return; }
         const parts = messageText.split(" ");
         if (parts.length < 2) { alert("使い方: /mute [ユーザー名] [期間]（例: 10m, 30s）"); return; }
         const targetName = parts[1].trim();
@@ -685,7 +683,7 @@
         return;
       }
       if (messageText.startsWith("/unmute ")) {
-        if (userBaseName !== "ねむい") { alert("この操作は権限がありません。"); return; }
+        if (userBaseName.split("#")[0] !== "ねむい") { alert("この操作は権限がありません。"); return; }
         const parts = messageText.split(" ");
         if (parts.length < 2) { alert("使い方: /unmute [ユーザー名]"); return; }
         const targetName = parts[1].trim();
@@ -774,7 +772,7 @@
         const messageContainer = document.createElement("div");
         messageContainer.className = "message-container";
         
-        // 送信者名の表示（#より前の名前のみを表示）
+        // 送信者名の表示（IDも含めて表示）
         const nameDiv = document.createElement("div");
         nameDiv.className = "message-name";
         let displayName = msg.name || "名無し";
@@ -783,25 +781,24 @@
         if (displayName.includes("|")) {
           [namePart, colorCode] = displayName.split("|");
         }
+        const span = document.createElement("span");
         if (namePart === "ねむい") {
-          const span = document.createElement("span");
           span.className = "rainbow-name";
           span.textContent = namePart;
-          nameDiv.appendChild(span);
         } else {
-          const span = document.createElement("span");
-          // 表示は名前部分のみ：「Alice」など（強制IDはプロフィール更新で常につくため、掲示上は名前だけでもOK）
+          // ここでは「名前#ID」をそのまま表示
+          span.textContent = namePart;
           if (pseudoAdmins.has(namePart.split("#")[0])) {
-            span.textContent = namePart.split("#")[0] + " (擬似管理者)";
-          } else {
-            span.textContent = namePart.split("#")[0];
+            span.textContent += " (擬似管理者)";
           }
-          if (colorCode) { span.style.color = colorCode; }
-          nameDiv.appendChild(span);
+          if (colorCode) {
+            span.style.color = colorCode;
+          }
         }
+        nameDiv.appendChild(span);
         messageContainer.appendChild(nameDiv);
         
-        // 自分のメッセージには削除ボタンを追加
+        // 自分のメッセージに削除ボタン
         const currentUser = auth.currentUser;
         if (currentUser && msg.uid === currentUser.uid) {
           const deleteButton = document.createElement("button");
