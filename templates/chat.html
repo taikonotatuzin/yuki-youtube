@@ -739,12 +739,14 @@
           messageContainer.appendChild(deleteButton);
         }
         
-        // 返信ボタン → クリックでメッセージ入力欄に引用文を挿入
+               // 返信ボタン → クリックで引用文を入力欄に挿入
         const replyButton = document.createElement("button");
         replyButton.className = "reply-button";
         replyButton.textContent = "返信";
         replyButton.onclick = function() {
-          messageInput.value = `> ${msg.name}: ${msg.text}\n` + messageInput.value;
+          // ここで返信対象のメッセージの各行に "> " を付け、既に引用になっている場合もさらにネストされるようにする
+          let quotedText = msg.text.split("\n").map(line => "> " + line).join("\n");
+          messageInput.value = `> ${msg.name}:\n` + quotedText + "\n" + messageInput.value;
           messageInput.focus();
         };
         messageContainer.appendChild(replyButton);
