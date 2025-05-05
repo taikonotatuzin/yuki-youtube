@@ -501,7 +501,7 @@
     }
     
     const fortuneOptions = [
-      { name: "重大な欠陥を発見‼︎直ちに使用します", weight: 1 },
+      { name: "…あれ？……何故か表示されません…", weight: 1 },
       { name: "極大吉", weight: 2 },
       { name: "超大吉", weight: 2 },
       { name: "大吉", weight: 10 },
@@ -802,8 +802,8 @@
         const result = weightedRandom(fortuneOptions);
         try {
           await addDoc(collection(db, "chat"), {
-            text: `【おみくじ】${userBaseName}さんの結果：${result}`,
-            name: "システム",
+            text: `【おみくじ】${userBaseName}さんの今日の運勢は…：${result}`,
+            name: "おみくじ",
             uid: "system",
             timestamp: new Date()
           });
@@ -827,7 +827,7 @@
         try {
           await addDoc(collection(db, "chat"), {
             text: `【ロール】${userBaseName}さんの結果：${rollResult} (1～${max})`,
-            name: "システム",
+            name: "roll",
             uid: "system",
             timestamp: new Date()
           });
