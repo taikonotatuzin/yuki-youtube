@@ -39,8 +39,6 @@
       margin: 0;
       background-color: #fff;
     }
-    /* ヘッダー 
-    
     /* チャット用エリア: 上部が top-bar に被らないように margin-top を確保 */
     #chat-section {
       margin-top: 0px;
@@ -188,7 +186,8 @@
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-        .delete-button {
+    /* 削除ボタンのスタイル */
+    .delete-button {
       font-size: 12px;
       padding: 2px 4px;
       background-color: #e74c3c;
@@ -203,6 +202,31 @@
     }
     .delete-button:hover {
       background-color: #c0392b;
+    }
+    /* プロフィール更新フォーム */
+    #profile-settings {
+      margin: 20px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background-color: #f0f0f0;
+    }
+    #profile-settings input {
+      margin: 5px 0;
+      padding: 5px;
+      width: 200px;
+    }
+    #profile-settings button {
+      background-color: #2ecc71;
+      border: none;
+      padding: 6px 12px;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #profile-settings button:hover {
+      background-color: #27ae60;
     }
   </style>
 </head>
@@ -252,22 +276,21 @@
     <div id="command-summary">
       <h3>コマンド一覧と使用方法</h3>
       <ul>
+        <li><code>/delete [ユーザー名]</code>: 「ねむい」または擬似管理者専用。指定したユーザーのメッセージを削除します。</li>
         <li><code>/color [カラーコード]</code>: 表示名のカラーを変更します。（例: <code>/color #fff</code>）</li>
         <li><code>/omi</code>: おみくじを引きます。重み付き確率により結果が決定され、実行者の名前が表示されます。</li>
         <li><code>/roll [最大値]</code>: 指定された最大値までのランダムな数字（サイコロ振り）を生成します。例: <code>/roll 6</code>。実行者の名前が表示されます。</li>
       </ul>
     </div>
-    <div id="command-summary">
-      <h3>管理者専用のコマンド</h3>
-      <ul>
-        <li><code>/adminadd [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者に追加します。</li>
-        <li><code>/admin</code>: 「ねむい」専用。現在の擬似管理者一覧を表示します。</li>
-        <li><code>/adminre [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者から外します。</li>
-        <li><code>/delete [ユーザー名]</code>: 「ねむい」または擬似管理者専用。指定したユーザーのメッセージを削除します。</li>
-        <li><code>/mute [ユーザー名] [期間]</code>: 「ねむい」専用。指定したユーザーを指定期間ミュートします。（例: <code>/mute taro 10m</code>）</li>
-        <li><code>/unmute [ユーザー名]</code>: 「ねむい」専用。指定したユーザーのミュート状態を解除します。</li>
-      </ul>
+    
+    <!-- プロフィール更新フォーム -->
+    <div id="profile-settings">
+      <h3>プロフィール更新</h3>
+      <input type="text" id="newName" placeholder="新しい名前">
+      <input type="password" id="newPassword" placeholder="新しいパスワード">
+      <button id="updateProfileButton">更新</button>
     </div>
+    
     <script>
       // ページは一度だけ自動リロード
       if (!sessionStorage.getItem("reloaded")) {
@@ -287,7 +310,8 @@
       signInWithEmailAndPassword,
       updateProfile,
       signOut,
-      onAuthStateChanged
+      onAuthStateChanged,
+      updatePassword
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
     import {
       getFirestore,
@@ -310,14 +334,14 @@
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
     
     // Firebase 設定
-     const firebaseConfig = {
+    const firebaseConfig = {
       apiKey: "AIzaSyBy2-A1aPIJ5sgdIkdtVP8M3ejYWh1SUU4",
-       authDomain: "chat-chat-2518e.firebaseapp.com",
-       projectId: "chat-chat-2518e",
-       storageBucket: "chat-chat-2518e.firebasestorage.app",
-       messagingSenderId: "465019906626",
-       appId: "1:465019906626:web:1de95eec38a8bbf5c65bdb",
-       measurementId: "G-HVV4XD4D6J"
+      authDomain: "chat-chat-2518e.firebaseapp.com",
+      projectId: "chat-chat-2518e",
+      storageBucket: "chat-chat-2518e.firebasestorage.app",
+      messagingSenderId: "465019906626",
+      appId: "1:465019906626:web:1de95eec38a8bbf5c65bdb",
+      measurementId: "G-HVV4XD4D6J"
     };
     
     // 初期化
@@ -345,6 +369,9 @@
     const sendButton   = document.getElementById("sendButton");
     const chatBox      = document.getElementById("chat-box");
     const messageInput = document.getElementById("messageInput");
+    
+    // プロフィール更新用のボタン
+    const updateProfileButton = document.getElementById("updateProfileButton");
     
     signupButton.addEventListener("click", async () => {
       const name = document.getElementById("signupName").value;
@@ -406,21 +433,17 @@
       });
     }
     onAuthStateChanged(auth, (user) => {
-  if (user) {
-    document.getElementById("user-auth").style.display = "none";
-    document.getElementById("chat-section").style.display = "block";
-    setupPresence(user);
-    // ログイン時にチャットボックスを自動で最下部までスクロール（200ms後に実行）
-    setTimeout(() => {
-      const chatBox = document.getElementById("chat-box");
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }, 200);
-  } else {
-    document.getElementById("user-auth").style.display = "block";
-    document.getElementById("chat-section").style.display = "none";
-  }
-});
-
+      if (user) {
+        document.getElementById("user-auth").style.display = "none";
+        document.getElementById("chat-section").style.display = "block";
+        setupPresence(user);
+        // ログイン時にチャットボックスを自動で最下部までスクロール（200ms後に実行）
+        setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 200);
+      } else {
+        document.getElementById("user-auth").style.display = "block";
+        document.getElementById("chat-section").style.display = "none";
+      }
+    });
     
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -468,6 +491,33 @@
       }
       return options[options.length - 1].name;
     }
+    
+    // プロフィール更新処理（名前・パスワードの変更）
+    updateProfileButton.addEventListener("click", async () => {
+      const newName = document.getElementById("newName").value.trim();
+      const newPassword = document.getElementById("newPassword").value;
+      const user = auth.currentUser;
+      if (!user) {
+        alert("ログインしてください。");
+        return;
+      }
+      try {
+        if (newName) {
+          await updateProfile(user, { displayName: newName });
+          alert("名前が更新されました。");
+        }
+        if (newPassword) {
+          // updatePassword 関数でパスワードの更新
+          await updatePassword(user, newPassword);
+          alert("パスワードが更新されました。");
+        }
+        // 更新後フォームをクリア
+        document.getElementById("newName").value = "";
+        document.getElementById("newPassword").value = "";
+      } catch (error) {
+        alert("更新に失敗しました：" + error.message);
+      }
+    });
     
     sendButton.addEventListener("click", async () => {
       const messageText = messageInput.value;
@@ -668,14 +718,14 @@
       }
     });
     
-        logoutButton.addEventListener("click", async () => {
-       try {
-         await signOut(auth);
-         console.log("ログアウト成功");
-       } catch (error) {
-         alert("ログアウトエラー: " + error.message);
-       }
-     });
+    logoutButton.addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        console.log("ログアウト成功");
+      } catch (error) {
+        alert("ログアウトエラー: " + error.message);
+      }
+    });
     
     // Firestore を利用したチャットメッセージ取得／更新＆古いメッセージ自動削除
     const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
@@ -696,7 +746,7 @@
         const messageContainer = document.createElement("div");
         messageContainer.className = "message-container";
         
-        // 送信者名
+        // 送信者名の表示
         const nameDiv = document.createElement("div");
         nameDiv.className = "message-name";
         let displayName = msg.name || "名無し";
@@ -721,8 +771,9 @@
           nameDiv.appendChild(span);
         }
         messageContainer.appendChild(nameDiv);
-        
-            const currentUser = auth.currentUser;
+
+        // 自分のメッセージの場合、削除ボタンを追加（返信ボタンの左隣）
+        const currentUser = auth.currentUser;
         if (currentUser && msg.uid === currentUser.uid) {
           const deleteButton = document.createElement("button");
           deleteButton.className = "delete-button";
@@ -739,13 +790,13 @@
           messageContainer.appendChild(deleteButton);
         }
         
-   // 返信ボタン → クリックで引用文を入力欄に挿入
+        // 返信ボタン → クリックで引用文を入力欄に挿入
         const replyButton = document.createElement("button");
         replyButton.className = "reply-button";
         replyButton.textContent = "返信";
         replyButton.onclick = function() {
           let lines = msg.text.split("\n");
-          // もしすでに引用済みなら最初の行だけは除外する
+          // すでに引用されている場合は最初の行を除外
           if (lines.length && lines[0].trim().startsWith(">")) {
             lines.shift();
           }
@@ -773,11 +824,14 @@
         });
         messageContainer.appendChild(textDiv);
         
-        // タイムスタンプ
+        // タイムスタンプの表示
         if (msg.timestamp) {
           let dateObj;
-          if (typeof msg.timestamp.toDate === "function") { dateObj = msg.timestamp.toDate(); }
-          else { dateObj = new Date(msg.timestamp); }
+          if (typeof msg.timestamp.toDate === "function") {
+            dateObj = msg.timestamp.toDate();
+          } else {
+            dateObj = new Date(msg.timestamp);
+          }
           const timeDiv = document.createElement("div");
           timeDiv.className = "message-time";
           timeDiv.textContent = dateObj.toLocaleString();
