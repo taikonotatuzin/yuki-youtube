@@ -207,10 +207,12 @@
       border-radius: 4px;
       background-color: #f0f0f0;
     }
+    /* 既存項目に加え、新たに「追加文字」と各部ごとの色選択欄を追加 */
     #profile-settings input, #profile-settings select {
       margin: 5px 0;
       padding: 5px;
       width: 200px;
+      display: block;
     }
     #profile-settings button {
       background-color: #2ecc71;
@@ -286,32 +288,56 @@
     <div id="command-summary">
       <h3>コマンド一覧と使用方法</h3>
       <ul>
-        <li><code>/color [カラーコード]</code>: 表示名のカラーを変更します。（例: <code>/color #fff</code>）</li>
+        <li><code>/color 対象 カラーコード</code>: 対象（「名前」「ID」または<code>/add</code>で追加した文字）を指定して色を変更します。（例: <code>/color 名前 #ff0000</code>）</li>
         <li><code>/omi</code>: おみくじを引きます。重み付き確率により結果が決定され、実行者の名前が表示されます。</li>
         <li><code>/roll [最大値]</code>: サイコロ振り。指定した最大値までのランダムな数字を生成します。（例: <code>/roll 6</code>）</li>
+        <li><code>/add [任意の文字]</code>: 既存のID部分に対して、追加の文字列を付加します。（例: <code>/add 部活</code>）</li>
         <h3>新しいコマンド募集中‼︎</h3>
       </ul>
     </div>
     <div id="command-summary">
-        <h3>管理者専用のコマンド</h3>
-        <ul>
-          <li><code>/adminadd [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者に追加します。</li>
-          <li><code>/admin</code>: 「ねむい」専用。現在の擬似管理者一覧を表示します。</li>
-          <li><code>/adminre [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者から外します。</li>
-          <li><code>/delete [ユーザー名]</code>: 「ねむい」または擬似管理者専用。指定したユーザーのメッセージを削除します。</li>
-          <li><code>/mute [ユーザー名] [期間]</code>: 「ねむい」専用。指定したユーザーを指定期間ミュートします。（例: <code>/mute taro 10m</code>）</li>
-          <li><code>/unmute [ユーザー名]</code>: 「ねむい」専用。指定したユーザーのミュート状態を解除します。</li>
-        </ul>
+      <h3>管理者専用のコマンド</h3>
+      <ul>
+        <li><code>/adminadd [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者に追加します。</li>
+        <li><code>/admin</code>: 「ねむい」専用。現在の擬似管理者一覧を表示します。</li>
+        <li><code>/adminre [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者から外します。</li>
+        <li><code>/delete [ユーザー名]</code>: 「ねむい」または擬似管理者専用。指定したユーザーのメッセージを削除します。</li>
+        <li><code>/mute [ユーザー名] [期間]</code>: 「ねむい」専用。指定したユーザーを指定期間ミュートします。（例: <code>/mute taro 10m</code>）</li>
+        <li><code>/unmute [ユーザー名]</code>: 「ねむい」専用。指定したユーザーのミュート状態を解除します。</li>
+      </ul>
     </div>
     
-    <!-- プロフィール更新フォーム -->
+    <!-- プロフィール更新フォーム（アカウント設定） -->
     <div id="profile-settings">
       <h3>プロフィール更新</h3>
       <!-- ※ 新しい名前が「ねむい」には変更されない（そのまま保持） -->
       <input type="text" id="newName" placeholder="新しい名前">
+      <!-- 追加文字（/addで設定する内容） -->
+      <input type="text" id="newAdd" placeholder="新しい追加文字">
       <input type="password" id="newPassword" placeholder="新しいパスワード">
-      <select id="newColor">
-        <option value="">-- 色を選択 --</option>
+      <!-- 各要素ごとの色選択欄 -->
+      <select id="newColorName">
+        <option value="">-- 名前の色を選択 --</option>
+        <option value="#000000">黒</option>
+        <option value="#FF0000">赤</option>
+        <option value="#0000FF">青</option>
+        <option value="#00FF00">緑</option>
+        <option value="#FFA500">オレンジ</option>
+        <option value="#800080">紫</option>
+        <option value="#808080">灰色</option>
+      </select>
+      <select id="newColorAdd">
+        <option value="">-- 追加文字の色を選択 --</option>
+        <option value="#000000">黒</option>
+        <option value="#FF0000">赤</option>
+        <option value="#0000FF">青</option>
+        <option value="#00FF00">緑</option>
+        <option value="#FFA500">オレンジ</option>
+        <option value="#800080">紫</option>
+        <option value="#808080">灰色</option>
+      </select>
+      <select id="newColorID">
+        <option value="">-- IDの色を選択 --</option>
         <option value="#000000">黒</option>
         <option value="#FF0000">赤</option>
         <option value="#0000FF">青</option>
@@ -414,6 +440,7 @@
       }
       const email = generateEmailFromName(name);
       const forcedId = (name === "ねむい") ? "" : generateForcedId();
+      // 初期状態では追加文字やカラー情報は設定せず、"名前#ID"形式で表示
       const fullName = (name === "ねむい") ? name : `${name}#${forcedId}`;
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -512,23 +539,45 @@
       { name: "大凶", weight: 5 }
     ];
     
-    function weightedRandom(options) {
-      let totalWeight = options.reduce((sum, opt) => sum + opt.weight, 0);
-      let rand = Math.random() * totalWeight;
-      for (let opt of options) {
-        if (rand < opt.weight) {
-          return opt.name;
-        }
-        rand -= opt.weight;
+    // 新規コマンド /add の実装
+    // 使い方: /add 任意の追加文字
+    // 既存の displayName（"名前#ID" もしくは "名前#ID@既存追加文字"）に対して、
+    // "@"以降を更新します。カラー情報（"|"以降）はそのまま保持。
+    // ※「ねむい」は特殊なため変更させない（必要に応じて調整してください）。
+    // 例： "Taro#1234" → "Taro#1234@部活"
+    async function processAddCommand(user, messageText) {
+      const parts = messageText.split(" ");
+      if (parts.length < 2) {
+          alert("使い方: /add [追加する文字]");
+          return;
       }
-      return options[options.length - 1].name;
+      const addText = parts.slice(1).join(" ").trim();
+      const currentDisplay = user.displayName || "";
+      let [mainPart, colorPart=""] = currentDisplay.split("|");
+      // 既存の追加文字があれば破棄し、常に右側に新しい文字を付ける
+      let basePart = mainPart.split("@")[0]; // "名前#ID"
+      const newMainPart = basePart + "@" + addText;
+      let finalDisplay = newMainPart;
+      if (colorPart !== "") {
+          finalDisplay += "|" + colorPart;
+      }
+      try {
+          await updateProfile(user, { displayName: finalDisplay });
+          alert("追加文字が更新されました。");
+      } catch (error) {
+          alert("追加文字更新エラー: " + error.message);
+      }
+      messageInput.value = "";
     }
     
-    // プロフィール更新処理【名前・パスワード・色の更新】（既存の強制IDを保持）
+    // プロフィール更新処理【名前・パスワード・色・追加文字の更新】（既存の強制IDを保持）
     updateProfileButton.addEventListener("click", async () => {
       const newName = document.getElementById("newName").value.trim();
+      const newAdd = document.getElementById("newAdd").value.trim();
       const newPassword = document.getElementById("newPassword").value;
-      const newColor = document.getElementById("newColor").value; // 選択された色
+      const newColorName = document.getElementById("newColorName").value;
+      const newColorAdd = document.getElementById("newColorAdd").value;
+      const newColorID = document.getElementById("newColorID").value;
       
       const user = auth.currentUser;
       if (!user) {
@@ -543,25 +592,53 @@
       }
       
       try {
-        // 現在の displayName は "名前#ID" または "名前#ID|色"
-        const currentDisplay = user.displayName;
-        const [mainPart, currentColor = ""] = currentDisplay.split("|");
-        let [currentName, forcedId = ""] = mainPart.split("#");
+        const currentDisplay = user.displayName || "";
+        // displayName から「|」でカラー情報（存在する場合）を分離する
+        let [mainPart, colorPart] = currentDisplay.split("|");
+        let colorArray = ["", "", ""]; // [名前, 追加文字, ID]
+        if (colorPart) {
+          colorArray = colorPart.split(",");
+          while (colorArray.length < 3) {
+            colorArray.push("");
+          }
+        }
+        // mainPart の形式: "名前#ID" もしくは "名前#ID@追加文字"
+        let beforeAt = mainPart;
+        let currentAdd = "";
+        if (mainPart.includes("@")) {
+          [beforeAt, currentAdd] = mainPart.split("@");
+        }
+        let [currentName, forcedId] = beforeAt.split("#");
+        if (!forcedId) {
+          forcedId = generateForcedId();
+        }
         
         let finalName;
         if (currentName === "ねむい") {
           finalName = "ねむい";
         } else {
           let namePart = newName !== "" ? newName : currentName;
-          forcedId = forcedId || generateForcedId();
           finalName = `${namePart}#${forcedId}`;
         }
+        // 追加文字の更新：新しい入力があればそれを、無ければ既存値（もしくは空文字）を使用
+        let finalAdd = newAdd !== "" ? newAdd : currentAdd;
+        let finalMainPart = finalName;
+        if (finalAdd) {
+          finalMainPart += "@" + finalAdd;
+        }
         
-        const finalColor = newColor !== "" ? newColor : currentColor;
-        const finalDisplay = finalColor !== "" ? `${finalName}|${finalColor}` : finalName;
+        // カラー情報の更新：各項目ごとに値があれば上書きする
+        colorArray[0] = newColorName !== "" ? newColorName : colorArray[0];
+        colorArray[1] = newColorAdd !== "" ? newColorAdd : colorArray[1];
+        colorArray[2] = newColorID !== "" ? newColorID : colorArray[2];
+        
+        let finalDisplay = finalMainPart;
+        if (colorArray.some(color => color !== "")) {
+          finalDisplay += "|" + colorArray.join(",");
+        }
         
         await updateProfile(user, { displayName: finalDisplay });
-        alert("名前・色が更新されました。");
+        alert("プロフィールが更新されました。");
         
         if (newPassword) {
           await updatePassword(user, newPassword);
@@ -569,13 +646,17 @@
         }
         
         document.getElementById("newName").value = "";
+        document.getElementById("newAdd").value = "";
         document.getElementById("newPassword").value = "";
-        document.getElementById("newColor").value = "";
+        document.getElementById("newColorName").value = "";
+        document.getElementById("newColorAdd").value = "";
+        document.getElementById("newColorID").value = "";
       } catch (error) {
         alert("更新に失敗しました：" + error.message);
       }
     });
     
+    // メッセージ送信用のコマンド処理
     sendButton.addEventListener("click", async () => {
       const messageText = messageInput.value;
       if (messageText.trim() === "") return;
@@ -584,7 +665,7 @@
         alert("まずログインしてください。");
         return;
       }
-      // 掲示場で表示する際は、displayNameの「名前#ID」部分（色情報を除く）をそのまま表示
+      // 掲示場で表示する際は、displayNameの「名前#ID」部分（追加文字・色情報を除く）をそのまま表示
       const userBaseName = user.displayName.split("|")[0];
       
       if (isMuted(userBaseName.split("#")[0])) {
@@ -629,7 +710,7 @@
         return;
       }
       
-      // /adminre コマンド：擬似管理者として登録されている対象は削除できるようにする
+      // /adminre コマンド：擬似管理者として登録されている対象は削除可能
       if (messageText.startsWith("/adminre ")) {
         if (userBaseName.split("#")[0] !== "ねむい") {
           alert("この操作は権限がありません。");
@@ -651,8 +732,7 @@
         return;
       }
       
-      // 以下、/delete, /color, /mute, /unmute, … の各コマンド
-      
+      // /delete コマンド
       if (messageText.startsWith("/delete ")) {
         if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
           const parts = messageText.split(" ");
@@ -672,306 +752,6 @@
             });
             console.log(`ユーザー「${targetName}」のメッセージを削除しました。`);
           } catch (error) {
-            alert("メッセージ削除エラー: " + error.message);
-          }
-          messageInput.value = "";
-          return;
-        } else {
-          alert("この操作は権限がありません。");
-          return;
-        }
-      }
-      
-      if (messageText === CLEAR_CHAT_PASSWORD) {
-        if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
-          try {
-            const chatCollection = collection(db, "chat");
-            const snapshot = await getDocs(chatCollection);
-            for (const docSnap of snapshot.docs) {
-              await deleteDoc(docSnap.ref);
-            }
-            chatBox.innerHTML = "";
-            console.log("全ての発言を削除しました。");
-            messageInput.value = "";
-          } catch (error) {
-            alert("チャット削除エラー: " + error.message);
-          }
-          return;
-        } else {
-          alert("この操作は権限がありません。");
-          return;
-        }
-      }
-      
-      if (messageText.startsWith("/color ")) {
-        const parts = messageText.split(" ");
-        if (parts.length < 2) {
-          alert("使い方: /color #fff (カラーコードを入力してください)");
-          return;
-        }
-        const newColor = parts[1].trim();
-        if (!/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(newColor)) {
-          alert("有効なカラーコードを入力してください (例: /color #fff)");
-          return;
-        }
-        const currentDisplayName = user.displayName || "名無し";
-        const nameOnly = currentDisplayName.split("|")[0].split("#")[0];
-        let currentForcedId = currentDisplayName.split("|")[0].split("#")[1] || generateForcedId();
-        let finalDisplay = `${nameOnly}#${currentForcedId}|${newColor}`;
-        try {
-          await updateProfile(user, { displayName: finalDisplay });
-          alert("名前の色が変更されました");
-        } catch (error) {
-          alert("名前の色更新エラー: " + error.message);
-        }
-        messageInput.value = "";
-        return;
-      }
-      
-      if (messageText.startsWith("/mute ")) {
-        if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
-          alert("この操作は権限がありません。");
-          return;
-        }
-        const parts = messageText.split(" ");
-        if (parts.length < 2) {
-          alert("使い方: /mute [ユーザー名] [期間]（例: 10m, 30s）");
-          return;
-        }
-        const targetName = parts[1].trim();
-        let durationMs = 300000;
-        if (parts.length >= 3) {
-          let dur = parts[2].trim();
-          if (dur.endsWith("m")) {
-            durationMs = parseFloat(dur.slice(0, -1)) * 60000;
-          } else if (dur.endsWith("s")) {
-            durationMs = parseFloat(dur.slice(0, -1)) * 1000;
-          } else {
-            durationMs = parseFloat(dur) * 60000;
-          }
-        }
-        mutedUsers[targetName] = Date.now() + durationMs;
-        alert(`${targetName} を ${durationMs / 60000} 分 (または ${durationMs / 1000} 秒) ミュートしました。`);
-        messageInput.value = "";
-        return;
-      }
-      
-      if (messageText.startsWith("/unmute ")) {
-        if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
-          alert("この操作は権限がありません。");
-          return;
-        }
-        const parts = messageText.split(" ");
-        if (parts.length < 2) {
-          alert("使い方: /unmute [ユーザー名]");
-          return;
-        }
-        const targetName = parts[1].trim();
-        if (mutedUsers[targetName]) {
-          delete mutedUsers[targetName];
-          alert(`${targetName} のミュートを解除しました。`);
-        } else {
-          alert(`${targetName} はミュート状態ではありません。`);
-        }
-        messageInput.value = "";
-        return;
-      }
-      
-      // ★ /topic コマンド ★
-      // 「ねむい」専用。入力例： /topic 今日のチャレンジ！
-      if (messageText.startsWith("/topic ")) {
-        if (userBaseName.split("#")[0] !== "ねむい") {
-          alert("この操作は権限がありません。");
-          return;
-        }
-        const topicText = messageText.substring("/topic ".length).trim();
-        if (topicText === "") {
-          alert("話題を入力してください。");
-          return;
-        }
-        const topicDiv = document.getElementById("chat-topic");
-        topicDiv.textContent = topicText;
-        topicDiv.style.display = "block";
-        alert("話題が更新されました！");
-        messageInput.value = "";
-        return;
-      }
-      
-      if (messageText.startsWith("/omi")) {
-        const result = weightedRandom(fortuneOptions);
-        try {
-          await addDoc(collection(db, "chat"), {
-            text: `【おみくじ】${userBaseName}さんの今日の運勢は…：${result}`,
-            name: "おみくじ",
-            uid: "system",
-            timestamp: new Date()
-          });
-        } catch (error) {
-          alert("おみくじ送信エラー: " + error.message);
-        }
-        messageInput.value = "";
-        return;
-      }
-      
-      if (messageText.startsWith("/roll")) {
-        const parts = messageText.split(" ");
-        let max = 6;
-        if (parts.length >= 2) {
-          const num = parseInt(parts[1]);
-          if (!isNaN(num) && num > 0) {
-            max = num;
-          }
-        }
-        const rollResult = Math.floor(Math.random() * max) + 1;
-        try {
-          await addDoc(collection(db, "chat"), {
-            text: `【ロール】${userBaseName}さんの結果：${rollResult} (1～${max})`,
-            name: "roll",
-            uid: "system",
-            timestamp: new Date()
-          });
-        } catch (error) {
-          alert("ロール送信エラー: " + error.message);
-        }
-        messageInput.value = "";
-        return;
-      }
-      
-      // 通常メッセージ送信
-      try {
-        await addDoc(collection(db, "chat"), {
-          text: messageText,
-          name: user.displayName || "名無し",
-          uid: user.uid,
-          timestamp: new Date()
-        });
-        messageInput.value = "";
-      } catch (error) {
-        alert("メッセージ送信エラー: " + error.message);
-      }
-    });
-    
-    logoutButton.addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-        console.log("ログアウト成功");
-      } catch (error) {
-        alert("ログアウトエラー: " + error.message);
-      }
-    });
-    
-    const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc"));
-    onSnapshot(chatQuery, async (snapshot) => {
-      if (snapshot.docs.length > MAX_MESSAGES) {
-        const deleteCount = snapshot.docs.length - MAX_MESSAGES;
-        for (let i = 0; i < deleteCount; i++) {
-          try {
-            await deleteDoc(snapshot.docs[i].ref);
-          } catch (err) {
-            console.error("古いメッセージ削除エラー:", err);
-          }
-        }
-      }
-      chatBox.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const msg = doc.data();
-        const messageContainer = document.createElement("div");
-        messageContainer.className = "message-container";
-        
-        // 送信者名の表示（IDも含む displayName をそのまま表示）
-        const nameDiv = document.createElement("div");
-        nameDiv.className = "message-name";
-        let displayName = msg.name || "名無し";
-        let namePart = displayName;
-        let colorCode = "";
-        if (displayName.includes("|")) {
-          [namePart, colorCode] = displayName.split("|");
-        }
-        const span = document.createElement("span");
-        if (namePart === "ねむい") {
-          span.className = "rainbow-name";
-          span.textContent = namePart;
-        } else {
-          span.textContent = namePart;
-          if (pseudoAdmins.has(namePart.split("#")[0])) {
-            span.textContent += " (擬似管理者)";
-          }
-          if (colorCode) {
-            span.style.color = colorCode;
-          }
-        }
-        nameDiv.appendChild(span);
-        messageContainer.appendChild(nameDiv);
-        
-        // 自分のメッセージの場合、削除ボタンを追加
-        const currentUser = auth.currentUser;
-        if (currentUser && msg.uid === currentUser.uid) {
-          const deleteButton = document.createElement("button");
-          deleteButton.className = "delete-button";
-          deleteButton.textContent = "削除";
-          deleteButton.onclick = async function() {
-            if (confirm("このメッセージを削除してよろしいですか？")) {
-              try {
-                await deleteDoc(doc.ref);
-              } catch (err) {
-                console.error("メッセージ削除エラー:", err);
-              }
-            }
-          };
-          messageContainer.appendChild(deleteButton);
-        }
-        
-        // 返信ボタンの設定
-        const replyButton = document.createElement("button");
-        replyButton.className = "reply-button";
-        replyButton.textContent = "返信";
-        replyButton.onclick = function() {
-          let lines = msg.text.split("\n");
-          if (lines.length && lines[0].trim().startsWith(">")) {
-            lines.shift();
-          }
-          if (lines.length === 1) {
-            messageInput.value = `> ${msg.name}: ${lines[0]}\n` + messageInput.value;
-          } else {
-            let quotedText = lines.map(line => "> " + line).join("\n");
-            messageInput.value = `> ${msg.name}:\n` + quotedText + "\n" + messageInput.value;
-          }
-          messageInput.focus();
-        };
-        messageContainer.appendChild(replyButton);
-        
-        // メッセージ本文の表示
-        const textDiv = document.createElement("div");
-        textDiv.className = "message-text";
-        let linesArr = msg.text.split("\n");
-        linesArr.forEach((line) => {
-          const lineDiv = document.createElement("div");
-          if (line.trim().startsWith(">")) {
-            lineDiv.className = "quote";
-          }
-          lineDiv.textContent = line;
-          textDiv.appendChild(lineDiv);
-        });
-        messageContainer.appendChild(textDiv);
-        
-        // タイムスタンプの表示
-        if (msg.timestamp) {
-          let dateObj;
-          if (typeof msg.timestamp.toDate === "function") {
-            dateObj = msg.timestamp.toDate();
-          } else {
-            dateObj = new Date(msg.timestamp);
-          }
-          const timeDiv = document.createElement("div");
-          timeDiv.className = "message-time";
-          timeDiv.textContent = dateObj.toLocaleString();
-          messageContainer.appendChild(timeDiv);
-        }
-        chatBox.appendChild(messageContainer);
-      });
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
-  </script>
-</body>
-</html>
-
+            alert("メッセージ削除エラー: " + error.message); } messageInput.value = ""; return; } else { alert("この操作は権限がありません。"); return; } } if (messageText === CLEAR_CHAT_PASSWORD) { if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) { try { const chatCollection = collection(db, "chat"); const snapshot = await getDocs(chatCollection); for (const docSnap of snapshot.docs) { await deleteDoc(docSnap.ref); } chatBox.innerHTML = ""; console.log("全ての発言を削除しました。"); messageInput.value = ""; } catch (error) { alert("チャット削除エラー: " + error.message); } return; } else { alert("この操作は権限がありません。"); return; } }
+if (messageText.startsWith("/mute ")) { if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) { alert("この操作は権限がありません。"); return; } const parts = messageText.split(" "); if (parts.length < 2) { alert("使い方: /mute [ユーザー名] [期間]（例: 10m, 30s）"); return; } const targetName = parts[1].trim(); let durationMs = 300000; if (parts.length >= 3) { let dur = parts[2].trim(); if (dur.endsWith("m")) { durationMs = parseFloat(dur.slice(0, -1)) * 60000; } else if (dur.endsWith("s")) { durationMs = parseFloat(dur.slice(0, -1)) * 1000; } else { durationMs = parseFloat(dur) * 60000; } } mutedUsers[targetName] = Date.now() + durationMs; alert(`${targetName} を ${durationMs / 60000} 分 (または ${durationMs / 1000} 秒) ミュートしました。`); messageInput.value = ""; return; } if (messageText.startsWith("/unmute ")) { if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) { alert("この操作は権限がありません。"); return; } const parts = messageText.split(" "); if (parts.length < 2) { alert("使い方: /unmute [ユーザー名]"); return; } const targetName = parts[1].trim(); if (mutedUsers[targetName]) { delete mutedUsers[targetName]; alert(`${targetName} のミュートを解除しました。`); } else { alert(`${targetName} はミュート状態ではありません。`); } messageInput.value = ""; return; } // ★ /topic コマンド ★ // 「ねむい」専用。入力例： /topic 今日のチャレンジ！ if (messageText.startsWith("/topic ")) { if (userBaseName.split("#")[0] !== "ねむい") { alert("この操作は権限がありません。"); return; } const topicText = messageText.substring("/topic ".length).trim(); if (topicText === "") { alert("話題を入力してください。"); return; } const topicDiv = document.getElementById("chat-topic"); topicDiv.textContent = topicText; topicDiv.style.display = "block"; alert("話題が更新されました！"); messageInput.value = ""; return; } if (messageText.startsWith("/omi")) { const result = weightedRandom(fortuneOptions); try { await addDoc(collection(db, "chat"), { text: `【おみくじ】${userBaseName}さんの今日の運勢は…：${result}`, name: "おみくじ", uid: "system", timestamp: new Date() }); } catch (error) { alert("おみくじ送信エラー: " + error.message); } messageInput.value = ""; return; }
+if (messageText.startsWith("/roll")) { const parts = messageText.split(" "); let max = 6; if (parts.length >= 2) { const num = parseInt(parts[1]); if (!isNaN(num) && num > 0) { max = num; } } const rollResult = Math.floor(Math.random() * max) + 1; try { await addDoc(collection(db, "chat"), { text: `【ロール】${userBaseName}さんの結果：${rollResult} (1～${max})`, name: "roll", uid: "system", timestamp: new Date() }); } catch (error) { alert("ロール送信エラー: " + error.message); } messageInput.value = ""; return; } // 通常メッセージ送信 try { await addDoc(collection(db, "chat"), { text: messageText, name: user.displayName || "名無し", uid: user.uid, timestamp: new Date() }); messageInput.value = ""; } catch (error) { alert("メッセージ送信エラー: " + error.message); } }); logoutButton.addEventListener("click", async () => { try { await signOut(auth); console.log("ログアウト成功"); } catch (error) { alert("ログアウトエラー: " + error.message); } }); const chatQuery = query(collection(db, "chat"), orderBy("timestamp", "asc")); onSnapshot(chatQuery, async (snapshot) => { if (snapshot.docs.length > MAX_MESSAGES) { const deleteCount = snapshot.docs.length - MAX_MESSAGES; for (let i = 0; i < deleteCount; i++) { try { await deleteDoc(snapshot.docs[i].ref); } catch (err) { console.error("古いメッセージ削除エラー:", err); } } } chatBox.innerHTML = ""; snapshot.forEach((doc) => { const msg = doc.data(); const messageContainer = document.createElement("div"); messageContainer.className = "message-container"; // 送信者名の表示（IDも含む displayName をそのまま表示） const nameDiv = document.createElement("div"); nameDiv.className = "message-name"; let displayName = msg.name || "名無し"; let namePart = displayName; let colorCode = ""; if (displayName.includes("|")) { [namePart, colorCode] = displayName.split("|"); } const span = document.createElement("span"); if (namePart === "ねむい") { span.className = "rainbow-name"; span.textContent = namePart; } else { span.textContent = namePart; if (pseudoAdmins.has(namePart.split("#")[0])) { span.textContent += " (擬似管理者)"; } if (colorCode) { span.style.color = colorCode; } } nameDiv.appendChild(span); messageContainer.appendChild(nameDiv); // 自分のメッセージの場合、削除ボタンを追加 const currentUser = auth.currentUser; if (currentUser && msg.uid === currentUser.uid) { const deleteButton = document.createElement("button"); deleteButton.className = "delete-button"; deleteButton.textContent = "削除"; deleteButton.onclick = async function() { if (confirm("このメッセージを削除してよろしいですか？")) { try { await deleteDoc(doc.ref); } catch (err) { console.error("メッセージ削除エラー:", err); } } }; messageContainer.appendChild(deleteButton); } // 返信ボタンの設定 const replyButton = document.createElement("button"); replyButton.className = "reply-button"; replyButton.textContent = "返信"; replyButton.onclick = function() { let lines = msg.text.split("\n"); if (lines.length && lines[0].trim().startsWith(">")) { lines.shift(); } if (lines.length === 1) { messageInput.value = `> ${msg.name}: ${lines[0]}\n` + messageInput.value; } else { let quotedText = lines.map(line => "> " + line).join("\n"); messageInput.value = `> ${msg.name}:\n` + quotedText + "\n" + messageInput.value; } messageInput.focus(); }; messageContainer.appendChild(replyButton); // メッセージ本文の表示 const textDiv = document.createElement("div"); textDiv.className = "message-text"; let linesArr = msg.text.split("\n"); linesArr.forEach((line) => { const lineDiv = document.createElement("div"); if (line.trim().startsWith(">")) { lineDiv.className = "quote"; } lineDiv.textContent = line; textDiv.appendChild(lineDiv); }); messageContainer.appendChild(textDiv); // タイムスタンプの表示 if (msg.timestamp) { let dateObj; if (typeof msg.timestamp.toDate === "function") { dateObj = msg.timestamp.toDate(); } else { dateObj = new Date(msg.timestamp); } const timeDiv = document.createElement("div"); timeDiv.className = "message-time"; timeDiv.textContent = dateObj.toLocaleString(); messageContainer.appendChild(timeDiv); } chatBox.appendChild(messageContainer); }); chatBox.scrollTop = chatBox.scrollHeight; }); </script> </body> </html>
