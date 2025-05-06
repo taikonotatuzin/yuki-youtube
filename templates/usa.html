@@ -58,7 +58,7 @@
       display: block;
       border: 4px solid #333;
     }
-    /* スコア表示：canvasの上部中央 */
+    /* スコア表示 (canvas上部中央) */
     #scoreBoard {
       font-size: 24px;
       color: #fff;
@@ -69,7 +69,7 @@
       text-align: center;
       pointer-events: none;
     }
-    /* オーバーレイ：得点時に表示するメッセージと【始める】ボタンをcanvasの上に重ねる */
+    /* オーバーレイ：得点時の文言と【始める】ボタン */
     #overlay {
       position: absolute;
       top: 0;
@@ -115,11 +115,13 @@
           <li>【スマホ／タブレットの場合】： 画面の左半分をタッチ＆ドラッグでプレイヤー1、右半分をタッチ＆ドラッグでプレイヤー2を操作</li>
         </ul>
       </li>
-      <li>「CPU対戦」モードでは右側パドルは自動でボールを追います。</li>
-      <li>ボールの初速は約6px/frame。さらに、ゲーム開始後1分経過ごとに新たなボールが1個ずつ追加されます。</li>
+      <li>「CPU対戦」モードでは、右側パドルが自動でボールを追います。</li>
+      <li>ボールの初速は約6px/frameに設定されています。<br>
+          ※以前は1分ごとに新たなボールが追加される仕様でしたが、今回は常に1個のボールのみとなります。</li>
       <li>ボールが画面左端または右端を抜けると、相手に1点が入ります。</li>
       <li>先に10点先取した方が勝者です。</li>
-      <li>得点が入ると、上部に「〇〇が取りました‼︎」と表示しゲームが一旦ストップします。表示された【始める】ボタンを押すと、ボールは中央にリセットされ再開します。</li>
+      <li>得点が入ると、得点した側の「〇〇が取りました‼︎」と表示され、ゲームは一旦ストップします。<br>
+          表示された【始める】ボタンを押すと、ボールは中央にリセットされ再開します。</li>
     </ul>
   </div>
   
@@ -132,9 +134,9 @@
   <!-- ゲームエリアコンテナ -->
   <div id="gameContainer">
     <canvas id="gameCanvas" width="800" height="500"></canvas>
-    <!-- スコア表示 (canvas上) -->
+    <!-- スコア表示（canvas上） -->
     <div id="scoreBoard">0 : 0</div>
-    <!-- オーバーレイ（得点時の文言と再開ボタン） -->
+    <!-- オーバーレイ（得点時のメッセージと始めるボタン） -->
     <div id="overlay">
       <div id="messageArea"></div>
       <button id="restartBtn">始める</button>
@@ -142,25 +144,25 @@
   </div>
   
   <script>
-    // キャンバスとコンテキストの設定
+    // キャンバス・コンテキスト取得
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const cw = canvas.width;
     const ch = canvas.height;
     
-    // パドルおよびボールのパラメータ
+    // パドルとボールのパラメータ
     const paddleWidth = 20;
     const paddleHeight = 100;
     const ballRadius = 10;
     
-    // モード："cpu" または "p2"
+    // ゲームモード： "cpu" または "p2"
     let gameMode = null;
     
-    // パドルの初期位置
+    // パドル初期状態
     let paddle1 = { x: 10, y: ch / 2 - paddleHeight / 2 };
     let paddle2 = { x: cw - paddleWidth - 10, y: ch / 2 - paddleHeight / 2 };
     
-    // 複数のボールを管理する配列（初期は1個）
+    // ボールは常に1個のみ（以前は複数個追加する仕様でしたが、今回は1個固定）
     let balls = [];
     function createBall() {
       return {
@@ -181,17 +183,17 @@
       document.getElementById("scoreBoard").textContent = score1 + " : " + score2;
     }
     
-    // ゲーム停止状態管理
+    // ゲーム状態管理
     let gameOver = false;
-    let paused = false; // 得点後の一時停止状態
-    let startTime = null; // ゲーム開始時刻（ボール追加用）
+    let paused = false;  // 得点時の一時停止状態
+    let startTime = null;  // ゲーム開始時刻（今回はボール追加機能はなくなりました）
     
     // キーボード入力管理（PC用）
     let keys = {};
     window.addEventListener("keydown", (e) => { keys[e.key] = true; });
     window.addEventListener("keyup", (e) => { keys[e.key] = false; });
     
-    // スマホ／タブレット用タッチ操作：canvas上のtouchmoveでパドルを更新
+    // スマホ／タブレット用：canvas上のtouchmoveイベントでパドルを更新
     canvas.addEventListener("touchmove", function(e) {
       e.preventDefault();
       const touches = e.touches;
@@ -203,38 +205,38 @@
         if (gameMode === "p2") {
           // 2人対戦：左半分でプレイヤー1、右半分でプレイヤー2
           if (touchX < cw / 2) {
-            paddle1.y = touchY - paddleHeight/2;
+            paddle1.y = touchY - paddleHeight / 2;
             paddle1.y = Math.max(0, Math.min(ch - paddleHeight, paddle1.y));
           } else {
-            paddle2.y = touchY - paddleHeight/2;
+            paddle2.y = touchY - paddleHeight / 2;
             paddle2.y = Math.max(0, Math.min(ch - paddleHeight, paddle2.y));
           }
         } else if (gameMode === "cpu") {
-          // CPU対戦：画面の左半分でプレイヤー操作
+          // CPU対戦：画面の左半分でプレイヤーのパドル操作
           if (touchX < cw / 2) {
-            paddle1.y = touchY - paddleHeight/2;
+            paddle1.y = touchY - paddleHeight / 2;
             paddle1.y = Math.max(0, Math.min(ch - paddleHeight, paddle1.y));
           }
         }
       }
     });
     
-    // PCキーボードによるパドル操作の更新
+    // PCキーボードによるパドル操作更新
     function updatePaddlesKeyboard() {
-      // プレイヤー1（左パドル）：W/Sキー
+      // プレイヤー1：W/Sキー
       if (keys["w"] || keys["W"]) { paddle1.y -= 5; }
       if (keys["s"] || keys["S"]) { paddle1.y += 5; }
       paddle1.y = Math.max(0, Math.min(ch - paddleHeight, paddle1.y));
   
       if (gameMode === "p2") {
-        // プレイヤー2（右パドル）：↑/↓キー
+        // プレイヤー2：↑/↓キー
         if (keys["ArrowUp"]) { paddle2.y -= 5; }
         if (keys["ArrowDown"]) { paddle2.y += 5; }
         paddle2.y = Math.max(0, Math.min(ch - paddleHeight, paddle2.y));
       }
     }
     
-    // CPU対戦の場合、右パドル（paddle2）自動操作
+    // CPU対戦の場合、右パドル（paddle2）の自動操作
     function updateCpuPaddle() {
       let targetBall = balls.find(b => b.vx > 0);
       if (!targetBall) { targetBall = balls[0]; }
@@ -243,13 +245,13 @@
       paddle2.y = Math.max(0, Math.min(ch - paddleHeight, paddle2.y));
     }
     
-    // 複数のボールの物理シミュレーションと衝突判定
+    // 複数のボールの物理更新と衝突判定
     function updateBalls() {
       for (let ball of balls) {
         ball.x += ball.vx;
         ball.y += ball.vy;
   
-        // 上下壁との反射
+        // 上下壁による反射
         if (ball.y - ball.radius < 0 || ball.y + ball.radius > ch) {
           ball.vy = -ball.vy;
         }
@@ -270,7 +272,7 @@
           ball.x = paddle2.x - ball.radius;
         }
   
-        // ゴール判定：左側からボールが抜けた → プレイヤー2の得点
+        // ゴール判定：左側から抜けた → プレイヤー2得点
         if (ball.x - ball.radius < 0) {
           score2++;
           updateScoreBoard();
@@ -279,11 +281,12 @@
             showOverlay("プレイヤー2の勝ちです！！");
             return;
           }
-          pauseGame("プレイヤー2が取りました‼︎");
+          paused = true;
+          showOverlay("プレイヤー2が取りました‼︎");
           return;
         }
   
-        // ゴール判定：右側からボールが抜けた → プレイヤー1の得点
+        // ゴール判定：右側から抜けた → プレイヤー1得点
         if (ball.x + ball.radius > cw) {
           score1++;
           updateScoreBoard();
@@ -292,21 +295,18 @@
             showOverlay("プレイヤー1の勝ちです！！");
             return;
           }
-          pauseGame("プレイヤー1が取りました‼︎");
+          paused = true;
+          showOverlay("プレイヤー1が取りました‼︎");
           return;
         }
       }
     }
-    
-    // 1分ごとに新たなボールを追加する
+  
+    // 今回はボール追加の仕様を変更し、常に1個のボールのみとするため、checkAddNewBall()は何もしません
     function checkAddNewBall() {
-      let elapsed = (Date.now() - startTime) / 1000; // 秒単位
-      let expectedBallCount = 1 + Math.floor(elapsed / 60);
-      while (balls.length < expectedBallCount) {
-        balls.push(createBall());
-      }
+      // 以前は1分ごとに新しいボール追加していましたが、今回の仕様ではそのまま1個のみです。
     }
-    
+  
     // ゲーム全体の更新処理
     function updateGame() {
       updatePaddlesKeyboard();
@@ -314,11 +314,10 @@
       updateBalls();
       checkAddNewBall();
     }
-    
+  
     // 描画処理
     function drawGame() {
       ctx.clearRect(0, 0, cw, ch);
-  
       // 各ボールの描画
       for (let ball of balls) {
         ctx.beginPath();
@@ -329,49 +328,40 @@
         ctx.stroke();
         ctx.closePath();
       }
-  
       // 左パドル描画（青）
       ctx.fillStyle = "blue";
       ctx.fillRect(paddle1.x, paddle1.y, paddleWidth, paddleHeight);
-  
       // 右パドル描画（赤）
       ctx.fillStyle = "red";
       ctx.fillRect(paddle2.x, paddle2.y, paddleWidth, paddleHeight);
     }
-    
-    // メインループ（ゲームが停止またはオーバーレイ表示中(paused)なら更新を中断）
+  
+    // メインループ（ゲームが停止中(pausedまたはgameOver)なら更新中断）
     function gameLoop() {
       if (gameOver || paused) return;
       updateGame();
       drawGame();
       requestAnimationFrame(gameLoop);
     }
-    
-    // 得点時に一旦ゲームを停止して、オーバーレイで得点文と【始める】ボタンを表示
-    function pauseGame(message) {
-      paused = true;
-      showOverlay(message);
-    }
-    
-    // オーバーレイ表示処理（得点時、またはゲームオーバー時）
+  
+    // 得点時・ゲームオーバー時のオーバーレイ表示
     function showOverlay(message) {
       const overlay = document.getElementById("overlay");
       const msgArea = document.getElementById("messageArea");
       msgArea.textContent = message;
-      // ボタンの文言は「始める」
       document.getElementById("restartBtn").textContent = "始める";
       overlay.style.display = "flex";
     }
-    
-    // オーバーレイをクリックした【始める】ボタンでゲーム再開
+  
+    // 得点後の一時停止中に【始める】ボタンが押された場合の再開処理
     function resumeGameAfterScore() {
       resetBalls();
       paused = false;
       document.getElementById("overlay").style.display = "none";
       gameLoop();
     }
-    
-    // ゲーム全体リスタート処理（ゲームオーバー時）
+  
+    // ゲームオーバー時のリスタート処理
     function restartGame() {
       score1 = 0;
       score2 = 0;
@@ -385,9 +375,8 @@
       document.getElementById("overlay").style.display = "none";
       gameLoop();
     }
-    
-    // ボタンのイベントリスナー：オーバーレイ上の【始める】ボタンがクリックされたら、
-    // ゲームオーバーならrestartGame()、一時停止中ならresumeGameAfterScore()を呼ぶ
+  
+    // オーバーレイ上【始める】ボタンのイベントリスナー
     document.getElementById("restartBtn").addEventListener("click", function() {
       if (gameOver) {
         restartGame();
@@ -395,7 +384,7 @@
         resumeGameAfterScore();
       }
     });
-    
+  
     // モード選択イベント
     document.getElementById("cpuModeBtn").addEventListener("click", function() {
       gameMode = "cpu";
@@ -407,7 +396,7 @@
       document.getElementById("modeSelect").style.display = "none";
       restartGame();
     });
-    
+  
     // 初回スタート
     restartGame();
   </script>
