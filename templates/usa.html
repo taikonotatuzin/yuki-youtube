@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>うさぎと猟犬</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #f7f7f7;
+      position: relative;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    /* モード選択エリア */
+    #modeSelect {
+      margin: 20px;
+    }
+    button {
+      background-color: #e0f7fa;
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #b2ebf2;
+    }
+    /* Canvas のスタイル */
+    #gameCanvas {
+      background: #fff;
+      border: 2px solid #333;
+      display: block;
+      margin: 0 auto;
+    }
+    /* オンスクリーンタッチ操作用 */
+    .touchControls {
+      display: inline-block;
+      margin: 10px;
+    }
+    #touchControls {
+      margin-top: 10px;
+    }
+    .touchControls p {
+      margin: 5px 0;
+      font-weight: bold;
+    }
+    /* ゲームオーバー画面 */
+    #gameOverScreen {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.95);
+      padding: 20px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <h1>うさぎと猟犬</h1>
+  
+  <!-- モード選択エリア -->
+  <div id="modeSelect">
+    <button id="singleModeBtn">一人モード（CPU対戦）</button>
+    <button id="twoPlayerModeBtn">二人モード</button>
+  </div>
+  
+  <!-- Canvasエリア -->
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
+  
+  <!-- タッチ操作用コントロールパネル -->
+  <div id="touchControls">
+    <!-- うさぎ操作用 -->
+    <div id="controlsRabbit" class="touchControls">
+      <p>うさぎ操作</p>
+      <button id="rabbitUp">↑</button>
+      <button id="rabbitDown">↓</button>
+      <button id="rabbitLeft">←</button>
+      <button id="rabbitRight">→</button>
+    </div>
+    <!-- 猟犬操作用（二人モード時のみ表示） -->
+    <div id="controlsHound" class="touchControls" style="display:none;">
+      <p>猟犬操作</p>
+      <button id="houndUp">↑</button>
+      <button id="houndDown">↓</button>
+      <button id="houndLeft">←</button>
+      <button id="houndRight">→</button>
+    </div>
+  </div>
+  
+  <!-- ゲームオーバー表示用 -->
+  <div id="gameOverScreen">
+    <h2>ゲームオーバー</h2>
+    <p id="finalScore"></p>
+    <button id="restartBtn">もう一度遊ぶ</button>
+  </div>
+  
+  <script>
+    // キャンバスの設定
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // 主要キャラクター
+    let rabbit = {
+      x: width / 2,
+      y: height / 2,
+      radius: 15,
+      speed: 5,
+      color: "pink"
+    };
+    
+    // 複数の猟犬を管理する配列
+    let hounds = [];
+    
+    // 障害物（矩形）の配列（サイズは40×40）
+    let obstacles = [];
+    
+    // ゲーム管理変数
+    let gameOver = false;
+    let score = 0;
+    let startTime = null;
+    
+    // モード： "single"（一人モード：うさぎ操作＋猟犬自動） or "two"（二人モード：うさぎと猟犬共に操作）
+    let gameMode = null;
+    
+    // キーボード入力管理
+    let keys = {};
+    window.addEventListener("keydown", (e) => { keys[e.key] = true; });
+    window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+    
+    // タッチ操作用フラグ（うさぎ）
+    let rabbitControls = { up: false, down: false, left: false, right: false };
+    // タッチ操作用フラグ（猟犬：二人モード時のみ）
+    let houndControls = { up: false, down: false, left: false, right: false };
+    
+    // 自動で追加するタイマー用（猟犬・障害物）
+    let lastHoundSpawnTime = Date.now();
+    const houndSpawnInterval = 15000; // 15秒ごとに新たな猟犬を追加
+    let lastObstacleSpawnTime = Date.now();
+    const obstacleSpawnInterval = 10000; // 10秒ごとに新たな障害物を追加
+    
+    // タッチ操作用イベントの設定
+    function setupTouchControls() {
+      // うさぎ操作ボタン
+      const rabbitUp = document.getElementById("rabbitUp");
+      const rabbitDown = document.getElementById("rabbitDown");
+      const rabbitLeft = document.getElementById("rabbitLeft");
+      const rabbitRight = document.getElementById("rabbitRight");
+      rabbitUp.addEventListener("touchstart", (e) => { e.preventDefault(); rabbitControls.up = true; });
+      rabbitUp.addEventListener("touchend", (e) => { e.preventDefault(); rabbitControls.up = false; });
+      rabbitDown.addEventListener("touchstart", (e) => { e.preventDefault(); rabbitControls.down = true; });
+      rabbitDown.addEventListener("touchend", (e) => { e.preventDefault(); rabbitControls.down = false; });
+      rabbitLeft.addEventListener("touchstart", (e) => { e.preventDefault(); rabbitControls.left = true; });
+      rabbitLeft.addEventListener("touchend", (e) => { e.preventDefault(); rabbitControls.left = false; });
+      rabbitRight.addEventListener("touchstart", (e) => { e.preventDefault(); rabbitControls.right = true; });
+      rabbitRight.addEventListener("touchend", (e) => { e.preventDefault(); rabbitControls.right = false; });
+      
+      // 猟犬操作ボタン（2Pモード用）
+      const houndUp = document.getElementById("houndUp");
+      const houndDown = document.getElementById("houndDown");
+      const houndLeft = document.getElementById("houndLeft");
+      const houndRight = document.getElementById("houndRight");
+      houndUp.addEventListener("touchstart", (e) => { e.preventDefault(); houndControls.up = true; });
+      houndUp.addEventListener("touchend", (e) => { e.preventDefault(); houndControls.up = false; });
+      houndDown.addEventListener("touchstart", (e) => { e.preventDefault(); houndControls.down = true; });
+      houndDown.addEventListener("touchend", (e) => { e.preventDefault(); houndControls.down = false; });
+      houndLeft.addEventListener("touchstart", (e) => { e.preventDefault(); houndControls.left = true; });
+      houndLeft.addEventListener("touchend", (e) => { e.preventDefault(); houndControls.left = false; });
+      houndRight.addEventListener("touchstart", (e) => { e.preventDefault(); houndControls.right = true; });
+      houndRight.addEventListener("touchend", (e) => { e.preventDefault(); houndControls.right = false; });
+    }
+    
+    // 円と矩形の衝突判定（うさぎと障害物用）
+    function circleRectCollision(circle, rect) {
+      const closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.width));
+      const closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.height));
+      const dx = circle.x - closestX;
+      const dy = circle.y - closestY;
+      return (dx * dx + dy * dy) < (circle.radius * circle.radius);
+    }
+    
+    // 新たな猟犬をランダムな位置から追加する
+    function spawnHound() {
+      let side = Math.floor(Math.random() * 4);
+      let x, y;
+      if (side === 0) { // 上
+        x = Math.random() * width;
+        y = 0;
+      } else if (side === 1) { // 右
+        x = width;
+        y = Math.random() * height;
+      } else if (side === 2) { // 下
+        x = Math.random() * width;
+        y = height;
+      } else { // 左
+        x = 0;
+        y = Math.random() * height;
+      }
+      // 新たな猟犬は自動制御（auto:true）
+      hounds.push({ x: x, y: y, radius: 20, speed: 2.5, color: "brown", auto: true });
+    }
+    
+    // 新たな障害物をランダムな位置に追加する
+    function spawnObstacle() {
+      const size = 40;
+      const x = Math.random() * (width - size);
+      const y = Math.random() * (height - size);
+      obstacles.push({ x: x, y: y, width: size, height: size });
+    }
+    
+    // メインの更新処理
+    function update() {
+      if (gameOver) return;
+      
+      // うさぎの移動（キーボードとタッチ操作）
+      if (keys["ArrowUp"]) rabbit.y -= rabbit.speed;
+      if (keys["ArrowDown"]) rabbit.y += rabbit.speed;
+      if (keys["ArrowLeft"]) rabbit.x -= rabbit.speed;
+      if (keys["ArrowRight"]) rabbit.x += rabbit.speed;
+      if (rabbitControls.up) rabbit.y -= rabbit.speed;
+      if (rabbitControls.down) rabbit.y += rabbit.speed;
+      if (rabbitControls.left) rabbit.x -= rabbit.speed;
+      if (rabbitControls.right) rabbit.x += rabbit.speed;
+      
+      // 猟犬の動作
+      for (let i = 0; i < hounds.length; i++) {
+        let h = hounds[i];
+        // 二人モードの場合、先頭の猟犬はプレイヤー操作（W/A/S/Dおよびタッチ）、
+        // その他は自動で追いかける
+        if (gameMode === "two" && i === 0 && h.auto === false) {
+          if (keys["w"] || keys["W"]) h.y -= h.speed;
+          if (keys["s"] || keys["S"]) h.y += h.speed;
+          if (keys["a"] || keys["A"]) h.x -= h.speed;
+          if (keys["d"] || keys["D"]) h.x += h.speed;
+          if (houndControls.up) h.y -= h.speed;
+          if (houndControls.down) h.y += h.speed;
+          if (houndControls.left) h.x -= h.speed;
+          if (houndControls.right) h.x += h.speed;
+        } else {
+          // 自動制御：うさぎを追いかける
+          let dx = rabbit.x - h.x;
+          let dy = rabbit.y - h.y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist !== 0) {
+            h.x += (dx / dist) * h.speed;
+            h.y += (dy / dist) * h.speed;
+          }
+        }
+        // 猟犬にもラップアラウンドを適用
+        if (h.x < 0) h.x = width;
+        if (h.x > width) h.x = 0;
+        if (h.y < 0) h.y = height;
+        if (h.y > height) h.y = 0;
+      }
+      
+      // うさぎのラップアラウンド
+      if (rabbit.x < 0) rabbit.x = width;
+      if (rabbit.x > width) rabbit.x = 0;
+      if (rabbit.y < 0) rabbit.y = height;
+      if (rabbit.y > height) rabbit.y = 0;
+      
+      // うさぎと各猟犬との衝突判定
+      for (let i = 0; i < hounds.length; i++) {
+        const dx = rabbit.x - hounds[i].x;
+        const dy = rabbit.y - hounds[i].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < rabbit.radius + hounds[i].radius) {
+          gameOver = true;
+          showGameOver();
+        }
+      }
+      
+      // うさぎと障害物との衝突判定
+      for (let obs of obstacles) {
+        if (circleRectCollision(rabbit, obs)) {
+          gameOver = true;
+          showGameOver();
+        }
+      }
+      
+      // 時間経過で猟犬を追加
+      const now = Date.now();
+      if (now - lastHoundSpawnTime > houndSpawnInterval) {
+        spawnHound();
+        lastHoundSpawnTime = now;
+      }
+      
+      // 時間経過で障害物を追加
+      if (now - lastObstacleSpawnTime > obstacleSpawnInterval) {
+        spawnObstacle();
+        lastObstacleSpawnTime = now;
+      }
+      
+      // スコアは生存時間（秒）
+      score = ((Date.now() - startTime) / 1000).toFixed(2);
+    }
+    
+    // 描画処理
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+      
+      // 障害物の描画
+      for (let obs of obstacles) {
+        ctx.fillStyle = "gray";
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+        ctx.strokeStyle = "black";
+        ctx.strokeRect(obs.x, obs.y, obs.width, obs.height);
+      }
+      
+      // うさぎの描画
+      ctx.beginPath();
+      ctx.arc(rabbit.x, rabbit.y, rabbit.radius, 0, Math.PI * 2);
+      ctx.fillStyle = rabbit.color;
+      ctx.fill();
+      ctx.strokeStyle = "black";
+      ctx.stroke();
+      ctx.closePath();
+      
+      // 各猟犬の描画
+      for (let h of hounds) {
+        ctx.beginPath();
+        ctx.arc(h.x, h.y, h.radius, 0, Math.PI * 2);
+        ctx.fillStyle = h.color;
+        ctx.fill();
+        ctx.strokeStyle = "black";
+        ctx.stroke();
+        ctx.closePath();
+      }
+      
+      // スコア描画
+      ctx.fillStyle = "black";
+      ctx.font = "20px sans-serif";
+      ctx.fillText("スコア: " + score, 10, 30);
+    }
+    
+    // メインループ
+    function loop() {
+      update();
+      draw();
+      if (!gameOver) {
+        requestAnimationFrame(loop);
+      }
+    }
+    
+    // ゲームオーバー時の処理
+    function showGameOver() {
+      document.getElementById("gameOverScreen").style.display = "block";
+      document.getElementById("finalScore").textContent = "最終スコア: " + score + "秒";
+    }
+    
+    // ゲームリセット
+    function resetGame() {
+      // うさぎの初期位置
+      rabbit.x = width / 2;
+      rabbit.y = height / 2;
+      // 猟犬と障害物配列のリセット
+      hounds = [];
+      obstacles = [];
+      // モードに応じた初期猟犬の設定
+      if (gameMode === "single") {
+        // 一人モードの場合、全猟犬は自動制御
+        hounds.push({ x: 50, y: 50, radius: 20, speed: 2.5, color: "brown", auto: true });
+      } else {
+        // 二人モードの場合、先頭はプレイヤー操作（manual）それ以降は自動
+        hounds.push({ x: 50, y: 50, radius: 20, speed: 2.5, color: "brown", auto: false });
+      }
+      gameOver = false;
+      startTime = Date.now();
+      score = 0;
+      document.getElementById("gameOverScreen").style.display = "none";
+      keys = {};
+      rabbitControls = { up: false, down: false, left: false, right: false };
+      houndControls = { up: false, down: false, left: false, right: false };
+      lastHoundSpawnTime = Date.now();
+      lastObstacleSpawnTime = Date.now();
+      loop();
+    }
+    
+    // モード選択イベントの設定
+    document.getElementById("singleModeBtn").addEventListener("click", () => {
+      gameMode = "single";
+      document.getElementById("modeSelect").style.display = "none";
+      // 一人モードなら猟犬操作パネルは非表示
+      document.getElementById("controlsHound").style.display = "none";
+      // 初期猟犬は自動制御
+      hounds = [];
+      hounds.push({ x: 50, y: 50, radius: 20, speed: 2.5, color: "brown", auto: true });
+      startTime = Date.now();
+      setupTouchControls();
+      loop();
+    });
+    document.getElementById("twoPlayerModeBtn").addEventListener("click", () => {
+      gameMode = "two";
+      document.getElementById("modeSelect").style.display = "none";
+      // 二人モードなら猟犬操作パネルを表示
+      document.getElementById("controlsHound").style.display = "inline-block";
+      // 初期猟犬（先頭はプレイヤー操作）
+      hounds = [];
+      hounds.push({ x: 50, y: 50, radius: 20, speed: 2.5, color: "brown", auto: false });
+      startTime = Date.now();
+      setupTouchControls();
+      loop();
+    });
+    
+    // リスタートボタンの設定
+    document.getElementById("restartBtn").addEventListener("click", resetGame);
+  </script>
+</body>
+</html>
