@@ -37,7 +37,7 @@ ua.indexOf('iPad') > -1 ||
 (ua.indexOf('Macintosh') > -1 && 'ontouchend' in document) ||
 ua.indexOf('Android') > -1
 )
-// タブレット端末でのみ最小幅を設定
+// タブレット端末での最小幅を設定
 if (isTablet) ViewportExtra.setContent({ minWidth: 1164 })
 })
 </script>
