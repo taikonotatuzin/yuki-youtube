@@ -75,7 +75,7 @@
       <li><strong>対戦モード：</strong>
         <ul>
           <li>【対人プレイ】：2人のプレイヤーが同じデバイスで交互に駒を落とします。</li>
-          <li>【CPU対戦】：Player 1（赤）が人間のプレイヤーとなり、Player 2の役割はCPU（黄色）が担当します。CPUは自動で駒を落とし、特にPlayer 1が次の一手で勝利できる可能性がある場合、その列へ駒を置いて防御します。</li>
+          <li>【CPU対戦】：Player 1（赤）が人間プレイヤーとなり、Player 2の役割はCPU（黄色）が担当します。CPUは自動で駒を落とし、勝てる手があればそれを実行、または相手の勝利を阻止します。</li>
         </ul>
       </li>
       <li><strong>操作方法：</strong>PCではキャンバス上をクリック、スマホ・タブレットではタッチ操作で任意の列に駒を落とすことができます。</li>
@@ -256,39 +256,57 @@
       e.preventDefault();
     });
 
-    // CPU の駒を自動で落とす（防御重視の戦略：Player 1が次の一手で勝利できる場合、その手をブロック）
+    // CPU の駒を自動で落とす関数（攻撃的戦略＋防御戦略）
     function cpuMove() {
       setTimeout(() => {
         if (gameOver) return;
         
-        // 防御：Player 1 (red)が次の一手で勝てるかどうか、各列をシミュレーション
-        let blockColumn = null;
+        let targetCol = null;
+        
+        // ① 攻撃的戦略：もしCPU (Yellow) がここに置いて勝利できるならその列に置く
         for (let c = 0; c < cols; c++) {
           let availableRow = getAvailableRow(c);
           if (availableRow !== -1) {
-            // シミュレーションとして、ここにPlayer 1の駒を置いた場合の勝利をチェック
-            board[availableRow][c] = 1;
-            if (checkWin(availableRow, c, 1)) {
-              blockColumn = c;
-              board[availableRow][c] = 0; // シミュレーションのためリセット
+            board[availableRow][c] = 2;  // CPU の駒としてシミュレーション
+            if (checkWin(availableRow, c, 2)) {
+              targetCol = c;
+              board[availableRow][c] = 0;  // シミュレーション後にリセット
               break;
             }
             board[availableRow][c] = 0;
           }
         }
         
-        // 有効な列をリストアップ
+        // ② 防御戦略：攻撃手がなければ、相手 (Red) が次の一手で勝利できるかどうかチェック
+        if (targetCol === null) {
+          let blockColumn = null;
+          for (let c = 0; c < cols; c++) {
+            let availableRow = getAvailableRow(c);
+            if (availableRow !== -1) {
+              board[availableRow][c] = 1;  // 相手の駒としてシミュレーション
+              if (checkWin(availableRow, c, 1)) {
+                blockColumn = c;
+                board[availableRow][c] = 0;
+                break;
+              }
+              board[availableRow][c] = 0;
+            }
+          }
+          targetCol = blockColumn;
+        }
+        
+        // ③ どちらにも該当しなければ、有効な列からランダムに選択
         let availableCols = [];
         for (let c = 0; c < cols; c++) {
           if (getAvailableRow(c) !== -1) {
             availableCols.push(c);
           }
         }
+        if (targetCol === null && availableCols.length > 0) {
+          targetCol = availableCols[Math.floor(Math.random() * availableCols.length)];
+        }
         
-        // ブロックすべき列があればその列を、なければランダムに選択
-        let targetCol = (blockColumn !== null) ? blockColumn 
-                                               : availableCols[Math.floor(Math.random() * availableCols.length)];
-        
+        if (targetCol === null) return;
         let row = getAvailableRow(targetCol);
         if (row === -1) return;
         board[row][targetCol] = currentPlayer;
