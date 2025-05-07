@@ -729,13 +729,13 @@
       }
       
       if (messageText.startsWith("/mute ")) {
-        if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
+        if (userBaseName.split("#")[0] !== "ねむい") {
           alert("この操作は権限がありません。");
           return;
         }
         const parts = messageText.split(" ");
-        if (parts.length < 2) {
-          alert("使い方: /mute [ユーザー名] [期間]（例: 10m, 30s）");
+        if (parts.length < 2) { 
+          alert("使い方: /adminadd [名前]");
           return;
         }
         const targetName = parts[1].trim();
@@ -754,6 +754,11 @@
         alert(`${targetName} を ${durationMs / 60000} 分 (または ${durationMs / 1000} 秒) ミュートしました。`);
         messageInput.value = "";
         return;
+      }
+       else {
+          alert("この操作は権限がありません。");
+          return;
+        }
       }
       
       if (messageText.startsWith("/unmute ")) {
