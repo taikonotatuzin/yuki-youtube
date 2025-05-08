@@ -367,12 +367,39 @@ def home(response: Response, request: Request, yuki: Union[str] = Cookie(None)):
     return redirect("/genesis")
 
 @app.get('/watch', response_class=HTMLResponse)
-def video(v: str, response: Response, request: Request, yuki: Union[str] = Cookie(None)):
-    if not checkCookie(yuki):
+def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
+    # v: video_id
+    if not(checkCookie(yuki)):
         return redirect("/")
-    response.set_cookie(key="yuki", value="True", max_age=7 * 24 * 60 * 60)
+    response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
     video_data = getVideoData(v)
     template_name = "ume.html" if request.cookies.get("ume_toggle", "false") == "true" else "video.html"
+    '''
+    return [
+        {
+            'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
+            'description_html': t["descriptionHtml"].replace("\n", "<br>"),
+            'title': t["title"],
+            'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"]))
+            'author_id': t["authorId"],
+            'author': t["author"],
+            'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
+            'view_count': t["viewCount"],
+            'like_count': t["likeCount"],
+            'subscribers_count': t["subCountText"]
+        },
+        [
+            {
+                "video_id": i["videoId"],
+                "title": i["title"],
+                "author_id": i["authorId"],
+                "author": i["author"],
+                "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
+                "view_count_text": i["viewCountText"]
+            } for i in recommended_videos
+        ]
+    ]
+    '''
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
     return template(template_name, {
         "request": request,
@@ -387,34 +414,32 @@ def video(v: str, response: Response, request: Request, yuki: Union[str] = Cooki
         "view_count": video_data[0]['view_count'],
         "like_count": video_data[0]['like_count'],
         "subscribers_count": video_data[0]['subscribers_count'],
-        "recommended_videos": video_data[1]
+        "recommended_videos": video_data[1],
+        "proxy":proxy
     })
-
 @app.get('/w', response_class=HTMLResponse)
-def video_alias(v: str, response: Response, request: Request, yuki: Union[str] = Cookie(None)):
-    if not checkCookie(yuki):
+def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
+    # v: video_id
+    if not(checkCookie(yuki)):
         return redirect("/")
-    response.set_cookie(key="yuki", value="True", max_age=7 * 24 * 60 * 60)
+    response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
     video_data = getVideoData(v)
-    response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
-    return template('hiquo.html', {
-        "request": request,
-        "videoid": v,
-        "videourls": video_data[0]['video_urls'],
-        "highstream_url": video_data[0]['highstream_url'],
-        "audio_url": video_data[0]['audio_url'],
-        "description": video_data[0]['description_html'],
-        "video_title": video_data[0]['title'],
-        "author_id": video_data[0]['author_id'],
-        "author_icon": video_data[0]['author_thumbnails_url'],
-        "author": video_data[0]['author'],
-        "length_text": video_data[0]['length_text'],
-        "view_count": video_data[0]['view_count'],
-        "like_count": video_data[0]['like_count'],
-        "subscribers_count": video_data[0]['subscribers_count'],
-        "recommended_videos": video_data[1]
-    })
-
+    '''
+    return [
+        {
+            'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
+            'highstream_url': highstream_url,
+            'audio_url': audio_url,
+            'description_html': t["descriptionHtml"].replace("\n", "<br>"),
+            'title': t["title"],
+            'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"]))
+            'author_id': t["authorId"],
+            'author': t["author"],
+            'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
+            'view_count': t["viewCount"],
+            'like_count': t["likeCount"],
+            'subscribers_count': t["subCountText"]
+        },
         [
             {
                 "video_id": i["videoId"],
@@ -819,6 +844,9 @@ def list_page(response: Response, request: Request):
 @app.get("/chat", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("chat.html", {"request": request})
+@app.get("/a", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("a.py", {"request": request})
 
 @app.exception_handler(500)
 def error500(request: Request, __):
