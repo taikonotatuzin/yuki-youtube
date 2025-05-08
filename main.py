@@ -265,6 +265,277 @@ def getSearchData(q, page):
     )
     return [formatSearchData(data_dict) for data_dict in datas_dict]
 
+import json
+import requests
+import urllib.parse
+import time
+import datetime
+import random
+import os
+import subprocess
+from cache import cache
+import ast
+
+# -------------------------------
+# タイムアウトなどの設定
+# -------------------------------
+max_api_wait_time = (1.5, 1)
+max_time = 10
+
+# -------------------------------
+# ユーザーエージェントリスト
+# -------------------------------
+user_agents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/163.43.250.132 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36'
+]
+
+def getRandomUserAgent():
+    """
+    ランダムなUser-Agentに加え、追加のリクエストヘッダーを設定する
+    """
+    user_agent = user_agents[random.randint(0, len(user_agents) - 1)]
+    print("Using User-Agent:", user_agent)
+    headers = {
+        'User-Agent': user_agent,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+    }
+    return headers
+
+# -------------------------------
+# InvidiousAPI クラス
+# -------------------------------
+class InvidiousAPI:
+    def __init__(self):
+        self.all = ast.literal_eval(
+            requests.get(
+                'https://github.com/M-14-deep/Kari/raw/refs/heads/main/Kari.',
+                headers=getRandomUserAgent(),
+                timeout=(1.0, 0.5)
+            ).text
+        )
+        
+        self.video = self.all['video']
+        self.playlist = self.all['playlist']
+        self.search = self.all['search']
+        self.channel = self.all['channel']
+        self.comments = self.all['comments']
+
+        self.check_video = False
+
+    def info(self):
+        return {
+            'API': self.all,
+            'checkVideo': self.check_video
+        }
+
+invidious_api = InvidiousAPI()
+
+url = requests.get(
+    'https://raw.githubusercontent.com/LunaKamituki/Yuki-BBS-Server-URL/refs/heads/main/server.txt',
+    headers=getRandomUserAgent()
+).text.rstrip()
+
+version = "1.0"
+new_instance_version = "1.3.2"
+
+os.system("chmod 777 ./yukiverify")
+
+class APITimeoutError(Exception):
+    pass
+
+class UnallowedBot(Exception):
+    pass
+
+def isJSON(json_str):
+    try:
+        json.loads(json_str)
+        return True
+    except json.JSONDecodeError:
+        pass
+    return False
+
+def updateList(list_obj, str_val):
+    list_obj.append(str_val)
+    list_obj.remove(str_val)
+    return list_obj
+
+def requestAPI(path, api_urls):
+    """
+    各APIエンドポイントに対して待機せず即座にリクエストする。
+    複数のAPIを順次試行し、成功した結果（またはタイムアウト例外）を返す。
+    """
+    starttime = time.time()
+    
+    for api in api_urls:
+        if time.time() - starttime >= max_time - 1:
+            break
+
+        try:
+            full_url = api + 'api/v1' + path
+            print("Requesting URL:", full_url)
+            res = requests.get(full_url, headers=getRandomUserAgent(), timeout=max_api_wait_time)
+            
+            if res.status_code == requests.codes.ok and isJSON(res.text):
+                if invidious_api.check_video and path.startswith('/video/'):
+                    # 動画の有無をチェックする場合
+                    video_res = requests.get(
+                        json.loads(res.text)['formatStreams'][0]['url'],
+                        headers=getRandomUserAgent(),
+                        timeout=(3.0, 0.5)
+                    )
+                    if 'video' not in video_res.headers.get('Content-Type', ''):
+                        print(f"No Video(True)({video_res.headers.get('Content-Type', '')}): {api}")
+                        updateList(api_urls, api)
+                        continue
+
+                if path.startswith('/channel/') and json.loads(res.text)["latestvideo"] == []:
+                    print(f"No Channel: {api}")
+                    updateList(api_urls, api)
+                    continue
+
+                print(f"Success({invidious_api.check_video})({path.split('/')[1].split('?')[0]}): {api}")
+                return res.text
+
+            elif isJSON(res.text):
+                err_text = json.loads(res.text).get('error', 'Unknown error').replace('error', 'err0r')
+                print(f"Returned Err0r(JSON): {api} ('{err_text}')")
+                updateList(api_urls, api)
+            else:
+                print(f"Returned Err0r: {api} ('{res.text[:100]}')")
+                updateList(api_urls, api)
+        except Exception as e:
+            print(f"Err0r: {api} 例外: {e}")
+            updateList(api_urls, api)
+            # エラー発生時も待機せず、すぐに次のAPIを試行
+
+    raise APITimeoutError("APIがタイムアウトしました")
+
+# 以下、その他の関数は元の実装通りです。
+def getInfo(request):
+    return json.dumps([version, os.environ.get('RENDER_EXTERNAL_URL'), str(request.scope["headers"]), str(request.scope['router'])[39:-2]])
+
+failed = "Load Failed"
+
+def getVideoData(videoid):
+    t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
+    if 'recommendedvideo' in t:
+        recommended_videos = t["recommendedvideo"]
+    elif 'recommendedVideos' in t:
+        recommended_videos = t["recommendedVideos"]
+    else:
+        recommended_videos = [{
+            "videoId": failed,
+            "title": failed,
+            "authorId": failed,
+            "author": failed,
+            "lengthSeconds": 0,
+            "viewCountText": "Load Failed"
+        }]
+
+    adaptiveFormats = t.get("adaptiveFormats", [])
+    highstream_url = None
+    audio_url = None
+
+    # 高画質動画 (webm 1080p または 720p)
+    for stream in adaptiveFormats:
+        if stream.get("container") == "webm" and stream.get("resolution") == "1080p":
+            highstream_url = stream.get("url")
+            break
+    if not highstream_url:
+        for stream in adaptiveFormats:
+            if stream.get("container") == "webm" and stream.get("resolution") == "720p":
+                highstream_url = stream.get("url")
+                break
+
+    # 音声ストリーム (m4a AUDIO_QUALITY_MEDIUM)
+    for stream in adaptiveFormats:
+        if stream.get("container") == "m4a" and stream.get("audioQuality") == "AUDIO_QUALITY_MEDIUM":
+            audio_url = stream.get("url")
+            break
+
+    adaptive = t.get('adaptiveFormats', [])
+    streamUrls = [
+        {
+            'url': stream['url'],
+            'resolution': stream['resolution']
+        }
+        for stream in adaptive
+        if stream.get('container') == 'webm' and stream.get('resolution')
+    ]
+    return [
+      {
+        'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
+        'highstream_url': highstream_url,
+        'audio_url': audio_url,
+        'description_html': t["descriptionHtml"].replace("\n", "<br>"),
+        'title': t["title"],
+        'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"])),
+        'author_id': t["authorId"],
+        'author': t["author"],
+        'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
+        'view_count': t["viewCount"],
+        'like_count': t["likeCount"],
+        'subscribers_count': t["subCountText"],
+        'streamUrls': streamUrls
+    },
+    [
+      {
+        "video_id": i["videoId"],
+        "title": i["title"],
+        "author_id": i["authorId"],
+        "author": i["author"],
+        "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
+        "view_count_text": i["viewCountText"]
+      } for i in recommended_videos]
+    ]
+
+def getSearchData(q, page):
+    def formatSearchData(data_dict):
+        if data_dict["type"] == "video":
+            return {
+                "type": "video",
+                "title": data_dict["title"] if 'title' in data_dict else failed,
+                "id": data_dict["videoId"] if 'videoId' in data_dict else failed,
+                "authorId": data_dict["authorId"] if 'authorId' in data_dict else failed,
+                "author": data_dict["author"] if 'author' in data_dict else failed,
+                "published": data_dict["publishedText"] if 'publishedText' in data_dict else failed,
+                "length": str(datetime.timedelta(seconds=data_dict["lengthSeconds"])),
+                "view_count_text": data_dict["viewCountText"]
+            }
+        elif data_dict["type"] == "playlist":
+            return {
+                "type": "playlist",
+                "title": data_dict["title"] if 'title' in data_dict else failed,
+                "id": data_dict['playlistId'] if 'playlistId' in data_dict else failed,
+                "thumbnail": data_dict["playlistThumbnail"] if 'playlistThumbnail' in data_dict else failed,
+                "count": data_dict["videoCount"] if 'videoCount' in data_dict else failed
+            }
+        elif data_dict["authorThumbnails"][-1]["url"].startswith("https"):
+            return {
+                "type": "channel",
+                "author": data_dict["author"] if 'author' in data_dict else failed,
+                "id": data_dict["authorId"] if 'authorId' in data_dict else failed,
+                "thumbnail": data_dict["authorThumbnails"][-1]["url"] if ('authorThumbnails' in data_dict and 
+                              len(data_dict["authorThumbnails"]) and 'url' in data_dict["authorThumbnails"][-1]) else failed
+            }
+        else:
+            return {
+                "type": "channel",
+                "author": data_dict["author"] if 'author' in data_dict else failed,
+                "id": data_dict["authorId"] if 'authorId' in data_dict else failed,
+                "thumbnail": "https://" + data_dict['authorThumbnails'][-1]['url']
+            }
+
+    datas_dict = json.loads(
+        requestAPI(f"/search?q={urllib.parse.quote(q)}&page={page}&hl=jp", invidious_api.search)
+    )
+    return [formatSearchData(data_dict) for data_dict in datas_dict]
+
 def getChannelData(channelid):
     t = json.loads(requestAPI(f"/channels/{urllib.parse.quote(channelid)}", invidious_api.channel))
     if 'latestvideo' in t:
