@@ -785,26 +785,49 @@ if (messageText.startsWith("/unmute ")) {
   return;
 }
 
-      
-      // ★ /topic コマンド ★
-      // 「ねむい」専用。入力例： /topic 今日のチャレンジ！
-      if (messageText.startsWith("/topic ")) {
-        if (userBaseName.split("#")[0] !== "ねむい") {
-          alert("この操作は権限がありません。");
+
+        if (messageText.startsWith("/topic ")) {
+          // 権限チェック
+          if (userBaseName.split("#")[0] !== "ねむい") {
+            alert("この操作は権限がありません。");
+            return;
+          }
+          const topicText = messageText.substring("/topic ".length).trim();
+          if (topicText === "") {
+            alert("話題を入力してください。");
+            return;
+          }
+          // まず既存の「chat-topic」ノードのデータを削除し、その後新しいデータを書き込みます。
+          database.ref("chat-topic").remove()
+            .then(function () {
+              return database.ref("chat-topic").set({
+                topic: topicText,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
+              });
+            })
+            .then(function () {
+              alert("話題が更新されました！");
+              messageInput.value = "";
+            })
+            .catch(function (error) {
+              console.error("Error updating topic: ", error);
+              alert("話題の更新に失敗しました。");
+            });
           return;
         }
-        const topicText = messageText.substring("/topic ".length).trim();
-        if (topicText === "") {
-          alert("話題を入力してください。");
-          return;
+
+        // その他のメッセージ処理があればここへ…
+      });
+
+      // Firebase から「chat-topic」の変更をリアルタイムで取得して表示更新
+      database.ref("chat-topic").on("value", function (snapshot) {
+        const data = snapshot.val();
+        if (data && data.topic) {
+          const topicDiv = document.getElementById("chat-topic");
+          topicDiv.textContent = data.topic;
+          topicDiv.style.display = "block";
         }
-        const topicDiv = document.getElementById("chat-topic");
-        topicDiv.textContent = topicText;
-        topicDiv.style.display = "block";
-        alert("話題が更新されました！");
-        messageInput.value = "";
-        return;
-      }
+      });
       
       if (messageText.startsWith("/omi")) {
         const result = weightedRandom(fortuneOptions);
