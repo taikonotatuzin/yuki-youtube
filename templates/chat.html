@@ -470,35 +470,6 @@
       await fetchNews();
       setInterval(fetchNews, 10 * 60 * 1000); // 10分ごとに更新
     });
-    
-        const darkModeToggle = document.getElementById("darkModeToggle");
-    darkModeToggle.addEventListener("click", () => {
-      document.body.classList.toggle("dark-mode");
-    });
-    
-    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
-    const messageInput = document.getElementById("messageInput");
-    const typingIndicator = document.getElementById("typing-indicator");
-    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
-    const messageInput = document.getElementById("messageInput");
-    const typingIndicator = document.getElementById("typing-indicator");
-    
-    let typingTimeout;  // タイマー用変数（直近の入力から一定時間経過後にクリアする）
-    
-    // 入力イベント監視
-    messageInput.addEventListener("input", () => {
-      // ユーザーが入力中ならすぐにインジケーターを表示
-      typingIndicator.textContent = "タイピング中…";
-      
-      // 前回設定していたタイマーがあればクリア
-      if (typingTimeout) clearTimeout(typingTimeout);
-      
-      // 入力が止まったら1秒後にインジケーター表示を消去
-      typingTimeout = setTimeout(() => {
-        typingIndicator.textContent = "";
-      }, 1000); // 1000ミリ秒＝1秒
-    });
-
     signupButton.addEventListener("click", async () => {
       const name = document.getElementById("signupName").value;
       const password = document.getElementById("signupPassword").value;
@@ -927,6 +898,34 @@
         messageInput.value = "";
         return;
       }
+              const darkModeToggle = document.getElementById("darkModeToggle");
+    darkModeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+    });
+    
+    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
+    const messageInput = document.getElementById("messageInput");
+    const typingIndicator = document.getElementById("typing-indicator");
+    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
+    const messageInput = document.getElementById("messageInput");
+    const typingIndicator = document.getElementById("typing-indicator");
+    
+    let typingTimeout;  // タイマー用変数（直近の入力から一定時間経過後にクリアする）
+    
+    // 入力イベント監視
+    messageInput.addEventListener("input", () => {
+      // ユーザーが入力中ならすぐにインジケーターを表示
+      typingIndicator.textContent = "タイピング中…";
+      
+      // 前回設定していたタイマーがあればクリア
+      if (typingTimeout) clearTimeout(typingTimeout);
+      
+      // 入力が止まったら1秒後にインジケーター表示を消去
+      typingTimeout = setTimeout(() => {
+        typingIndicator.textContent = "";
+      }, 1000); // 1000ミリ秒＝1秒
+    });
+
       
       // 通常メッセージ送信（URL自動リンク化もレンダリング側で実施）
       try {
