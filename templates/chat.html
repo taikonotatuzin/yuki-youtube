@@ -278,6 +278,10 @@
     <div id="featured-news"></div>
     
     <div id="chat-box"></div>
+    
+    <!-- タイピングインジケーター -->
+    <div id="typing-indicator" style="margin: 10px 0; font-style: italic; color: gray;"></div>
+    
     <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
     <button id="sendButton">送信</button>
     <button id="logoutButton">ログアウト</button>
@@ -294,15 +298,15 @@
       </ul>
     </div>
     <div id="command-summary">
-        <h3>管理者専用のコマンド</h3>
-        <ul>
-          <li><code>/adminadd [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者に追加します。</li>
-          <li><code>/admin</code>: 「ねむい」専用。現在の擬似管理者一覧を表示します。</li>
-          <li><code>/adminre [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者から外します。</li>
-          <li><code>/delete [ユーザー名]</code>: 「ねむい」または擬似管理者専用。指定したユーザーのメッセージを削除します。</li>
-          <li><code>/mute [ユーザー名] [期間]</code>: 「ねむい」専用。指定したユーザーを指定期間ミュートします。（例: <code>/mute taro 10m</code>）</li>
-          <li><code>/unmute [ユーザー名]</code>: 「ねむい」専用。指定したユーザーのミュート状態を解除します。</li>
-        </ul>
+      <h3>管理者専用のコマンド</h3>
+      <ul>
+        <li><code>/adminadd [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者に追加します。</li>
+        <li><code>/admin</code>: 「ねむい」専用。現在の擬似管理者一覧を表示します。</li>
+        <li><code>/adminre [名前]</code>: 「ねむい」専用。指定した名前を擬似管理者から外します。</li>
+        <li><code>/delete [ユーザー名]</code>: 「ねむい」または擬似管理者専用。指定したユーザーのメッセージを削除します。</li>
+        <li><code>/mute [ユーザー名] [期間]</code>: 「ねむい」専用。指定したユーザーを指定期間ミュートします。（例: <code>/mute taro 10m</code>）</li>
+        <li><code>/unmute [ユーザー名]</code>: 「ねむい」専用。指定したユーザーのミュート状態を解除します。</li>
+      </ul>
     </div>
     
     <!-- プロフィール更新フォーム -->
@@ -541,58 +545,58 @@
       return options[options.length - 1].name;
     }
     
-    // プロフィール更新処理【名前・パスワード・色の更新】（既存の強制IDを保持）
-    updateProfileButton.addEventListener("click", async () => {
-      const newName = document.getElementById("newName").value.trim();
-      const newPassword = document.getElementById("newPassword").value;
-      const newColor = document.getElementById("newColor").value; // 選択された色
-      
+    // ≪タイピングインジケーター実装≫
+    // 1. タイピング状態更新用のタイマー変数
+    let typingTimer;
+    
+    // 2. 入力欄のイベントリスナを追加：入力があれば自身の「typing」状態を更新し、3秒後に解除
+    messageInput.addEventListener("input", () => {
       const user = auth.currentUser;
-      if (!user) {
-        alert("ログインしてください。");
-        return;
-      }
+      if (!user) return;
       
-      // 新しい名前が入力されている場合、「ねむい」への変更は不可
-      if (newName !== "" && newName === "ねむい") {
-        alert("名前を「ねむい」に変更することはできません。");
-        return;
-      }
+      const userUid = user.uid;
+      const typingRef = ref(dbRT, "typing/" + userUid);
       
-      try {
-        // 現在の displayName は "名前#ID" または "名前#ID|色"
-        const currentDisplay = user.displayName;
-        const [mainPart, currentColor = ""] = currentDisplay.split("|");
-        let [currentName, forcedId = ""] = mainPart.split("#");
-        
-        let finalName;
-        if (currentName === "ねむい") {
-          finalName = "ねむい";
-        } else {
-          let namePart = newName !== "" ? newName : currentName;
-          forcedId = forcedId || generateForcedId();
-          finalName = `${namePart}#${forcedId}`;
+      // ユーザーの表示名は「名前#ID|色」の形式なので、"|" 以前の部分を抽出
+      const displayName = (user.displayName || "名無し").split("|")[0];
+      
+      // タイピング状態を更新
+      set(typingRef, {
+        name: displayName,
+        timestamp: serverTimestamp()
+      });
+      
+      // 既存のタイマーがあればクリア
+      if (typingTimer) clearTimeout(typingTimer);
+      
+      // 入力停止後 3 秒でタイピング状態を解除
+      typingTimer = setTimeout(() => {
+        set(typingRef, null);
+      }, 3000);
+    });
+    
+    // 3. 「typing」ノードを監視し、他のユーザーがタイピング中なら表示
+    onValue(ref(dbRT, "typing"), (snapshot) => {
+      const typingData = snapshot.val() || {};
+      const currentUser = auth.currentUser;
+      let typingUsers = [];
+      
+      // 自分以外のタイピング状態を収集
+      Object.keys(typingData).forEach(uid => {
+        if (!currentUser || uid !== currentUser.uid) {
+          typingUsers.push(typingData[uid].name);
         }
-        
-        const finalColor = newColor !== "" ? newColor : currentColor;
-        const finalDisplay = finalColor !== "" ? `${finalName}|${finalColor}` : finalName;
-        
-        await updateProfile(user, { displayName: finalDisplay });
-        alert("名前・色が更新されました。");
-        
-        if (newPassword) {
-          await updatePassword(user, newPassword);
-          alert("パスワードが更新されました。");
-        }
-        
-        document.getElementById("newName").value = "";
-        document.getElementById("newPassword").value = "";
-        document.getElementById("newColor").value = "";
-      } catch (error) {
-        alert("更新に失敗しました：" + error.message);
+      });
+      
+      const indicator = document.getElementById("typing-indicator");
+      if (typingUsers.length > 0) {
+        indicator.textContent = typingUsers.join(", ") + " がタイピング中...";
+      } else {
+        indicator.textContent = "";
       }
     });
     
+    // 4. メッセージ送信時、自身のタイピング状態を即時解除（既存の sendButton 処理に統合）
     sendButton.addEventListener("click", async () => {
       const messageText = messageInput.value;
       if (messageText.trim() === "") return;
@@ -601,17 +605,10 @@
         alert("まずログインしてください。");
         return;
       }
-      // 掲示場で表示する際は、displayNameの「名前#ID」部分（色情報を除く）をそのまま表示
-      const userBaseName = user.displayName.split("|")[0];
       
-      if (isMuted(userBaseName.split("#")[0])) {
-        alert("あなたはミュート中です。ミュート解除後に送信してください。");
-        return;
-      }
-      
-      // /adminadd コマンド：この操作は「ねむい」専用
+      // 以下、既存の各種コマンド処理
       if (messageText.startsWith("/adminadd ")) {
-        if (userBaseName.split("#")[0] !== "ねむい") {
+        if (user.displayName.split("#")[0] !== "ねむい") {
           alert("この操作は権限がありません。");
           return;
         }
@@ -631,9 +628,8 @@
         return;
       }
       
-      // /admin コマンド
       if (messageText === "/admin") {
-        if (userBaseName.split("#")[0] !== "ねむい") {
+        if (user.displayName.split("#")[0] !== "ねむい") {
           alert("この操作は権限がありません。");
           return;
         }
@@ -646,9 +642,8 @@
         return;
       }
       
-      // /adminre コマンド：擬似管理者として登録されている対象は削除できるようにする
       if (messageText.startsWith("/adminre ")) {
-        if (userBaseName.split("#")[0] !== "ねむい") {
+        if (user.displayName.split("#")[0] !== "ねむい") {
           alert("この操作は権限がありません。");
           return;
         }
@@ -668,9 +663,8 @@
         return;
       }
       
-      // /delete コマンド
       if (messageText.startsWith("/delete ")) {
-        if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
+        if (user.displayName.split("#")[0] === "ねむい" || pseudoAdmins.has(user.displayName.split("#")[0])) {
           const parts = messageText.split(" ");
           if (parts.length < 2) {
             alert("使い方: /delete [ユーザー名]");
@@ -698,9 +692,8 @@
         }
       }
       
-      // クリアチャット（パスワードと一致する場合）
       if (messageText === CLEAR_CHAT_PASSWORD) {
-        if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
+        if (user.displayName.split("#")[0] === "ねむい" || pseudoAdmins.has(user.displayName.split("#")[0])) {
           try {
             const chatCollection = collection(db, "chat");
             const snapshot = await getDocs(chatCollection);
@@ -720,7 +713,6 @@
         }
       }
       
-      // /color コマンド
       if (messageText.startsWith("/color ")) {
         const parts = messageText.split(" ");
         if (parts.length < 2) {
@@ -746,9 +738,8 @@
         return;
       }
       
-      // /mute コマンド
       if (messageText.startsWith("/mute ")) {
-        if (userBaseName.split("#")[0] !== "ねむい") {
+        if (user.displayName.split("#")[0] !== "ねむい") {
           alert("この操作は権限がありません。");
           return;
         }
@@ -775,9 +766,8 @@
         return;
       }
       
-      // /unmute コマンド
       if (messageText.startsWith("/unmute ")) {
-        if (userBaseName.split("#")[0] !== "ねむい") {
+        if (user.displayName.split("#")[0] !== "ねむい") {
           alert("この操作は権限がありません。");
           return;
         }
@@ -797,9 +787,8 @@
         return;
       }
       
-      // /topic コマンド（ねむい専用）
       if (messageText.startsWith("/topic ")) {
-        if (userBaseName.split("#")[0] !== "ねむい") {
+        if (user.displayName.split("#")[0] !== "ねむい") {
           alert("この操作は権限がありません。");
           messageInput.value = "";
           return;
@@ -808,7 +797,7 @@
         try {
           await set(ref(dbRT, "topic"), {
             text: topicText,
-            updatedBy: userBaseName,
+            updatedBy: user.displayName.split("|")[0],
             timestamp: serverTimestamp()
           });
           alert("トピックが更新されました。");
@@ -819,12 +808,11 @@
         return;
       }
       
-      // /omi コマンド（おみくじ）
       if (messageText.startsWith("/omi")) {
         const result = weightedRandom(fortuneOptions);
         try {
           await addDoc(collection(db, "chat"), {
-            text: `【おみくじ】${userBaseName}さんの今日の運勢は…：${result}`,
+            text: `【おみくじ】${user.displayName.split("|")[0]}さんの今日の運勢は…：${result}`,
             name: "おみくじ",
             uid: "system",
             timestamp: new Date()
@@ -836,7 +824,6 @@
         return;
       }
       
-      // /roll コマンド（サイコロ振り）
       if (messageText.startsWith("/roll")) {
         const parts = messageText.split(" ");
         let max = 6;
@@ -849,7 +836,7 @@
         const rollResult = Math.floor(Math.random() * max) + 1;
         try {
           await addDoc(collection(db, "chat"), {
-            text: `【ロール】${userBaseName}さんの結果：${rollResult} (1～${max})`,
+            text: `【ロール】${user.displayName.split("|")[0]}さんの結果：${rollResult} (1～${max})`,
             name: "roll",
             uid: "system",
             timestamp: new Date()
@@ -861,7 +848,7 @@
         return;
       }
       
-      // 通常メッセージ送信（URL自動リンク化もレンダリング側で実施）
+      // 通常メッセージ送信
       try {
         await addDoc(collection(db, "chat"), {
           text: messageText,
@@ -869,6 +856,9 @@
           uid: user.uid,
           timestamp: new Date()
         });
+        // メッセージ送信後、自身のタイピング状態を削除
+        const typingRef = ref(dbRT, "typing/" + user.uid);
+        set(typingRef, null);
         messageInput.value = "";
       } catch (error) {
         alert("メッセージ送信エラー: " + error.message);
@@ -978,7 +968,6 @@
         // メッセージ本文の自動リンク化表示
         const textDiv = document.createElement("div");
         textDiv.className = "message-text";
-        // 改行ごとに分割して、各行内のURL文字列を検出して<a>要素に変換する
         const linesArr = msg.text.split("\n");
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         linesArr.forEach((line) => {
@@ -986,7 +975,6 @@
           if (line.trim().startsWith(">")) {
             lineDiv.className = "quote";
           }
-          // URLが含まれている場合、分割してリンク要素に置換
           if (urlRegex.test(line)) {
             const parts = line.split(urlRegex);
             parts.forEach((part) => {
