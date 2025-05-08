@@ -234,6 +234,7 @@
       border-radius: 8px;
       margin: 10px 0;
       box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
+      display: none;
     }
   </style>
 </head>
@@ -275,7 +276,7 @@
     <h3>試験段階のチャットです。リアルタイム通信しています！</h3>
     
     <!-- 話題表示エリア（/topic コマンドで更新）-->
-    <div id="chat-topic" style="display:none;"></div>
+    <div id="chat-topic"></div>
     
     <div id="chat-box"></div>
     <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
@@ -288,7 +289,7 @@
       <ul>
         <li><code>/color [カラーコード]</code>: 表示名のカラーを変更します。（例: <code>/color #fff</code>）</li>
         <li><code>/omi</code>: おみくじを引きます。重み付き確率により結果が決定され、実行者の名前が表示されます。</li>
-        <li><code>/roll [最大値]</code>: サイコロ振り。指定した最大値までのランダムな数字を生成します。（例: <code>/roll 6</code>）</li>
+        <li><code>/roll [最大値]</code>: サイコロを振ります。指定した最大値までのランダムな数字を生成します。（例: <code>/roll 6</code>）</li>
         <h3>新しいコマンド募集中‼︎</h3>
       </ul>
     </div>
@@ -477,17 +478,7 @@
       }
     });
     
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("user-auth").style.display = "none";
-        document.getElementById("chat-section").style.display = "block";
-        setupPresence(user);
-      } else {
-        document.getElementById("user-auth").style.display = "block";
-        document.getElementById("chat-section").style.display = "none";
-      }
-    });
-    
+    // ミュート確認用関数
     function isMuted(userBaseName) {
       if (mutedUsers[userBaseName]) {
         if (Date.now() < mutedUsers[userBaseName]) {
@@ -651,8 +642,7 @@
         return;
       }
       
-      // 以下、/delete, /color, /mute, /unmute, … の各コマンド
-      
+      // /delete コマンド
       if (messageText.startsWith("/delete ")) {
         if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
           const parts = messageText.split(" ");
@@ -682,6 +672,7 @@
         }
       }
       
+      // クリアチャット（パスワードと一致する場合）
       if (messageText === CLEAR_CHAT_PASSWORD) {
         if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
           try {
@@ -703,6 +694,7 @@
         }
       }
       
+      // /color コマンド
       if (messageText.startsWith("/color ")) {
         const parts = messageText.split(" ");
         if (parts.length < 2) {
@@ -728,107 +720,80 @@
         return;
       }
       
- if (messageText.startsWith("/mute ")) {
-  // 「ねむい」でない場合は実行不可
-  if (userBaseName.split("#")[0] !== "ねむい") {
-    alert("この操作は権限がありません。");
-    return;
-  }
-  
-  const parts = messageText.split(" ");
-  if (parts.length < 2) {
-    alert("使い方: /mute [ユーザー名] [期間]（例: 10m, 30s）");
-    return;
-  }
-  
-  const targetName = parts[1].trim();
-  let durationMs = 300000; // デフォルト: 5分
-  if (parts.length >= 3) {
-    let dur = parts[2].trim();
-    if (dur.endsWith("m")) {
-      durationMs = parseFloat(dur.slice(0, -1)) * 60000;
-    } else if (dur.endsWith("s")) {
-      durationMs = parseFloat(dur.slice(0, -1)) * 1000;
-    } else {
-      durationMs = parseFloat(dur) * 60000;
-    }
-  }
-  
-  mutedUsers[targetName] = Date.now() + durationMs;
-  alert(`${targetName} を ${durationMs / 60000} 分 (または ${durationMs / 1000} 秒) ミュートしました。`);
-  messageInput.value = "";
-  return;
-}
-
-if (messageText.startsWith("/unmute ")) {
-  // 「ねむい」でない場合は実行不可
-  if (userBaseName.split("#")[0] !== "ねむい") {
-    alert("この操作は権限がありません。");
-    return;
-  }
-  
-  const parts = messageText.split(" ");
-  if (parts.length < 2) {
-    alert("使い方: /unmute [ユーザー名]");
-    return;
-  }
-  
-  const targetName = parts[1].trim();
-  if (mutedUsers[targetName]) {
-    delete mutedUsers[targetName];
-    alert(`${targetName} のミュートを解除しました。`);
-  } else {
-    alert(`${targetName} はミュート状態ではありません。`);
-  }
-  
-  messageInput.value = "";
-  return;
-}
-
-
-        if (messageText.startsWith("/topic ")) {
-          // 権限チェック
-          if (userBaseName.split("#")[0] !== "ねむい") {
-            alert("この操作は権限がありません。");
-            return;
-          }
-          const topicText = messageText.substring("/topic ".length).trim();
-          if (topicText === "") {
-            alert("話題を入力してください。");
-            return;
-          }
-          // まず既存の「chat-topic」ノードのデータを削除し、その後新しいデータを書き込みます。
-          database.ref("chat-topic").remove()
-            .then(function () {
-              return database.ref("chat-topic").set({
-                topic: topicText,
-                lastUpdated: firebase.database.ServerValue.TIMESTAMP
-              });
-            })
-            .then(function () {
-              alert("話題が更新されました！");
-              messageInput.value = "";
-            })
-            .catch(function (error) {
-              console.error("Error updating topic: ", error);
-              alert("話題の更新に失敗しました。");
-            });
+      // /mute コマンド
+      if (messageText.startsWith("/mute ")) {
+        if (userBaseName.split("#")[0] !== "ねむい") {
+          alert("この操作は権限がありません。");
           return;
         }
-
-        // その他のメッセージ処理があればここへ…
-      });
-
-      // Firebase から「chat-topic」の変更をリアルタイムで取得して表示更新
-      database.ref("chat-topic").on("value", function (snapshot) {
-        const data = snapshot.val();
-        if (data && data.topic) {
-          const topicDiv = document.getElementById("chat-topic");
-          topicDiv.textContent = data.topic;
-          topicDiv.style.display = "block";
+        const parts = messageText.split(" ");
+        if (parts.length < 2) {
+          alert("使い方: /mute [ユーザー名] [期間]（例: 10m, 30s）");
+          return;
         }
-      });
+        const targetName = parts[1].trim();
+        let durationMs = 300000; // デフォルト: 5分
+        if (parts.length >= 3) {
+          let dur = parts[2].trim();
+          if (dur.endsWith("m")) {
+            durationMs = parseFloat(dur.slice(0, -1)) * 60000;
+          } else if (dur.endsWith("s")) {
+            durationMs = parseFloat(dur.slice(0, -1)) * 1000;
+          } else {
+            durationMs = parseFloat(dur) * 60000;
+          }
+        }
+        mutedUsers[targetName] = Date.now() + durationMs;
+        alert(`${targetName} を ${durationMs / 60000} 分 (または ${durationMs / 1000} 秒) ミュートしました。`);
+        messageInput.value = "";
+        return;
+      }
       
+      // /unmute コマンド
+      if (messageText.startsWith("/unmute ")) {
+        if (userBaseName.split("#")[0] !== "ねむい") {
+          alert("この操作は権限がありません。");
+          return;
+        }
+        const parts = messageText.split(" ");
+        if (parts.length < 2) {
+          alert("使い方: /unmute [ユーザー名]");
+          return;
+        }
+        const targetName = parts[1].trim();
+        if (mutedUsers[targetName]) {
+          delete mutedUsers[targetName];
+          alert(`${targetName} のミュートを解除しました。`);
+        } else {
+          alert(`${targetName} はミュート状態ではありません。`);
+        }
+        messageInput.value = "";
+        return;
+      }
+      
+      // /topic コマンド（ねむい専用）
+      if (messageText.startsWith("/topic ")) {
+        if (userBaseName.split("#")[0] !== "ねむい") {
+          alert("この操作は権限がありません。");
+          messageInput.value = "";
+          return;
+        }
+        const topicText = messageText.substring(7).trim();
+        try {
+          await set(ref(dbRT, "topic"), {
+            text: topicText,
+            updatedBy: userBaseName,
+            timestamp: serverTimestamp()
+          });
+          alert("トピックが更新されました。");
+        } catch (error) {
+          alert("トピック更新エラー: " + error.message);
+        }
+        messageInput.value = "";
+        return;
+      }
+      
+      // /omi コマンド（おみくじ）
       if (messageText.startsWith("/omi")) {
         const result = weightedRandom(fortuneOptions);
         try {
@@ -845,6 +810,7 @@ if (messageText.startsWith("/unmute ")) {
         return;
       }
       
+      // /roll コマンド（サイコロ振り）
       if (messageText.startsWith("/roll")) {
         const parts = messageText.split(" ");
         let max = 6;
@@ -889,6 +855,17 @@ if (messageText.startsWith("/unmute ")) {
         console.log("ログアウト成功");
       } catch (error) {
         alert("ログアウトエラー: " + error.message);
+      }
+    });
+    
+    // Realtime Database で "topic" ノードの変化をリアルタイムで反映
+    onValue(ref(dbRT, "topic"), (snapshot) => {
+      const topicData = snapshot.val();
+      if (topicData && topicData.text) {
+        document.getElementById("chat-topic").textContent = topicData.text;
+        document.getElementById("chat-topic").style.display = "block";
+      } else {
+        document.getElementById("chat-topic").style.display = "none";
       }
     });
     
