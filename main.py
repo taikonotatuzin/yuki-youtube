@@ -211,7 +211,7 @@ def getVideoData(videoid):
         'like_count': t["likeCount"],
         'subscribers_count': t["subCountText"],
         'streamUrls': streamUrls
-    },
+    },]
     [
       {
         "video_id": i["videoId"],
