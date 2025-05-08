@@ -406,6 +406,40 @@
     
     // プロフィール更新用ボタン
     const updateProfileButton = document.getElementById("updateProfileButton");
+    window.addEventListener("load", async () => {
+      const featuredNewsDiv = document.getElementById("featured-news");
+      // サンプルのトップ5ニュース（実際は外部API等で動的に取得してください）
+      const top5News = [
+        {
+          title: "最新のニュースランキング - 時事通信ニュース",
+          url: "https://sp.m.jiji.com/ranking/newest"
+        },
+        {
+          title: "アクセスランキング - 読売新聞",
+          url: "https://www.yomiuri.co.jp/ranking"
+        },
+        {
+          title: "ニュースランキング - テレ朝news",
+          url: "https://news.tv-asahi.co.jp/ranking/"
+        },
+        {
+          title: "注目ニュース - 共同通信",
+          url: "https://www.kyodonews.jp/"
+        },
+        {
+          title: "国内注目ニュース - NHKニュース",
+          url: "https://www3.nhk.or.jp/news/"
+        }
+      ];
+
+      // 上位5件のニュースをリスト形式で表示
+      let html = '<strong>今日の注目ニュース（上位5件）：</strong><ul>';
+      top5News.forEach(item => {
+        html += `<li><a href="${item.url}" target="_blank">${item.title}</a></li>`;
+      });
+      html += '</ul>';
+      featuredNewsDiv.innerHTML = html;
+    });
     
     signupButton.addEventListener("click", async () => {
       const name = document.getElementById("signupName").value;
