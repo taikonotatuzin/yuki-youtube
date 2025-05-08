@@ -211,7 +211,7 @@ def getVideoData(videoid):
         'like_count': t["likeCount"],
         'subscribers_count': t["subCountText"],
         'streamUrls': streamUrls
-    },]
+    },
     [
       {
         "video_id": i["videoId"],
@@ -220,7 +220,7 @@ def getVideoData(videoid):
         "author": i["author"],
         "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
         "view_count_text": i["viewCountText"]
-      } for i in recommended_videos
+      } for i in recommended_videos]
     ]
 
 def getSearchData(q, page):
