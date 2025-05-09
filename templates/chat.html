@@ -307,10 +307,7 @@
     
     <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
     <button id="sendButton">送信</button>
-    <input type="file" id="fileInput" style="display: none;">
-    <button id="uploadButton">画像送信</button>
     <button id="logoutButton">ログアウト</button>
-    
     
     <!-- コマンド一覧 -->
     <div id="command-summary">
@@ -398,14 +395,6 @@
       serverTimestamp,
       onValue
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
-    // Firebase Storage モジュールのインポート（deleteObject 追加）
-    import {
-      getStorage,
-      ref as storageRef,
-      uploadBytes,
-      getDownloadURL,
-      deleteObject
-    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
     
     
     // Firebase 設定
@@ -424,7 +413,6 @@
     const auth = getAuth(appFB);
     const db = getFirestore(appFB);
     const dbRT = getDatabase(appFB);
-    const storage = getStorage(appFB);
     
     const MAX_MESSAGES = 50;
     let pseudoAdmins = new Set();
@@ -446,11 +434,6 @@
     const sendButton   = document.getElementById("sendButton");
     const chatBox      = document.getElementById("chat-box");
     const messageInput = document.getElementById("messageInput");
-    const updateProfileButton = document.getElementById("updateProfileButton");
-    
-    // 追加： ファイルアップロード用の要素
-    const fileInput = document.getElementById("fileInput");
-    const uploadButton = document.getElementById("uploadButton");
     
     // プロフィール更新用ボタン
     const updateProfileButton = document.getElementById("updateProfileButton");
@@ -632,38 +615,6 @@
         document.getElementById("themeSelect").value = "";
       } catch (error) {
         alert("更新に失敗しました：" + error.message);
-      }
-    });
-       // 追加： ファイル・画像アップロード処理
-    uploadButton.addEventListener("click", () => {
-      fileInput.click();
-    });
-    fileInput.addEventListener("change", async (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      const uniqueName = Date.now() + "_" + file.name;
-      const path = 'uploads/' + uniqueName;
-      const fileRef = storageRef(storage, path);
-      try {
-        await uploadBytes(fileRef, file);
-        const downloadURL = await getDownloadURL(fileRef);
-        let messageText = "";
-        if (file.type.startsWith("image/")) {
-          messageText = "IMAGE:" + downloadURL;
-        } else {
-          messageText = "FILE:" + downloadURL;
-        }
-        await addDoc(collection(db, "chat"), {
-          text: messageText,
-          name: auth.currentUser.displayName || "名無し",
-          uid: auth.currentUser.uid,
-          timestamp: new Date(),
-          storagePath: path
-        });
-        alert("ファイルアップロード完了！");
-        fileInput.value = "";
-      } catch (err) {
-        alert("アップロードエラー: " + err.message);
       }
     });
     sendButton.addEventListener("click", async () => {
@@ -1051,51 +1002,34 @@
         messageContainer.appendChild(replyButton);
         
         // メッセージ本文の自動リンク化表示
-             // メッセージ本文の描画（アップロード画像／ファイルの場合は専用表示）
         const textDiv = document.createElement("div");
         textDiv.className = "message-text";
-        if (msg.text.startsWith("IMAGE:")) {
-          const imageURL = msg.text.substring(6);
-          const img = document.createElement("img");
-          img.src = imageURL;
-          img.alt = "アップロードされた画像";
-          img.style.maxWidth = "300px";
-          textDiv.appendChild(img);
-        } else if (msg.text.startsWith("FILE:")) {
-          const fileURL = msg.text.substring(5);
-          const a = document.createElement("a");
-          a.href = fileURL;
-          a.textContent = "アップロードされたファイルはこちら";
-          a.target = "_blank";
-          textDiv.appendChild(a);
-        } else {
-          const linesArr = msg.text.split("\n");
-          const urlRegex = /(https?:\/\/[^\s]+)/g;
-          linesArr.forEach((line) => {
-            const lineDiv = document.createElement("div");
-            if (line.trim().startsWith(">")) {
-              lineDiv.className = "quote";
-            }
-            if (urlRegex.test(line)) {
-              const parts = line.split(urlRegex);
-              parts.forEach((part) => {
-                if (urlRegex.test(part)) {
-                  const anchor = document.createElement("a");
-                  anchor.href = part;
-                  anchor.textContent = part;
-                  anchor.target = "_blank";
-                  anchor.rel = "noopener noreferrer";
-                  lineDiv.appendChild(anchor);
-                } else {
-                  lineDiv.appendChild(document.createTextNode(part));
-                }
-              });
-            } else {
-              lineDiv.textContent = line;
-            }
-            textDiv.appendChild(lineDiv);
-          });
-        }
+        const linesArr = msg.text.split("\n");
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        linesArr.forEach((line) => {
+          const lineDiv = document.createElement("div");
+          if (line.trim().startsWith(">")) {
+            lineDiv.className = "quote";
+          }
+          if (urlRegex.test(line)) {
+            const parts = line.split(urlRegex);
+            parts.forEach((part) => {
+              if (urlRegex.test(part)) {
+                const anchor = document.createElement("a");
+                anchor.href = part;
+                anchor.textContent = part;
+                anchor.target = "_blank";
+                anchor.rel = "noopener noreferrer";
+                lineDiv.appendChild(anchor);
+              } else {
+                lineDiv.appendChild(document.createTextNode(part));
+              }
+            });
+          } else {
+            lineDiv.textContent = line;
+          }
+          textDiv.appendChild(lineDiv);
+        });
         messageContainer.appendChild(textDiv);
         
         // タイムスタンプの表示
