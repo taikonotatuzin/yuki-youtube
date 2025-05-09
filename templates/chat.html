@@ -39,6 +39,23 @@
       margin: 0;
       background-color: #fff;
     }
+     /* テーマごとのスタイル */
+    body.theme-default {
+      background-color: #fff;
+      color: #000;
+    }
+    body.theme-dark {
+      background-color: #222;
+      color: #ddd;
+    }
+    body.theme-light {
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    body.theme-blue {
+      background-color: #e0f7fa;
+      color: #006064;
+    }
     /* チャット用エリア */
     #chat-section {
       margin-top: 0px;
@@ -330,6 +347,13 @@
         <option value="#800080">紫</option>
         <option value="#808080">灰色</option>
       </select>
+      <select id="themeSelect">
+        <option value="">-- テーマを選択 --</option>
+        <option value="default">Default</option>
+        <option value="dark">ダーク</option>
+        <option value="light">ライト</option>
+        <option value="blue">ブルー</option>
+      </select>
       <button id="updateProfileButton">更新</button>
     </div>
     
@@ -534,11 +558,12 @@
       return options[options.length - 1].name;
     }
     
-    // プロフィール更新処理【名前・パスワード・色の更新】（既存の強制IDを保持）
+      // プロフィール更新処理（名前・パスワード・色・テーマの更新）
     updateProfileButton.addEventListener("click", async () => {
       const newName = document.getElementById("newName").value.trim();
       const newPassword = document.getElementById("newPassword").value;
       const newColor = document.getElementById("newColor").value; // 選択された色
+      const newTheme = document.getElementById("themeSelect").value; // 選択されたテーマ
       
       const user = auth.currentUser;
       if (!user) {
@@ -553,7 +578,7 @@
       }
       
       try {
-        // 現在の displayName は "名前#ID" または "名前#ID|色"
+        // 現在の displayName は "名前#ID" または "名前#ID|色" という形式
         const currentDisplay = user.displayName;
         const [mainPart, currentColor = ""] = currentDisplay.split("|");
         let [currentName, forcedId = ""] = mainPart.split("#");
@@ -578,14 +603,21 @@
           alert("パスワードが更新されました。");
         }
         
+        // テーマ更新：選択されたテーマがあれば、body のクラスを更新し、ローカルストレージに保存
+        if(newTheme) {
+          document.body.classList.remove("theme-default", "theme-dark", "theme-light", "theme-blue");
+          document.body.classList.add("theme-" + newTheme);
+          localStorage.setItem("chatTheme", newTheme);
+        }
+        
         document.getElementById("newName").value = "";
         document.getElementById("newPassword").value = "";
         document.getElementById("newColor").value = "";
+        document.getElementById("themeSelect").value = "";
       } catch (error) {
         alert("更新に失敗しました：" + error.message);
       }
     });
-    
     sendButton.addEventListener("click", async () => {
       const messageText = messageInput.value;
       if (messageText.trim() === "") return;
