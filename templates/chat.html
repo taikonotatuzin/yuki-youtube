@@ -760,11 +760,11 @@
     
     const handRank = evaluateHand(hand);
     const handString = hand.map(card => card.rank + card.suit).join(" ");
-    const pokerMessage = `【Poker Hand】\n手札: ${handString}\n結果: ${handRank}`;
+    const pokerMessage = `【Poker Hand】\n手札: ${handString}\n${userBaseName}さんの結果: ${handRank}`;
     try {
       await addDoc(collection(db, "chat"), {
         text: pokerMessage,
-        name: user.displayName || "名無し",
+        name: システム,
         uid: user.uid,
         timestamp: new Date()
       });
