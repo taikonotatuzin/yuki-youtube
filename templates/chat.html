@@ -939,13 +939,13 @@ if (messageText.startsWith("/poker")) {
   
   const handRank = evaluateHand(hand);
   const handString = hand.map(card => card.rank + card.suit).join(" ");
-  const pokerMessage = `【Poker Hand】\n手札: ${handString}\n結果: ${handRank}`;
+  const pokerMessage = `${userBaseName}さんの結果：手札: ${handString}\n結果: ${handRank}`;
   
   // 4. 結果の送信【/omi と同じスタイル：送信者は "おみくじ", uid は "system"】
   try {
     await addDoc(collection(db, "chat"), {
       text: pokerMessage,
-      name: "おみくじ",
+      name: "【Poker Hand】",
       uid: "system",
       timestamp: new Date()
     });
