@@ -691,6 +691,91 @@
         messageInput.value = "";
         return;
       }
+     
+  // /poker コマンドの実装
+  if (messageText.startsWith("/poker")) {
+    // ポーカーハンド生成のための準備
+    const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+    const suits = ['♠','♥','♦','♣'];
+    let deck = [];
+    for (let rank of ranks) {
+      for (let suit of suits) {
+        deck.push({ rank, suit });
+      }
+    }
+    // フィッシャー・イェーツのシャッフルアルゴリズムでデッキをシャッフル
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    // 上から5枚引く
+    const hand = deck.slice(0, 5);
+    
+    // hand を評価する関数（シンプルな評価ロジック）
+    function evaluateHand(hand) {
+      // カウント集計用オブジェクト
+      const rankCount = {};
+      const suitCount = {};
+      for (const card of hand) {
+        rankCount[card.rank] = (rankCount[card.rank] || 0) + 1;
+        suitCount[card.suit] = (suitCount[card.suit] || 0) + 1;
+      }
+      // カードの数値インデックスに変換してソート（Aは最も高いとする）
+      const rankIndexes = hand.map(card => ranks.indexOf(card.rank)).sort((a, b) => a - b);
+      // すべてのカードのスートが同じかどうか
+      const flush = Object.values(suitCount).some(count => count === 5);
+      // ストレートかどうか（単純な連番チェック。特殊ケースは未対応）
+      let straight = false;
+      if (
+        rankIndexes[4] - rankIndexes[0] === 4 &&
+        new Set(rankIndexes).size === 5
+      ) {
+        straight = true;
+      }
+      // カードの出現回数配列を降順に取得
+      const counts = Object.values(rankCount).sort((a, b) => b - a);
+      // 評価の判定
+      if (flush && straight && hand.some(card => card.rank === 'A') && hand.some(card => card.rank === '10')) {
+        return "Royal Flush";
+      } else if (flush && straight) {
+        return "Straight Flush";
+      } else if (counts[0] === 4) {
+        return "Four of a Kind";
+      } else if (counts[0] === 3 && counts[1] === 2) {
+        return "Full House";
+      } else if (flush) {
+        return "Flush";
+      } else if (straight) {
+        return "Straight";
+      } else if (counts[0] === 3) {
+        return "Three of a Kind";
+      } else if (counts[0] === 2 && counts[1] === 2) {
+        return "Two Pair";
+      } else if (counts[0] === 2) {
+        return "One Pair";
+      } else {
+        return "High Card";
+      }
+    }
+    
+    const handRank = evaluateHand(hand);
+    const handString = hand.map(card => card.rank + card.suit).join(" ");
+    const pokerMessage = `【Poker Hand】\n手札: ${handString}\n結果: ${handRank}`;
+    try {
+      await addDoc(collection(db, "chat"), {
+        text: pokerMessage,
+        name: user.displayName || "名無し",
+        uid: user.uid,
+        timestamp: new Date()
+      });
+    } catch (error) {
+      alert("Pokerコマンド送信エラー: " + error.message);
+    }
+    messageInput.value = "";
+    return;
+  }
+
+
       
       // 以下、/delete, /color, /mute, /unmute, … の各コマンド
       
