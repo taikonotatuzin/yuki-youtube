@@ -96,18 +96,24 @@
       font-size: 16px;
       resize: vertical;
     }
-    .reply-button {
+    .reply-button, .edit-button {
       position: absolute;
       top: 5px;
-      right: 5px;
       font-size: 12px;
       padding: 2px 4px;
       background-color: #eee;
       border: 1px solid #ccc;
       border-radius: 3px;
       cursor: pointer;
+      margin-right: 5px;
     }
-    .reply-button:hover {
+    .reply-button {
+      right: 5px;
+    }
+    .edit-button {
+      right: 70px;
+    }
+    .reply-button:hover, .edit-button:hover {
       background-color: #ddd;
     }
     button {
@@ -194,7 +200,7 @@
       margin-right: 5px;
       position: absolute;
       top: 5px;
-      right: 70px;
+      right: 130px;
     }
     .delete-button:hover {
       background-color: #c0392b;
@@ -279,8 +285,7 @@
     
     <div id="chat-box"></div>
     
-    <!-- タイピングインジケーター -->
-    <div id="typing-indicator" style="margin: 10px 0; font-style: italic; color: gray;"></div>
+    <!-- ※ タイピングインジケーターは削除済 -->
     
     <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
     <button id="sendButton">送信</button>
@@ -356,6 +361,7 @@
       addDoc,
       deleteDoc,
       getDocs,
+      updateDoc,
       onSnapshot,
       query,
       orderBy
@@ -545,58 +551,7 @@
       return options[options.length - 1].name;
     }
     
-    // ≪タイピングインジケーター実装≫
-    // 1. タイピング状態更新用のタイマー変数
-    let typingTimer;
-    
-    // 2. 入力欄のイベントリスナを追加：入力があれば自身の「typing」状態を更新し、3秒後に解除
-    messageInput.addEventListener("input", () => {
-      const user = auth.currentUser;
-      if (!user) return;
-      
-      const userUid = user.uid;
-      const typingRef = ref(dbRT, "typing/" + userUid);
-      
-      // ユーザーの表示名は「名前#ID|色」の形式なので、"|" 以前の部分を抽出
-      const displayName = (user.displayName || "名無し").split("|")[0];
-      
-      // タイピング状態を更新
-      set(typingRef, {
-        name: displayName,
-        timestamp: serverTimestamp()
-      });
-      
-      // 既存のタイマーがあればクリア
-      if (typingTimer) clearTimeout(typingTimer);
-      
-      // 入力停止後 3 秒でタイピング状態を解除
-      typingTimer = setTimeout(() => {
-        set(typingRef, null);
-      }, 3000);
-    });
-    
-    // 3. 「typing」ノードを監視し、他のユーザーがタイピング中なら表示
-    onValue(ref(dbRT, "typing"), (snapshot) => {
-      const typingData = snapshot.val() || {};
-      const currentUser = auth.currentUser;
-      let typingUsers = [];
-      
-      // 自分以外のタイピング状態を収集
-      Object.keys(typingData).forEach(uid => {
-        if (!currentUser || uid !== currentUser.uid) {
-          typingUsers.push(typingData[uid].name);
-        }
-      });
-      
-      const indicator = document.getElementById("typing-indicator");
-      if (typingUsers.length > 0) {
-        indicator.textContent = typingUsers.join(", ") + " がタイピング中...";
-      } else {
-        indicator.textContent = "";
-      }
-    });
-    
-    // 4. メッセージ送信時、自身のタイピング状態を即時解除（既存の sendButton 処理に統合）
+    // メッセージ送信処理
     sendButton.addEventListener("click", async () => {
       const messageText = messageInput.value;
       if (messageText.trim() === "") return;
@@ -606,7 +561,8 @@
         return;
       }
       
-      // 以下、既存の各種コマンド処理
+      // ※ 以下、各種コマンド処理はそのまま
+      
       if (messageText.startsWith("/adminadd ")) {
         if (user.displayName.split("#")[0] !== "ねむい") {
           alert("この操作は権限がありません。");
@@ -856,9 +812,6 @@
           uid: user.uid,
           timestamp: new Date()
         });
-        // メッセージ送信後、自身のタイピング状態を削除
-        const typingRef = ref(dbRT, "typing/" + user.uid);
-        set(typingRef, null);
         messageInput.value = "";
       } catch (error) {
         alert("メッセージ送信エラー: " + error.message);
@@ -903,7 +856,7 @@
         const messageContainer = document.createElement("div");
         messageContainer.className = "message-container";
         
-        // 送信者名の表示（IDも含む displayName をそのまま表示）
+        // 送信者名の表示（displayName の「名前#ID|色」形式）
         const nameDiv = document.createElement("div");
         nameDiv.className = "message-name";
         let displayName = msg.name || "名無し";
@@ -928,7 +881,7 @@
         nameDiv.appendChild(span);
         messageContainer.appendChild(nameDiv);
         
-        // 自分のメッセージの場合、削除ボタンを追加
+        // 自分のメッセージの場合：削除ボタンと編集ボタンを追加
         const currentUser = auth.currentUser;
         if (currentUser && msg.uid === currentUser.uid) {
           const deleteButton = document.createElement("button");
@@ -944,9 +897,29 @@
             }
           };
           messageContainer.appendChild(deleteButton);
+          
+          const editButton = document.createElement("button");
+          editButton.className = "edit-button";
+          editButton.textContent = "編集";
+          editButton.onclick = async function() {
+            // 現在のメッセージ内容を編集できるように prompt を表示
+            let newText = prompt("新しいメッセージに編集してください:", msg.text);
+            if (newText && newText.trim() !== "" && newText !== msg.text) {
+              try {
+                await updateDoc(doc.ref, {
+                  text: newText,
+                  edited: true,
+                  editedAt: new Date()
+                });
+              } catch (error) {
+                alert("メッセージ更新エラー: " + error.message);
+              }
+            }
+          };
+          messageContainer.appendChild(editButton);
         }
         
-        // 返信ボタンの設定
+        // 返信ボタンの設定（既存機能）
         const replyButton = document.createElement("button");
         replyButton.className = "reply-button";
         replyButton.textContent = "返信";
@@ -1007,6 +980,15 @@
           const timeDiv = document.createElement("div");
           timeDiv.className = "message-time";
           timeDiv.textContent = dateObj.toLocaleString();
+          // 編集済みの場合は小さい文字で「(編集済み)」と表示
+          if (msg.edited) {
+            const editedSpan = document.createElement("span");
+            editedSpan.style.fontSize = "0.7em";
+            editedSpan.style.color = "gray";
+            editedSpan.style.marginLeft = "5px";
+            editedSpan.textContent = " (編集済み)";
+            timeDiv.appendChild(editedSpan);
+          }
           messageContainer.appendChild(timeDiv);
         }
         chatBox.appendChild(messageContainer);
