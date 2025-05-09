@@ -435,6 +435,68 @@
     const sendButton   = document.getElementById("sendButton");
     const chatBox      = document.getElementById("chat-box");
     const messageInput = document.getElementById("messageInput");
+
+        function openEditModal(currentText, callback) {
+      // overlay の生成
+      const overlay = document.createElement('div');
+      overlay.style.position = 'fixed';
+      overlay.style.top = '0';
+      overlay.style.left = '0';
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+      overlay.style.display = 'flex';
+      overlay.style.alignItems = 'center';
+      overlay.style.justifyContent = 'center';
+      overlay.style.zIndex = '2000';
+      
+      // モーダルコンテナ
+      const modal = document.createElement('div');
+      modal.style.backgroundColor = '#fff';
+      modal.style.padding = '20px';
+      modal.style.borderRadius = '5px';
+      modal.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+      modal.style.maxWidth = '500px';
+      modal.style.width = '90%';
+      
+      // タイトル
+      const title = document.createElement('h3');
+      title.innerText = 'メッセージ編集';
+      modal.appendChild(title);
+      
+      // textarea：改行を保持
+      const textarea = document.createElement('textarea');
+      textarea.style.width = '100%';
+      textarea.style.height = '150px';
+      textarea.value = currentText;
+      modal.appendChild(textarea);
+      
+      // ボタンコンテナ
+      const btnContainer = document.createElement('div');
+      btnContainer.style.marginTop = '10px';
+      btnContainer.style.textAlign = 'right';
+      
+      // 保存ボタン
+      const saveBtn = document.createElement('button');
+      saveBtn.innerText = '保存';
+      saveBtn.style.marginRight = '10px';
+      saveBtn.onclick = () => {
+        callback(textarea.value);
+        document.body.removeChild(overlay);
+      };
+      btnContainer.appendChild(saveBtn);
+      
+      // キャンセルボタン
+      const cancelBtn = document.createElement('button');
+      cancelBtn.innerText = 'キャンセル';
+      cancelBtn.onclick = () => {
+        document.body.removeChild(overlay);
+      };
+      btnContainer.appendChild(cancelBtn);
+      
+      modal.appendChild(btnContainer);
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
     
     // プロフィール更新用ボタン
     const updateProfileButton = document.getElementById("updateProfileButton");
@@ -545,81 +607,6 @@
       { name: "凶", weight: 10 },
       { name: "大凶", weight: 5 }
     ];
-    
-    function weightedRandom(options) {
-      let totalWeight = options.reduce((sum, opt) => sum + opt.weight, 0);
-      let rand = Math.random() * totalWeight;
-      for (let opt of options) {
-        if (rand < opt.weight) {
-          return opt.name;
-        }
-        rand -= opt.weight;
-      }
-      return options[options.length - 1].name;
-    }
-    // カスタム編集モーダルを表示する関数
-function openEditModal(currentText, callback) {
-  // overlay の生成
-  const overlay = document.createElement('div');
-  overlay.style.position = 'fixed';
-  overlay.style.top = '0';
-  overlay.style.left = '0';
-  overlay.style.width = '100%';
-  overlay.style.height = '100%';
-  overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
-  overlay.style.display = 'flex';
-  overlay.style.alignItems = 'center';
-  overlay.style.justifyContent = 'center';
-  overlay.style.zIndex = '2000';
-
-  // モーダルコンテナの生成
-  const modal = document.createElement('div');
-  modal.style.backgroundColor = '#fff';
-  modal.style.padding = '20px';
-  modal.style.borderRadius = '5px';
-  modal.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
-  modal.style.maxWidth = '500px';
-  modal.style.width = '90%';
-
-  // タイトルなど（必要に応じて）
-  const title = document.createElement('h3');
-  title.innerText = 'メッセージ編集';
-  modal.appendChild(title);
-
-  // textarea の生成（改行保持）
-  const textarea = document.createElement('textarea');
-  textarea.style.width = '100%';
-  textarea.style.height = '150px';
-  textarea.value = currentText;
-  modal.appendChild(textarea);
-
-  // ボタンコンテナ
-  const btnContainer = document.createElement('div');
-  btnContainer.style.marginTop = '10px';
-  btnContainer.style.textAlign = 'right';
-
-  // 保存ボタン
-  const saveBtn = document.createElement('button');
-  saveBtn.innerText = '保存';
-  saveBtn.style.marginRight = '10px';
-  saveBtn.onclick = () => {
-    callback(textarea.value);
-    document.body.removeChild(overlay);
-  };
-  btnContainer.appendChild(saveBtn);
-
-  // キャンセルボタン
-  const cancelBtn = document.createElement('button');
-  cancelBtn.innerText = 'キャンセル';
-  cancelBtn.onclick = () => {
-    document.body.removeChild(overlay);
-  };
-  btnContainer.appendChild(cancelBtn);
-
-  modal.appendChild(btnContainer);
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-}
 
     
       // プロフィール更新処理（名前・パスワード・色・テーマの更新）
@@ -1105,26 +1092,27 @@ if (messageText.startsWith("/poker")) {
           };
           messageContainer.appendChild(deleteButton);
           
-          const editButton = document.createElement("button");
-editButton.className = "edit-button";
-editButton.textContent = "編集";
-editButton.onclick = function() {
-  openEditModal(msg.text, async (newText) => {
-    // 変更があれば、アップデート処理
-    if (newText && newText.trim() !== "" && newText !== msg.text) {
-      try {
-        await updateDoc(doc.ref, {
-          text: newText,
-          edited: true,
-          editedAt: new Date()
-        });
-      } catch (error) {
-        alert("メッセージ更新エラー: " + error.message);
-      }
-    }
-  });
-};
-messageContainer.appendChild(editButton);
+       const editButton = document.createElement("button");
+          editButton.className = "edit-button";
+          editButton.textContent = "編集";
+          // カスタム編集モーダルを使用
+          editButton.onclick = function() {
+            openEditModal(msg.text, async (newText) => {
+              if (newText && newText.trim() !== "" && newText !== msg.text) {
+                try {
+                  await updateDoc(doc.ref, {
+                    text: newText,
+                    edited: true,
+                    editedAt: new Date()
+                  });
+                } catch (error) {
+                  alert("メッセージ更新エラー: " + error.message);
+                }
+              }
+            });
+          };
+          messageContainer.appendChild(editButton);
+        }
 
         
         // 返信ボタンの設定（既存機能）
