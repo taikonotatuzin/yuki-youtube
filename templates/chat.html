@@ -619,8 +619,8 @@
         return;
       }
       
-      if (messageText.startsWith("/delete ")) {
-        if (user.displayName.split("#")[0] === "ねむい" || pseudoAdmins.has(user.displayName.split("#")[0])) {
+  if (messageText.startsWith("/delete ")) {
+        if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
           const parts = messageText.split(" ");
           if (parts.length < 2) {
             alert("使い方: /delete [ユーザー名]");
