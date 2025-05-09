@@ -96,32 +96,25 @@
       font-size: 16px;
       resize: vertical;
     }
-    .reply-button {
+       .reply-button, .edit-button {
       position: absolute;
       top: 5px;
-      right: 5px;
       font-size: 12px;
       padding: 2px 4px;
       background-color: #eee;
       border: 1px solid #ccc;
       border-radius: 3px;
       cursor: pointer;
+      margin-right: 5px;
     }
-    .reply-button:hover {
+    .reply-button {
+      right: 5px;
+    }
+    .edit-button {
+      right: 70px;
+    }
+    .reply-button:hover, .edit-button:hover {
       background-color: #ddd;
-    }
-    button {
-      background-color: #3498db;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-    button:hover {
-      background-color: #2980b9;
-      transform: scale(1.05);
     }
     #user-auth, #chat-section {
       animation: slideIn 0.6s ease-out;
@@ -234,6 +227,7 @@
       border-radius: 8px;
       margin: 10px 0;
       box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
+      display: none;
     }
   </style>
 </head>
@@ -274,8 +268,7 @@
     <h2>チャットルーム</h2>
     <h3>試験段階のチャットです。リアルタイム通信しています！</h3>
     
-    <!-- 話題表示エリア（/topic コマンドで更新）-->
-    <div id="chat-topic" style="display:none;"></div>
+    <div id="featured-news"></div>
     
     <div id="chat-box"></div>
     <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
@@ -288,7 +281,8 @@
       <ul>
         <li><code>/color [カラーコード]</code>: 表示名のカラーを変更します。（例: <code>/color #fff</code>）</li>
         <li><code>/omi</code>: おみくじを引きます。重み付き確率により結果が決定され、実行者の名前が表示されます。</li>
-        <li><code>/roll [最大値]</code>: サイコロ振り。指定した最大値までのランダムな数字を生成します。（例: <code>/roll 6</code>）</li>
+        <li><code>/roll [最大値]</code>: サイコロを振ります。指定した最大値までのランダムな数字を生成します。（例: <code>/roll 6</code>）</li>
+        <li><code>/topic [好きな話題]</code>: 「ねむい」専用。チャットの話題を更新します。</li>
         <h3>新しいコマンド募集中‼︎</h3>
       </ul>
     </div>
@@ -404,7 +398,33 @@
     
     // プロフィール更新用ボタン
     const updateProfileButton = document.getElementById("updateProfileButton");
+    async function fetchNews() {
+      try {
+        // NewsAPI.org を利用。必ず YOUR_API_KEY を有効な API キーに置換してください。
+        const response = await fetch("https://newsapi.org/v2/top-headlines?country=jp&apiKey=100ee72921e94c10a06f08166260f693");
+        const data = await response.json();
+        if (data.status === "ok") {
+          const articles = data.articles.slice(0, 5);
+          let html = '<strong>今日の注目ニュース（上位5件）：</strong><ul>';
+          articles.forEach(article => {
+            html += `<li><a href="${article.url}" target="_blank">${article.title}</a></li>`;
+          });
+          html += '</ul>';
+          document.getElementById("featured-news").innerHTML = html;
+        } else {
+          console.error("ニュースAPIの応答エラー:", data);
+        }
+      } catch (error) {
+        console.error("ニュース取得エラー:", error);
+      }
+    }
     
+    // ページ読み込み時にニュース取得、10分毎に自動更新
+    window.addEventListener("load", async () => {
+      await fetchNews();
+      setInterval(fetchNews, 10 * 60 * 1000); // 10分ごとに更新
+    });
+
     signupButton.addEventListener("click", async () => {
       const name = document.getElementById("signupName").value;
       const password = document.getElementById("signupPassword").value;
@@ -477,17 +497,7 @@
       }
     });
     
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("user-auth").style.display = "none";
-        document.getElementById("chat-section").style.display = "block";
-        setupPresence(user);
-      } else {
-        document.getElementById("user-auth").style.display = "block";
-        document.getElementById("chat-section").style.display = "none";
-      }
-    });
-    
+    // ミュート確認用関数
     function isMuted(userBaseName) {
       if (mutedUsers[userBaseName]) {
         if (Date.now() < mutedUsers[userBaseName]) {
@@ -651,8 +661,7 @@
         return;
       }
       
-      // 以下、/delete, /color, /mute, /unmute, … の各コマンド
-      
+      // /delete コマンド
       if (messageText.startsWith("/delete ")) {
         if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
           const parts = messageText.split(" ");
@@ -682,6 +691,7 @@
         }
       }
       
+      // クリアチャット（パスワードと一致する場合）
       if (messageText === CLEAR_CHAT_PASSWORD) {
         if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
           try {
@@ -703,6 +713,7 @@
         }
       }
       
+      // /color コマンド
       if (messageText.startsWith("/color ")) {
         const parts = messageText.split(" ");
         if (parts.length < 2) {
@@ -728,107 +739,80 @@
         return;
       }
       
- if (messageText.startsWith("/mute ")) {
-  // 「ねむい」でない場合は実行不可
-  if (userBaseName.split("#")[0] !== "ねむい") {
-    alert("この操作は権限がありません。");
-    return;
-  }
-  
-  const parts = messageText.split(" ");
-  if (parts.length < 2) {
-    alert("使い方: /mute [ユーザー名] [期間]（例: 10m, 30s）");
-    return;
-  }
-  
-  const targetName = parts[1].trim();
-  let durationMs = 300000; // デフォルト: 5分
-  if (parts.length >= 3) {
-    let dur = parts[2].trim();
-    if (dur.endsWith("m")) {
-      durationMs = parseFloat(dur.slice(0, -1)) * 60000;
-    } else if (dur.endsWith("s")) {
-      durationMs = parseFloat(dur.slice(0, -1)) * 1000;
-    } else {
-      durationMs = parseFloat(dur) * 60000;
-    }
-  }
-  
-  mutedUsers[targetName] = Date.now() + durationMs;
-  alert(`${targetName} を ${durationMs / 60000} 分 (または ${durationMs / 1000} 秒) ミュートしました。`);
-  messageInput.value = "";
-  return;
-}
-
-if (messageText.startsWith("/unmute ")) {
-  // 「ねむい」でない場合は実行不可
-  if (userBaseName.split("#")[0] !== "ねむい") {
-    alert("この操作は権限がありません。");
-    return;
-  }
-  
-  const parts = messageText.split(" ");
-  if (parts.length < 2) {
-    alert("使い方: /unmute [ユーザー名]");
-    return;
-  }
-  
-  const targetName = parts[1].trim();
-  if (mutedUsers[targetName]) {
-    delete mutedUsers[targetName];
-    alert(`${targetName} のミュートを解除しました。`);
-  } else {
-    alert(`${targetName} はミュート状態ではありません。`);
-  }
-  
-  messageInput.value = "";
-  return;
-}
-
-
-        if (messageText.startsWith("/topic ")) {
-          // 権限チェック
-          if (userBaseName.split("#")[0] !== "ねむい") {
-            alert("この操作は権限がありません。");
-            return;
-          }
-          const topicText = messageText.substring("/topic ".length).trim();
-          if (topicText === "") {
-            alert("話題を入力してください。");
-            return;
-          }
-          // まず既存の「chat-topic」ノードのデータを削除し、その後新しいデータを書き込みます。
-          database.ref("chat-topic").remove()
-            .then(function () {
-              return database.ref("chat-topic").set({
-                topic: topicText,
-                lastUpdated: firebase.database.ServerValue.TIMESTAMP
-              });
-            })
-            .then(function () {
-              alert("話題が更新されました！");
-              messageInput.value = "";
-            })
-            .catch(function (error) {
-              console.error("Error updating topic: ", error);
-              alert("話題の更新に失敗しました。");
-            });
+      // /mute コマンド
+      if (messageText.startsWith("/mute ")) {
+        if (userBaseName.split("#")[0] !== "ねむい") {
+          alert("この操作は権限がありません。");
           return;
         }
-
-        // その他のメッセージ処理があればここへ…
-      });
-
-      // Firebase から「chat-topic」の変更をリアルタイムで取得して表示更新
-      database.ref("chat-topic").on("value", function (snapshot) {
-        const data = snapshot.val();
-        if (data && data.topic) {
-          const topicDiv = document.getElementById("chat-topic");
-          topicDiv.textContent = data.topic;
-          topicDiv.style.display = "block";
+        const parts = messageText.split(" ");
+        if (parts.length < 2) {
+          alert("使い方: /mute [ユーザー名] [期間]（例: 10m, 30s）");
+          return;
         }
-      });
+        const targetName = parts[1].trim();
+        let durationMs = 300000; // デフォルト: 5分
+        if (parts.length >= 3) {
+          let dur = parts[2].trim();
+          if (dur.endsWith("m")) {
+            durationMs = parseFloat(dur.slice(0, -1)) * 60000;
+          } else if (dur.endsWith("s")) {
+            durationMs = parseFloat(dur.slice(0, -1)) * 1000;
+          } else {
+            durationMs = parseFloat(dur) * 60000;
+          }
+        }
+        mutedUsers[targetName] = Date.now() + durationMs;
+        alert(`${targetName} を ${durationMs / 60000} 分 (または ${durationMs / 1000} 秒) ミュートしました。`);
+        messageInput.value = "";
+        return;
+      }
       
+      // /unmute コマンド
+      if (messageText.startsWith("/unmute ")) {
+        if (userBaseName.split("#")[0] !== "ねむい") {
+          alert("この操作は権限がありません。");
+          return;
+        }
+        const parts = messageText.split(" ");
+        if (parts.length < 2) {
+          alert("使い方: /unmute [ユーザー名]");
+          return;
+        }
+        const targetName = parts[1].trim();
+        if (mutedUsers[targetName]) {
+          delete mutedUsers[targetName];
+          alert(`${targetName} のミュートを解除しました。`);
+        } else {
+          alert(`${targetName} はミュート状態ではありません。`);
+        }
+        messageInput.value = "";
+        return;
+      }
+      
+      // /topic コマンド（ねむい専用）
+      if (messageText.startsWith("/topic ")) {
+        if (userBaseName.split("#")[0] !== "ねむい") {
+          alert("この操作は権限がありません。");
+          messageInput.value = "";
+          return;
+        }
+        const topicText = messageText.substring(7).trim();
+        try {
+          await set(ref(dbRT, "topic"), {
+            text: topicText,
+            updatedBy: userBaseName,
+            timestamp: serverTimestamp()
+          });
+          alert("トピックが更新されました。");
+        } catch (error) {
+          alert("トピック更新エラー: " + error.message);
+        }
+        messageInput.value = "";
+        return;
+      }
+      
+      // /omi コマンド（おみくじ）
       if (messageText.startsWith("/omi")) {
         const result = weightedRandom(fortuneOptions);
         try {
@@ -845,6 +829,7 @@ if (messageText.startsWith("/unmute ")) {
         return;
       }
       
+      // /roll コマンド（サイコロ振り）
       if (messageText.startsWith("/roll")) {
         const parts = messageText.split(" ");
         let max = 6;
@@ -869,7 +854,7 @@ if (messageText.startsWith("/unmute ")) {
         return;
       }
       
-      // 通常メッセージ送信
+      // 通常メッセージ送信（URL自動リンク化もレンダリング側で実施）
       try {
         await addDoc(collection(db, "chat"), {
           text: messageText,
@@ -889,6 +874,17 @@ if (messageText.startsWith("/unmute ")) {
         console.log("ログアウト成功");
       } catch (error) {
         alert("ログアウトエラー: " + error.message);
+      }
+    });
+    
+    // Realtime Database で "topic" ノードの変化をリアルタイムで反映
+    onValue(ref(dbRT, "topic"), (snapshot) => {
+      const topicData = snapshot.val();
+      if (topicData && topicData.text) {
+        document.getElementById("chat-topic").textContent = topicData.text;
+        document.getElementById("chat-topic").style.display = "block";
+      } else {
+        document.getElementById("chat-topic").style.display = "none";
       }
     });
     
@@ -971,17 +967,56 @@ if (messageText.startsWith("/unmute ")) {
           messageInput.focus();
         };
         messageContainer.appendChild(replyButton);
+        const editButton = document.createElement("button");
+          editButton.className = "edit-button";
+          editButton.textContent = "編集";
+          editButton.onclick = async function() {
+            // 現在のメッセージ内容を編集できるように prompt を表示
+            let newText = prompt("新しいメッセージに編集してください:", msg.text);
+            if (newText && newText.trim() !== "" && newText !== msg.text) {
+              try {
+                await updateDoc(doc.ref, {
+                  text: newText,
+                  edited: true,
+                  editedAt: new Date()
+                });
+              } catch (error) {
+                alert("メッセージ更新エラー: " + error.message);
+              }
+            }
+          };
+          messageContainer.appendChild(editButton);
+        }
         
-        // メッセージ本文の表示
+        // メッセージ本文の自動リンク化表示
         const textDiv = document.createElement("div");
         textDiv.className = "message-text";
-        let linesArr = msg.text.split("\n");
+        // 改行ごとに分割して、各行内のURL文字列を検出して<a>要素に変換する
+        const linesArr = msg.text.split("\n");
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
         linesArr.forEach((line) => {
           const lineDiv = document.createElement("div");
           if (line.trim().startsWith(">")) {
             lineDiv.className = "quote";
           }
-          lineDiv.textContent = line;
+          // URLが含まれている場合、分割してリンク要素に置換
+          if (urlRegex.test(line)) {
+            const parts = line.split(urlRegex);
+            parts.forEach((part) => {
+              if (urlRegex.test(part)) {
+                const anchor = document.createElement("a");
+                anchor.href = part;
+                anchor.textContent = part;
+                anchor.target = "_blank";
+                anchor.rel = "noopener noreferrer";
+                lineDiv.appendChild(anchor);
+              } else {
+                lineDiv.appendChild(document.createTextNode(part));
+              }
+            });
+          } else {
+            lineDiv.textContent = line;
+          }
           textDiv.appendChild(lineDiv);
         });
         messageContainer.appendChild(textDiv);
