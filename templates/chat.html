@@ -763,11 +763,11 @@
     const pokerMessage = `【Poker Hand】\n手札: ${handString}\n${userBaseName}さんの結果: ${handRank}`;
     try {
       await addDoc(collection(db, "chat"), {
-        text: pokerMessage,
-        name: システム,
-        uid: user.uid,
-        timestamp: new Date()
-      });
+            text: `【Poker Hand】\n手札: ${handString}\n${userBaseName}さんの結果: ${handRank`,
+            name: "【Poker Hand】",
+            uid: "system",
+            timestamp: new Date()
+          });
     } catch (error) {
       alert("Pokerコマンド送信エラー: " + error.message);
     }
