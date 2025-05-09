@@ -911,7 +911,7 @@
         nameDiv.appendChild(span);
         messageContainer.appendChild(nameDiv);
         
-        // 自分のメッセージの場合、削除ボタンを追加
+  // 自分のメッセージの場合：削除ボタンと編集ボタンを追加
         const currentUser = auth.currentUser;
         if (currentUser && msg.uid === currentUser.uid) {
           const deleteButton = document.createElement("button");
@@ -927,9 +927,29 @@
             }
           };
           messageContainer.appendChild(deleteButton);
+          
+          const editButton = document.createElement("button");
+          editButton.className = "edit-button";
+          editButton.textContent = "編集";
+          editButton.onclick = async function() {
+            // 現在のメッセージ内容を編集できるように prompt を表示
+            let newText = prompt("新しいメッセージに編集してください:", msg.text);
+            if (newText && newText.trim() !== "" && newText !== msg.text) {
+              try {
+                await updateDoc(doc.ref, {
+                  text: newText,
+                  edited: true,
+                  editedAt: new Date()
+                });
+              } catch (error) {
+                alert("メッセージ更新エラー: " + error.message);
+              }
+            }
+          };
+          messageContainer.appendChild(editButton);
         }
         
-        // 返信ボタンの設定
+        // 返信ボタンの設定（既存機能）
         const replyButton = document.createElement("button");
         replyButton.className = "reply-button";
         replyButton.textContent = "返信";
@@ -948,16 +968,33 @@
         };
         messageContainer.appendChild(replyButton);
         
-        // メッセージ本文の表示
+        // メッセージ本文の自動リンク化表示
         const textDiv = document.createElement("div");
         textDiv.className = "message-text";
-        let linesArr = msg.text.split("\n");
+        const linesArr = msg.text.split("\n");
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
         linesArr.forEach((line) => {
           const lineDiv = document.createElement("div");
           if (line.trim().startsWith(">")) {
             lineDiv.className = "quote";
           }
-          lineDiv.textContent = line;
+          if (urlRegex.test(line)) {
+            const parts = line.split(urlRegex);
+            parts.forEach((part) => {
+              if (urlRegex.test(part)) {
+                const anchor = document.createElement("a");
+                anchor.href = part;
+                anchor.textContent = part;
+                anchor.target = "_blank";
+                anchor.rel = "noopener noreferrer";
+                lineDiv.appendChild(anchor);
+              } else {
+                lineDiv.appendChild(document.createTextNode(part));
+              }
+            });
+          } else {
+            lineDiv.textContent = line;
+          }
           textDiv.appendChild(lineDiv);
         });
         messageContainer.appendChild(textDiv);
@@ -973,6 +1010,15 @@
           const timeDiv = document.createElement("div");
           timeDiv.className = "message-time";
           timeDiv.textContent = dateObj.toLocaleString();
+          // 編集済みの場合は小さい文字で「(編集済み)」と表示
+          if (msg.edited) {
+            const editedSpan = document.createElement("span");
+            editedSpan.style.fontSize = "0.7em";
+            editedSpan.style.color = "gray";
+            editedSpan.style.marginLeft = "5px";
+            editedSpan.textContent = " (編集済み)";
+            timeDiv.appendChild(editedSpan);
+          }
           messageContainer.appendChild(timeDiv);
         }
         chatBox.appendChild(messageContainer);
