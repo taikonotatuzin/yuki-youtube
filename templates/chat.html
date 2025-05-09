@@ -342,7 +342,7 @@
     </script>
   </div>
   <script type="module">
-    // Firebaseモジュールのインポート
+   // Firebaseモジュールのインポート
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import {
       getAuth,
@@ -359,6 +359,7 @@
       addDoc,
       deleteDoc,
       getDocs,
+      updateDoc,
       onSnapshot,
       query,
       orderBy
@@ -371,6 +372,7 @@
       serverTimestamp,
       onValue
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+    
     
     // Firebase 設定
     const firebaseConfig = {
