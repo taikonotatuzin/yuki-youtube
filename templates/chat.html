@@ -435,8 +435,9 @@
     const sendButton   = document.getElementById("sendButton");
     const chatBox      = document.getElementById("chat-box");
     const messageInput = document.getElementById("messageInput");
-
-        function openEditModal(currentText, callback) {
+    // プロフィール更新用ボタン
+    const updateProfileButton = document.getElementById("updateProfileButton");
+    function openEditModal(currentText, callback) {
       // overlay の生成
       const overlay = document.createElement('div');
       overlay.style.position = 'fixed';
@@ -497,9 +498,7 @@
       modal.appendChild(btnContainer);
       overlay.appendChild(modal);
       document.body.appendChild(overlay);
-    
-    // プロフィール更新用ボタン
-    const updateProfileButton = document.getElementById("updateProfileButton");
+    }
     
     signupButton.addEventListener("click", async () => {
       const name = document.getElementById("signupName").value;
@@ -607,7 +606,18 @@
       { name: "凶", weight: 10 },
       { name: "大凶", weight: 5 }
     ];
-
+    
+    function weightedRandom(options) {
+      let totalWeight = options.reduce((sum, opt) => sum + opt.weight, 0);
+      let rand = Math.random() * totalWeight;
+      for (let opt of options) {
+        if (rand < opt.weight) {
+          return opt.name;
+        }
+        rand -= opt.weight;
+      }
+      return options[options.length - 1].name;
+    }
     
       // プロフィール更新処理（名前・パスワード・色・テーマの更新）
     updateProfileButton.addEventListener("click", async () => {
@@ -1092,7 +1102,8 @@ if (messageText.startsWith("/poker")) {
           };
           messageContainer.appendChild(deleteButton);
           
-       const editButton = document.createElement("button");
+                   
+          const editButton = document.createElement("button");
           editButton.className = "edit-button";
           editButton.textContent = "編集";
           // カスタム編集モーダルを使用
@@ -1113,7 +1124,6 @@ if (messageText.startsWith("/poker")) {
           };
           messageContainer.appendChild(editButton);
         }
-
         
         // 返信ボタンの設定（既存機能）
         const replyButton = document.createElement("button");
