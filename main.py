@@ -15,13 +15,12 @@ max_api_wait_time = (1.5, 1)
 max_time = 10
 
 user_agents = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/163.43.250.132 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3864.0 Safari/537.36',
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100',
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:62.0) Gecko/20100101 Firefox/62.0',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:67.0) Gecko/20100101 Firefox/67.0',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:68.0) Gecko/20100101 Firefox/68.0',
@@ -43,7 +42,7 @@ def getRandomUserAgent():
 
 class InvidiousAPI:
     def __init__(self):
-        self.all = ast.literal_eval(requests.get('https://raw.githubusercontent.com/M-14-deep/Kari/refs/heads/main/Kari', headers=getRandomUserAgent(), timeout=(1.0, 0.5)).text)
+        self.all = ast.literal_eval(requests.get('https://github.com/M-14-deep/Kari/raw/refs/heads/main/Kari.', headers=getRandomUserAgent(), timeout=(1.0, 0.5)).text)
         
         self.video = self.all['video']
         self.playlist = self.all['playlist']
@@ -824,6 +823,16 @@ def list_page(response: Response, request: Request):
 @app.get("/snow", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("snow.html", {"request": request})
+@app.get("/2048", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("block.html", {"request": request})
+@app.get("/ose", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("ose.html", {"request": request})
+@app.get("/game", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("proxy.html", {"request": request})
+
 @app.get("/2048", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("block.html", {"request": request})
