@@ -424,6 +424,13 @@
     let pseudoAdmins = new Set();
     let mutedUsers = {};
     
+  // 例：既存の extractVideoId 関数（なければ下記を利用）
+function extractVideoId(url) {
+  const regExp = /^.*(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[1].length === 11) ? match[1] : null;
+}
+    
     function generateEmailFromName(name) {
       return name.trim().toLowerCase().replace(/\s+/g, "") + "@chatapp.local";
     }
@@ -763,40 +770,33 @@
       
       // 以下、/delete, /color, /mute, /unmute, … の各コマンド
 if (messageText.startsWith("/you ")) {
-  // 「/you」の後にスペース区切りで YouTube URL がある場合のみ処理する
-  const parts = messageText.split(" ");
-  if (parts.length < 2) {
-    alert("使い方: /you [YouTube URL]");
-    return;
-  }
-  const youtubeUrl = parts[1].trim();
-  // extractVideoId 関数は既存の実装を流用
-  const videoId = extractVideoId(youtubeUrl);
-  if (!videoId) {
-    alert("有効なYouTube URLを入力してください。");
-    return;
-  }
-  try {
-    // サーバー側 /you エンドポイントに videoId を渡す
-    const response = await fetch(`/you?videoId=${videoId}`);
-    const streamUrl = await response.text();
-    if (!streamUrl) {
-      alert("ストリームURLの取得に失敗しました。");
+    const parts = messageText.split(" ");
+    if (parts.length < 2) {
+      alert("使い方: /you [YouTube URL]");
       return;
     }
-    // システムメッセージとして送信（他の自動URL整形とは異なり、/youコマンドとして明示）
-    await addDoc(collection(db, "chat"), {
-      text: `【YouTube Stream URL】${userBaseName}さんのストリームURL: ${streamUrl}`,
-      name: "【YouTube】",
-      uid: "system",
-      timestamp: new Date()
-    });
-  } catch (error) {
-    alert("ストリームURL取得エラー: " + error.message);
+    const youtubeUrl = parts[1].trim();
+    const videoId = extractVideoId(youtubeUrl);
+    if (!videoId) {
+      alert("有効なYouTube URLを入力してください。");
+      return;
+    }
+    // 現在のドメインと組み合わせた /watch ページへの絶対URL を作成
+    const watchUrl = `${window.location.origin}/watch?v=${videoId}`;
+    try {
+      // 送信者名を "【YouTube】" としてシステムメッセージとして送信
+      await addDoc(collection(db, "chat"), {
+        text: watchUrl,  // 例: https://example.com/watch?v=動画ID
+        name: "【YouTube】",
+        uid: "system",
+        timestamp: new Date()
+      });
+    } catch (error) {
+      alert("URL送信エラー: " + error.message);
+    }
+    messageInput.value = "";
+    return;
   }
-  messageInput.value = "";
-  return;
-}
 
 
       
@@ -1186,36 +1186,51 @@ if (messageText.startsWith("/poker")) {
         };
         messageContainer.appendChild(replyButton);
         
-        // メッセージ本文の自動リンク化表示
-        const textDiv = document.createElement("div");
-        textDiv.className = "message-text";
-        const linesArr = msg.text.split("\n");
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        linesArr.forEach((line) => {
-          const lineDiv = document.createElement("div");
-          if (line.trim().startsWith(">")) {
-            lineDiv.className = "quote";
-          }
-          if (urlRegex.test(line)) {
-            const parts = line.split(urlRegex);
-            parts.forEach((part) => {
-              if (urlRegex.test(part)) {
-                const anchor = document.createElement("a");
-                anchor.href = part;
-                anchor.textContent = part;
-                anchor.target = "_blank";
-                anchor.rel = "noopener noreferrer";
-                lineDiv.appendChild(anchor);
-              } else {
-                lineDiv.appendChild(document.createTextNode(part));
-              }
-            });
-          } else {
-            lineDiv.textContent = line;
-          }
-          textDiv.appendChild(lineDiv);
-        });
-        messageContainer.appendChild(textDiv);
+        // メッセージ本文の生成
+    const textDiv = document.createElement("div");
+    textDiv.className = "message-text";
+    // /you コマンドで送信されたシステムメッセージの場合は専用処理
+    if (msg.uid === "system" && msg.name === "【YouTube】") {
+      const link = document.createElement("a");
+      link.href = msg.text;       // 絶対URL（例: https://example.com/watch?v=動画ID）
+      link.textContent = msg.text;
+      link.style.cursor = "pointer";
+      // クリックで現在のページを置き換える（window.location.replace）
+      link.onclick = function(e) {
+        e.preventDefault();
+        window.location.replace(msg.text);
+      };
+      textDiv.appendChild(link);
+    } else {
+      // 既存の自動リンク化処理
+      const linesArr = msg.text.split("\n");
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      linesArr.forEach((line) => {
+        const lineDiv = document.createElement("div");
+        if (line.trim().startsWith(">")) {
+          lineDiv.className = "quote";
+        }
+        if (urlRegex.test(line)) {
+          const parts = line.split(urlRegex);
+          parts.forEach((part) => {
+            if (urlRegex.test(part)) {
+              const anchor = document.createElement("a");
+              anchor.href = part;
+              anchor.textContent = part;
+              anchor.target = "_blank";
+              anchor.rel = "noopener noreferrer";
+              lineDiv.appendChild(anchor);
+            } else {
+              lineDiv.appendChild(document.createTextNode(part));
+            }
+          });
+        } else {
+          lineDiv.textContent = line;
+        }
+        textDiv.appendChild(lineDiv);
+      });
+    }
+    messageContainer.appendChild(textDiv);
         
         // タイムスタンプの表示
         if (msg.timestamp) {
