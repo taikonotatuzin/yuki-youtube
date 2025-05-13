@@ -762,27 +762,29 @@
 
       
       // 以下、/delete, /color, /mute, /unmute, … の各コマンド
-
-      if (messageText.startsWith("/you ")) {
+if (messageText.startsWith("/you ")) {
+  // 「/you」の後にスペース区切りで YouTube URL がある場合のみ処理する
   const parts = messageText.split(" ");
   if (parts.length < 2) {
     alert("使い方: /you [YouTube URL]");
     return;
   }
   const youtubeUrl = parts[1].trim();
+  // extractVideoId 関数は既存の実装を流用
   const videoId = extractVideoId(youtubeUrl);
   if (!videoId) {
     alert("有効なYouTube URLを入力してください。");
     return;
   }
   try {
-    // バックエンドの /you エンドポイントへ videoId を渡す
+    // サーバー側 /you エンドポイントに videoId を渡す
     const response = await fetch(`/you?videoId=${videoId}`);
     const streamUrl = await response.text();
     if (!streamUrl) {
       alert("ストリームURLの取得に失敗しました。");
       return;
     }
+    // システムメッセージとして送信（他の自動URL整形とは異なり、/youコマンドとして明示）
     await addDoc(collection(db, "chat"), {
       text: `【YouTube Stream URL】${userBaseName}さんのストリームURL: ${streamUrl}`,
       name: "【YouTube】",
@@ -795,6 +797,7 @@
   messageInput.value = "";
   return;
 }
+
 
       
       if (messageText.startsWith("/delete ")) {
