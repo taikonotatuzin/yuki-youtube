@@ -762,6 +762,40 @@
 
       
       // 以下、/delete, /color, /mute, /unmute, … の各コマンド
+
+      if (messageText.startsWith("/you ")) {
+  const parts = messageText.split(" ");
+  if (parts.length < 2) {
+    alert("使い方: /you [YouTube URL]");
+    return;
+  }
+  const youtubeUrl = parts[1].trim();
+  const videoId = extractVideoId(youtubeUrl);
+  if (!videoId) {
+    alert("有効なYouTube URLを入力してください。");
+    return;
+  }
+  try {
+    // バックエンドの /you エンドポイントへ videoId を渡す
+    const response = await fetch(`/you?videoId=${videoId}`);
+    const streamUrl = await response.text();
+    if (!streamUrl) {
+      alert("ストリームURLの取得に失敗しました。");
+      return;
+    }
+    await addDoc(collection(db, "chat"), {
+      text: `【YouTube Stream URL】${userBaseName}さんのストリームURL: ${streamUrl}`,
+      name: "【YouTube】",
+      uid: "system",
+      timestamp: new Date()
+    });
+  } catch (error) {
+    alert("ストリームURL取得エラー: " + error.message);
+  }
+  messageInput.value = "";
+  return;
+}
+
       
       if (messageText.startsWith("/delete ")) {
         if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
