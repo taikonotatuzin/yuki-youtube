@@ -364,42 +364,6 @@ def home(response: Response, request: Request, yuki: Union[str] = Cookie(None)):
         return template("home.html", {"request": request})
     print(checkCookie(yuki))
     return redirect("/genesis")
-def extract_video_id(url: str) -> str:
-    """
-    YouTube の URL から動画IDを抽出する。
-    ※ 以下のパターン：youtu.be/、v=、embed/ などに対応
-    """
-    pattern = re.compile(r'(?:youtu\.be/|v=|u/\w/|embed/|watch\?v=|&v=)([a-zA-Z0-9_-]{11})')
-    match = pattern.search(url)
-    return match.group(1) if match else None
-
-@app.get("/you", response_class=PlainTextResponse)
-def you_command(url: str = None, videoId: str = None):
-    """
-    /you エンドポイント  
-    URL または videoId が指定された場合、getVideoData を呼び出し、
-    高画質のストリームURL（なければフォーマットストリームの先頭）を返す。
-    """
-    if not videoId:
-        if url:
-            videoId = extract_video_id(url)
-        else:
-            raise HTTPException(status_code=400, detail="URL または videoId を指定してください。")
-    if not videoId:
-        raise HTTPException(status_code=400, detail="不正なYouTube URL形式です。")
-
-    try:
-        data = getVideoData(videoId)
-        video_info = data[0]  # 0番目の要素に動画情報が入っています
-        # highstream_url があればそちらを、なければ formatStreams の先頭（video_urls）を利用
-        stream_url = video_info.get("highstream_url") or (video_info.get("video_urls")[0] if video_info.get("video_urls") else None)
-        if stream_url:
-            return stream_url
-        else:
-            return "Stream URL not found."
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get('/watch', response_class=HTMLResponse)
 def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
