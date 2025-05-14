@@ -875,54 +875,6 @@ if (messageText.startsWith("/you ")) {
         return;
       }
       
-      if (messageText.startsWith("/mute ")) {
-        if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
-          alert("この操作は権限がありません。");
-          return;
-        }
-        const parts = messageText.split(" ");
-        if (parts.length < 2) {
-          alert("使い方: /mute [ユーザー名] [期間]（例: 10m, 30s）");
-          return;
-        }
-        const targetName = parts[1].trim();
-        let durationMs = 300000;
-        if (parts.length >= 3) {
-          let dur = parts[2].trim();
-          if (dur.endsWith("m")) {
-            durationMs = parseFloat(dur.slice(0, -1)) * 60000;
-          } else if (dur.endsWith("s")) {
-            durationMs = parseFloat(dur.slice(0, -1)) * 1000;
-          } else {
-            durationMs = parseFloat(dur) * 60000;
-          }
-        }
-        mutedUsers[targetName] = Date.now() + durationMs;
-        alert(`${targetName} を ${durationMs / 60000} 分 (または ${durationMs / 1000} 秒) ミュートしました。`);
-        messageInput.value = "";
-        return;
-      }
-      
-      if (messageText.startsWith("/unmute ")) {
-        if (userBaseName.split("#")[0] === "ねむい" || pseudoAdmins.has(userBaseName.split("#")[0])) {
-          alert("この操作は権限がありません。");
-          return;
-        }
-        const parts = messageText.split(" ");
-        if (parts.length < 2) {
-          alert("使い方: /unmute [ユーザー名]");
-          return;
-        }
-        const targetName = parts[1].trim();
-        if (mutedUsers[targetName]) {
-          delete mutedUsers[targetName];
-          alert(`${targetName} のミュートを解除しました。`);
-        } else {
-          alert(`${targetName} はミュート状態ではありません。`);
-        }
-        messageInput.value = "";
-        return;
-      }
       
       // ★ /topic コマンド ★
       // 「ねむい」専用。入力例： /topic 今日のチャレンジ！
