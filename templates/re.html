@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ランダムURL切り替えデモ</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f3f3f3;
+    }
+    #toggle {
+      padding: 1em 2em;
+      font-size: 1.5em;
+      border: none;
+      border-radius: 8px;
+      background: #007acc;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #toggle:hover {
+      background: #005fa3;
+    }
+  </style>
+</head>
+<body>
+  <button id="toggle">Start</button>
+
+  <script>
+    // タイマー管理用の変数
+    let timer = null;
+    const toggleButton = document.getElementById("toggle");
+
+    // 任意の長さのランダム文字列を生成する関数（例：英数字のみ）
+    function randomId(length) {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let result = '';
+      for(let i = 0; i < length; i++){
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    // URL をランダムな ID に変更して履歴を追加する処理
+    function changeURL() {
+      // ここでは 8 文字のランダムな文字列を生成
+      const id = randomId(8);
+      // history.pushState を使って、現在のページの履歴に新しいエントリを追加する
+      history.pushState(null, "", "/" + id);
+    }
+
+    // URL の変更を一定間隔で実行するためのタイマー開始
+    function startChanging() {
+      // 例として、100ミリ秒ごとに変更する
+      timer = setInterval(changeURL, 100);
+    }
+
+    // タイマーをクリアして変更を停止
+    function stopChanging() {
+      clearInterval(timer);
+      timer = null;
+    }
+
+    // ボタンのクリックイベントでトグル動作を実現
+    toggleButton.addEventListener("click", () => {
+      if (timer === null) {
+        // スタート：タイマーが無い状態なら処理を開始
+        startChanging();
+        toggleButton.textContent = "Stop";
+      } else {
+        // ストップ：タイマーが動作中なら停止する
+        stopChanging();
+        toggleButton.textContent = "Start";
+      }
+    });
+  </script>
+</body>
+</html>
