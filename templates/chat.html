@@ -1011,6 +1011,50 @@ if (messageText.startsWith("/poker")) {
   messageInput.value = "";
   return;
 }
+// /ai コマンド：外部の AI API を呼び出して返信を得る
+if (messageText.startsWith("/ai ")) {
+  const aiQuery = messageText.slice(4).trim();
+  if (!aiQuery) {
+    alert("AIに話したい内容を入力してください。");
+    return;
+  }
+  try {
+    // ※ 以下は Hugging Face の BlenderBot 400M Distilled モデルへのリクエスト例です
+    const response = await fetch("https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill", {
+      method: "POST",
+      headers: {
+         "Content-Type": "application/json",
+         // 必要に応じて API キーを利用してください（※無料枠でもキー発行が必要な場合があります）
+         // "Authorization": "Bearer YOUR_API_TOKEN"
+      },
+      body: JSON.stringify({ "inputs": aiQuery })
+    });
+    const data = await response.json();
+    let aiResponse = "";
+    // モデルによって返す形式が異なるため、下記は BlenderBot の例です
+    if (data.error) {
+      aiResponse = "外部AIエラー: " + data.error;
+    } else if (data.generated_text) {
+      aiResponse = data.generated_text;
+    } else if (Array.isArray(data) && data[0].generated_text) {
+      aiResponse = data[0].generated_text;
+    } else {
+      aiResponse = "予期せぬレスポンス: " + JSON.stringify(data);
+    }
+    // 外部 AI の返答をチャットルームにシステムメッセージとして送信
+    await addDoc(collection(db, "chat"), {
+      text: aiResponse,
+      name: "【AI】",
+      uid: "system",
+      timestamp: new Date()
+    });
+  } catch (error) {
+    alert("外部AI呼び出しエラー: " + error.message);
+  }
+  messageInput.value = "";
+  return;
+}
+
 
       
       // 通常メッセージ送信
