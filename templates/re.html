@@ -2,17 +2,22 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ランダムURL切り替えデモ</title>
+  <title>デジタル時計「--:--:--」</title>
   <style>
     body {
       margin: 0;
       padding: 0;
       font-family: sans-serif;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
       background: #f3f3f3;
+    }
+    #currentId {
+      font-size: 1.5em;
+      margin-bottom: 1em;
     }
     #toggle {
       padding: 1em 2em;
@@ -23,59 +28,102 @@
       color: white;
       cursor: pointer;
       transition: background 0.3s;
+      margin: 1em 0;
     }
     #toggle:hover {
       background: #005fa3;
     }
+    #clockContainer {
+      text-align: center;
+      margin-top: 1em;
+    }
+    #clock {
+      font-size: 2.5em;
+      font-family: "Courier New", Courier, monospace;
+      margin-top: 0.5em;
+    }
   </style>
 </head>
 <body>
+  <!-- 現在のID表示エリア -->
+  <div id="currentId">Current ID: -</div>
+
+  <!-- トグルボタン -->
   <button id="toggle">Start</button>
+
+  <!-- デジタル時計エリア -->
+  <div id="clockContainer">
+    <h2>デジタル時計(現在の時間)</h2>
+    <div id="clock">--:--:--</div>
+  </div>
 
   <script>
     // タイマー管理用の変数
-    let timer = null;
-    const toggleButton = document.getElementById("toggle");
+    let urlTimer = null;
+    let clockTimer = null;
 
-    // 任意の長さのランダム文字列を生成する関数（例：英数字のみ）
+    const toggleButton = document.getElementById("toggle");
+    const currentIdDisplay = document.getElementById("currentId");
+    const clockDisplay = document.getElementById("clock");
+
+    // 任意の長さのランダム文字列を生成する関数（英数字のみ）
     function randomId(length) {
-      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      const chars = 'ABCDEFGHIJKLNMOPQRSTUXYZabcdefghijklmnopqrstuvwxyz0123456789';
       let result = '';
-      for(let i = 0; i < length; i++){
+      for (let i = 0; i < length; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       return result;
     }
 
-    // URL をランダムな ID に変更して履歴を追加する処理
+    // URL をランダムな ID に変更して履歴を追加し、現在のIDを表示する処理
     function changeURL() {
-      // ここでは 8 文字のランダムな文字列を生成
       const id = randomId(8);
-      // history.pushState を使って、現在のページの履歴に新しいエントリを追加する
+      currentIdDisplay.textContent = "Current ID: " + id;
       history.pushState(null, "", "/" + id);
     }
 
-    // URL の変更を一定間隔で実行するためのタイマー開始
-    function startChanging() {
-      // 例として、100ミリ秒ごとに変更する
-      timer = setInterval(changeURL, 100);
+    // URL の変更を定期的に実行するタイマー開始
+    function startChangingURL() {
+      urlTimer = setInterval(changeURL, 100);
     }
 
-    // タイマーをクリアして変更を停止
-    function stopChanging() {
-      clearInterval(timer);
-      timer = null;
+    // URL変更タイマーをクリアして停止
+    function stopChangingURL() {
+      clearInterval(urlTimer);
+      urlTimer = null;
     }
 
-    // ボタンのクリックイベントでトグル動作を実現
+    // デジタル時計を更新する関数（ページタイトルにも反映）
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+      const timeString = hours + ":" + minutes + ":" + seconds;
+      
+      // 時計表示の更新
+      clockDisplay.textContent = timeString;
+      // ページタイトルを更新
+      document.title = "デジタル時計「" + timeString + "」";
+    }
+
+    // 時計の開始（初回即時更新と1秒ごとの更新）
+    function startClock() {
+      updateClock();
+      clockTimer = setInterval(updateClock, 1000);
+    }
+    
+    // デジタル時計の開始
+    startClock();
+
+    // ボタンのクリックでURL切り替えの開始/停止をトグル
     toggleButton.addEventListener("click", () => {
-      if (timer === null) {
-        // スタート：タイマーが無い状態なら処理を開始
-        startChanging();
+      if (urlTimer === null) {
+        startChangingURL();
         toggleButton.textContent = "Stop";
       } else {
-        // ストップ：タイマーが動作中なら停止する
-        stopChanging();
+        stopChangingURL();
         toggleButton.textContent = "Start";
       }
     });
