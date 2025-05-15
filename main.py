@@ -854,7 +854,7 @@ def list_page(response: Response, request: Request):
   if not(checkCookie(yuki)):
         return redirect("/")
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
-    return template("re.html", {"request": request})
+    return template("re.html", {"request": request},"proxy":proxy)
 
 @app.exception_handler(500)
 def error500(request: Request, __):
