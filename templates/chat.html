@@ -1024,8 +1024,7 @@ if (messageText.startsWith("/ai ")) {
       method: "POST",
       headers: {
          "Content-Type": "application/json",
-         // 必要に応じて API キーを利用してください（※無料枠でもキー発行が必要な場合があります）
-         // "Authorization": "Bearer YOUR_API_TOKEN"
+         "Authorization": "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"
       },
       body: JSON.stringify({ "inputs": aiQuery })
     });
