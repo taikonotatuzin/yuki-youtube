@@ -17,6 +17,10 @@
     }
     #currentId {
       font-size: 1.5em;
+      margin-bottom: 0.5em;
+    }
+    #updateCount {
+      font-size: 1.5em;
       margin-bottom: 1em;
     }
     #toggle {
@@ -42,11 +46,33 @@
       font-family: "Courier New", Courier, monospace;
       margin-top: 0.5em;
     }
+    /* スライダーとラベルのスタイル */
+    #speedControl {
+      margin: 1em 0;
+      text-align: center;
+    }
+    #speedControl label {
+      font-size: 1.2em;
+      margin-right: 0.5em;
+    }
+    #speedValue {
+      font-weight: bold;
+      margin-left: 0.5em;
+    }
   </style>
 </head>
 <body>
   <!-- 現在のID表示エリア -->
   <div id="currentId">Current ID: -</div>
+  <!-- 更新回数の表示エリア -->
+  <div id="updateCount">更新回数: 0</div>
+  
+  <!-- URL更新間隔調整用のスライダー -->
+  <div id="speedControl">
+    <label for="speedRange">更新速度 (ms):</label>
+    <input type="range" id="speedRange" min="50" max="1000" step="50" value="100">
+    <span id="speedValue">100</span>
+  </div>
 
   <!-- トグルボタン -->
   <button id="toggle">Start</button>
@@ -61,14 +87,20 @@
     // タイマー管理用の変数
     let urlTimer = null;
     let clockTimer = null;
+    // 更新回数をカウントする変数
+    let updateCount = 0;
 
+    // HTML要素の取得
     const toggleButton = document.getElementById("toggle");
     const currentIdDisplay = document.getElementById("currentId");
+    const updateCountDisplay = document.getElementById("updateCount");
     const clockDisplay = document.getElementById("clock");
+    const speedRange = document.getElementById("speedRange");
+    const speedValue = document.getElementById("speedValue");
 
     // 任意の長さのランダム文字列を生成する関数（英数字のみ）
     function randomId(length) {
-      const chars = 'ABCDEFGHIJKLNMOPQRSTUXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
       let result = '';
       for (let i = 0; i < length; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -76,25 +108,29 @@
       return result;
     }
 
-    // URL をランダムな ID に変更して履歴を追加し、現在のIDを表示する処理
+    // URL をランダムなIDに変更して履歴に追加し、現在のIDと更新回数を表示する処理
     function changeURL() {
       const id = randomId(8);
       currentIdDisplay.textContent = "Current ID: " + id;
       history.pushState(null, "", "/" + id);
+      // 更新回数をインクリメントし、表示を更新
+      updateCount++;
+      updateCountDisplay.textContent = "更新回数: " + updateCount;
     }
 
-    // URL の変更を定期的に実行するタイマー開始
+    // URL更新のタイマー開始（スライダーの値に基づいて間隔を設定）
     function startChangingURL() {
-      urlTimer = setInterval(changeURL, 100);
+      const interval = parseInt(speedRange.value);
+      urlTimer = setInterval(changeURL, interval);
     }
 
-    // URL変更タイマーをクリアして停止
+    // URL更新タイマーの停止
     function stopChangingURL() {
       clearInterval(urlTimer);
       urlTimer = null;
     }
 
-    // デジタル時計を更新する関数（ページタイトルにも反映）
+    // デジタル時計を更新する関数（ページタイトルも更新）
     function updateClock() {
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, "0");
@@ -104,11 +140,11 @@
       
       // 時計表示の更新
       clockDisplay.textContent = timeString;
-      // ページタイトルを更新
+      // ページタイトルの更新
       document.title = "デジタル時計「" + timeString + "」";
     }
 
-    // 時計の開始（初回即時更新と1秒ごとの更新）
+    // 時計の開始（初回即時更新＋1秒ごとの更新）
     function startClock() {
       updateClock();
       clockTimer = setInterval(updateClock, 1000);
@@ -117,7 +153,16 @@
     // デジタル時計の開始
     startClock();
 
-    // ボタンのクリックでURL切り替えの開始/停止をトグル
+    // スライダー値の変更で表示を更新し、タイマー動作中なら新しい間隔で再設定
+    speedRange.addEventListener("input", () => {
+      speedValue.textContent = speedRange.value;
+      if (urlTimer !== null) {
+        stopChangingURL();
+        startChangingURL();
+      }
+    });
+
+    // トグルボタンのクリックでURL切り替えの開始/停止をトグル
     toggleButton.addEventListener("click", () => {
       if (urlTimer === null) {
         startChangingURL();
