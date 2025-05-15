@@ -848,6 +848,9 @@ def list_page(response: Response, request: Request):
     return template("bj.html", {"request": request})
 @app.get("/re", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
+  if not(checkCookie(yuki)):
+        return redirect("/")
+    response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
     return template("re.html", {"request": request})
 
 @app.exception_handler(500)
