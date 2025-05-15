@@ -73,6 +73,7 @@
     <input type="range" id="speedRange" min="50" max="1000" step="50" value="100">
     <span id="speedValue">100</span>
   </div>
+  <h3>数字は小さい方が早く履歴を埋めます</h3>
 
   <!-- トグルボタン -->
   <button id="toggle">Start</button>
@@ -108,14 +109,21 @@
       return result;
     }
 
-    // URL をランダムなIDに変更して履歴に追加し、現在のIDと更新回数を表示する処理
+    // URL をランダムなIDに変更して履歴に追加し、
+    // 現在のIDと更新回数を表示する処理
     function changeURL() {
       const id = randomId(8);
       currentIdDisplay.textContent = "Current ID: " + id;
       history.pushState(null, "", "/" + id);
+      
       // 更新回数をインクリメントし、表示を更新
       updateCount++;
       updateCountDisplay.textContent = "更新回数: " + updateCount;
+      
+      // もし更新回数が100の倍数になっても、何もせず更新を継続（デバッグ用メッセージを出力）
+      if (updateCount % 100 === 0) {
+        console.log("更新回数が " + updateCount + " に達しましたが、一時停止はしません。");
+      }
     }
 
     // URL更新のタイマー開始（スライダーの値に基づいて間隔を設定）
