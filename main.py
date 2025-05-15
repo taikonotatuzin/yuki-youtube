@@ -846,6 +846,9 @@ def list_page(response: Response, request: Request):
 @app.get("/bj", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("bj.html", {"request": request})
+@app.get("/tools", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("tools.html", {"request": request})
 @app.get("/re", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
   if not(checkCookie(yuki)):
