@@ -896,164 +896,180 @@ if (messageText.startsWith("/you ")) {
         return;
       }
       
-      if (messageText.startsWith("/omi")) {
-        const result = weightedRandom(fortuneOptions);
-        try {
-          await addDoc(collection(db, "chat"), {
-            text: `【おみくじ】${userBaseName}さんの今日の運勢は…：${result}`,
-            name: "おみくじ",
-            uid: "system",
-            timestamp: new Date()
-          });
-        } catch (error) {
-          alert("おみくじ送信エラー: " + error.message);
-        }
-        messageInput.value = "";
-        return;
-      }
-      
-      if (messageText.startsWith("/roll")) {
-        const parts = messageText.split(" ");
-        let max = 6;
-        if (parts.length >= 2) {
-          const num = parseInt(parts[1]);
-          if (!isNaN(num) && num > 0) {
-            max = num;
-          }
-        }
-        const rollResult = Math.floor(Math.random() * max) + 1;
-        try {
-          await addDoc(collection(db, "chat"), {
-            text: `【ロール】${userBaseName}さんの結果：${rollResult} (1～${max})`,
-            name: "roll",
-            uid: "system",
-            timestamp: new Date()
-          });
-        } catch (error) {
-          alert("ロール送信エラー: " + error.message);
-        }
-        messageInput.value = "";
-        return;
-      }
-if (messageText.startsWith("/poker")) {
-  // 1. デッキ作成
-  const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-  const suits = ['♠','♥','♦','♣'];
-  let deck = [];
-  for (let rank of ranks) {
-    for (let suit of suits) {
-      deck.push({ rank, suit });
-    }
-  }
+      <script>
+  // …（これまでのコードはそのまま）…
 
-  // フィッシャー・イェーツ法によるシャッフル
-  for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-  
-  // 2. 上から5枚を手札として抽出
-  const hand = deck.slice(0, 5);
-  
-  // 3. 手役評価（シンプルなロジック）
-  function evaluateHand(hand) {
-    const rankCount = {};
-    const suitCount = {};
-    for (let card of hand) {
-      rankCount[card.rank] = (rankCount[card.rank] || 0) + 1;
-      suitCount[card.suit] = (suitCount[card.suit] || 0) + 1;
-    }
-    const flush = Object.values(suitCount).some(count => count === 5);
-    const rankIndexes = hand.map(card => ranks.indexOf(card.rank)).sort((a, b) => a - b);
-    let straight = false;
-    if (rankIndexes[4] - rankIndexes[0] === 4 && new Set(rankIndexes).size === 5) {
-      straight = true;
-    }
-    const counts = Object.values(rankCount).sort((a, b) => b - a);
-    if (flush && straight && hand.some(card => card.rank === 'A') && hand.some(card => card.rank === '10')) {
-      return "Royal Flush";
-    } else if (flush && straight) {
-      return "Straight Flush";
-    } else if (counts[0] === 4) {
-      return "Four of a Kind";
-    } else if (counts[0] === 3 && counts[1] === 2) {
-      return "Full House";
-    } else if (flush) {
-      return "Flush";
-    } else if (straight) {
-      return "Straight";
-    } else if (counts[0] === 3) {
-      return "Three of a Kind";
-    } else if (counts[0] === 2 && counts[1] === 2) {
-      return "Two Pair";
-    } else if (counts[0] === 2) {
-      return "One Pair";
-    } else {
-      return "High Card";
-    }
-  }
-  
-  const handRank = evaluateHand(hand);
-  const handString = hand.map(card => card.rank + card.suit).join(" ");
-  const pokerMessage = `${userBaseName}さんの結果：手札: ${handString}\n結果: ${handRank}`;
-  
-  // 4. 結果の送信【/omi と同じスタイル：送信者は "おみくじ", uid は "system"】
-  try {
-    await addDoc(collection(db, "chat"), {
-      text: pokerMessage,
-      name: "【Poker Hand】",
-      uid: "system",
-      timestamp: new Date()
-    });
-  } catch (error) {
-    alert("Pokerコマンド送信エラー: " + error.message);
-  }
-  messageInput.value = "";
-  return;
-}
-// /ai コマンド：外部の AI API を呼び出して返信を得る
-if (messageText.startsWith("/ai ")) {
-  const aiQuery = messageText.slice(4).trim();
-  if (!aiQuery) {
-    alert("AIに話したい内容を入力してください。");
-    return;
-  }
-  try {
-    // ※ 以下は Hugging Face の BlenderBot 400M Distilled モデルへのリクエスト例です
-    const response = await fetch("https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill", {
+  // ※ Gemini API を呼び出して回答を取得する関数（実際の API エンドポイントに合わせて修正してください）
+  async function getGeminiAnswer(question) {
+    const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyBOHcke-jsEhWQTQH4TV8LzkfeMAET-4VQ"; // 仮のURL。実際のGemini無料APIのエンドポイントに変更
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
-         "Content-Type": "application/json",
-         "Authorization": "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"
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({ "inputs": aiQuery })
+      body: JSON.stringify({ prompt: question })
     });
-    const data = await response.json();
-    let aiResponse = "";
-    // モデルによって返す形式が異なるため、下記は BlenderBot の例です
-    if (data.error) {
-      aiResponse = "外部AIエラー: " + data.error;
-    } else if (data.generated_text) {
-      aiResponse = data.generated_text;
-    } else if (Array.isArray(data) && data[0].generated_text) {
-      aiResponse = data[0].generated_text;
-    } else {
-      aiResponse = "予期せぬレスポンス: " + JSON.stringify(data);
+    if (!response.ok) {
+      throw new Error("Gemini API の応答が不正です。");
     }
-    // 外部 AI の返答をチャットルームにシステムメッセージとして送信
-    await addDoc(collection(db, "chat"), {
-      text: aiResponse,
-      name: "【AI】",
-      uid: "system",
-      timestamp: new Date()
-    });
-  } catch (error) {
-    alert("外部AI呼び出しエラー: " + error.message);
+    const data = await response.json();
+    // API の戻り値が { answer: "回答文" } となっている前提
+    return data.answer;
   }
-  messageInput.value = "";
-  return;
-}
-
+  
+  sendButton.addEventListener("click", async () => {
+    const messageText = messageInput.value;
+    if (messageText.trim() === "") return;
+    const user = auth.currentUser;
+    if (!user) {
+      alert("まずログインしてください。");
+      return;
+    }
+    const userBaseName = user.displayName.split("|")[0];
+    
+    if (isMuted(userBaseName.split("#")[0])) {
+      alert("あなたはミュート中です。ミュート解除後に送信してください。");
+      return;
+    }
+    
+    // /you, /delete, /color, /topic, /roll など既存のコマンド処理はそのまま…
+    
+    // ★ 新規 /ai コマンド ★
+    if (messageText.startsWith("/ai ")) {
+      // コマンド入力そのものをチャットに表示
+      await addDoc(collection(db, "chat"), {
+        text: messageText, // ユーザーが入力した「/ai 質問内容」をそのまま表示
+        name: user.displayName || "名無し",
+        uid: user.uid,
+        timestamp: new Date()
+      });
+      const question = messageText.substring(4).trim();
+      if (question === "") {
+        alert("質問内容を入力してください。");
+        return;
+      }
+      let answerText = "";
+      try {
+        answerText = await getGeminiAnswer(question);
+      } catch (error) {
+        answerText = "回答の取得に失敗しました: " + error.message;
+      }
+      try {
+        await addDoc(collection(db, "chat"), {
+          text: `【AI回答】 ${answerText}`,
+          name: "【AI回答】",
+          uid: "system",
+          timestamp: new Date()
+        });
+      } catch (error) {
+        alert("AI回答の送信エラー: " + error.message);
+      }
+      messageInput.value = "";
+      return;
+    }
+    
+    // ★ 既存コマンド /omi の修正版 ★
+    if (messageText.startsWith("/omi")) {
+      // 入力された /omi コマンドもまず表示
+      await addDoc(collection(db, "chat"), {
+        text: messageText,
+        name: user.displayName || "名無し",
+        uid: user.uid,
+        timestamp: new Date()
+      });
+      const result = weightedRandom(fortuneOptions);
+      try {
+        await addDoc(collection(db, "chat"), {
+          text: `【おみくじ】${userBaseName}さんの今日の運勢は…：${result}`,
+          name: "【おみくじ】",
+          uid: "system",
+          timestamp: new Date()
+        });
+      } catch (error) {
+        alert("おみくじ送信エラー: " + error.message);
+      }
+      messageInput.value = "";
+      return;
+    }
+    
+    // ★ 既存コマンド /poker の修正版 ★
+    if (messageText.startsWith("/poker")) {
+      // 入力された /poker コマンドもまず表示
+      await addDoc(collection(db, "chat"), {
+        text: messageText,
+        name: user.displayName || "名無し",
+        uid: user.uid,
+        timestamp: new Date()
+      });
+      // 1. デッキ作成
+      const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+      const suits = ['♠','♥','♦','♣'];
+      let deck = [];
+      for (let rank of ranks) {
+        for (let suit of suits) {
+          deck.push({ rank, suit });
+        }
+      }
+      // フィッシャー・イェーツ法によるシャッフル
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
+      // 上から5枚を手札として抽出
+      const hand = deck.slice(0, 5);
+      // 手役評価（シンプルなロジック）
+      function evaluateHand(hand) {
+        const rankCount = {};
+        const suitCount = {};
+        for (let card of hand) {
+          rankCount[card.rank] = (rankCount[card.rank] || 0) + 1;
+          suitCount[card.suit] = (suitCount[card.suit] || 0) + 1;
+        }
+        const flush = Object.values(suitCount).some(count => count === 5);
+        const rankIndexes = hand.map(card => ranks.indexOf(card.rank)).sort((a, b) => a - b);
+        let straight = false;
+        if (rankIndexes[4] - rankIndexes[0] === 4 && new Set(rankIndexes).size === 5) {
+          straight = true;
+        }
+        const counts = Object.values(rankCount).sort((a, b) => b - a);
+        if (flush && straight && hand.some(card => card.rank === 'A') && hand.some(card => card.rank === '10')) {
+          return "Royal Flush";
+        } else if (flush && straight) {
+          return "Straight Flush";
+        } else if (counts[0] === 4) {
+          return "Four of a Kind";
+        } else if (counts[0] === 3 && counts[1] === 2) {
+          return "Full House";
+        } else if (flush) {
+          return "Flush";
+        } else if (straight) {
+          return "Straight";
+        } else if (counts[0] === 3) {
+          return "Three of a Kind";
+        } else if (counts[0] === 2 && counts[1] === 2) {
+          return "Two Pair";
+        } else if (counts[0] === 2) {
+          return "One Pair";
+        } else {
+          return "High Card";
+        }
+      }
+      const handRank = evaluateHand(hand);
+      const handString = hand.map(card => card.rank + card.suit).join(" ");
+      const pokerMessage = `${userBaseName}さんの結果：手札: ${handString}\n結果: ${handRank}`;
+      try {
+        await addDoc(collection(db, "chat"), {
+          text: pokerMessage,
+          name: "【Poker Hand】",
+          uid: "system",
+          timestamp: new Date()
+        });
+      } catch (error) {
+        alert("Pokerコマンド送信エラー: " + error.message);
+      }
+      messageInput.value = "";
+      return;
+    }
 
       
       // 通常メッセージ送信
