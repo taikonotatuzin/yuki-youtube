@@ -923,6 +923,7 @@ if (messageText.startsWith("/you ")) {
       messageInput.value = "";
       return;
     }
+      
 if (messageText.startsWith("/news")) {
   // ユーザーが入力した /news コマンドをまずチャットに投稿
   await addDoc(collection(db, "chat"), {
@@ -937,7 +938,7 @@ if (messageText.startsWith("/news")) {
     const mediastackApiKey = 'b037cd39eb522c5955524b45a248101a'; // ← ご自身の API キーに置き換えてください
 
     // Yahoo News のみを対象とするため、sources パラメーターに "yahoo" を指定（limit=1 で最新記事1件を取得）
-    const mediastackUrl = `http://api.mediastack.com/v1/news?access_key=${mediastackApiKey}&sources=yahoo&limit=1`;
+    const mediastackUrl = `http://api.mediastack.com/v1/news?access_key=${mediastackApiKey}&sources=google&limit=1`;
 
     // Mediastack API にリクエストを送信
     const response = await fetch(mediastackUrl);
