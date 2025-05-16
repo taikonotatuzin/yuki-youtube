@@ -926,15 +926,6 @@ if (messageText.startsWith("/you ")) {
   // -----------------------
   // 送信ボタン (sendButton) のクリックイベント
   // -----------------------
-  sendButton.addEventListener("click", async () => {
-    const messageText = messageInput.value;
-    if (messageText.trim() === "") return;
-
-    const user = auth.currentUser;
-    if (!user) {
-      alert("まずログインしてください。");
-      return;
-    }
 
     // /ai コマンドの処理
     if (messageText.startsWith("/ai ")) {
