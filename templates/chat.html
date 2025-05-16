@@ -898,7 +898,7 @@ if (messageText.startsWith("/you ")) {
   // -----------------------
   // Groq OpenAI API を呼び出す関数
   // -----------------------
-      const OPENAI_TOKEN = "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"; // ここにあなたのトークンを設定
+     
     
     // ★ 既存コマンド /omi の修正版 ★
     if (messageText.startsWith("/omi")) {
@@ -923,8 +923,8 @@ if (messageText.startsWith("/you ")) {
       messageInput.value = "";
       return;
     }
- if (messageText.startsWith("/news")) {
-  // ユーザーが入力した /news コマンドそのものをチャットに投稿
+if (messageText.startsWith("/news")) {
+  // まず、ユーザーが入力した /news コマンドそのものをチャットに投稿
   await addDoc(collection(db, "chat"), {
     text: messageText,
     name: user.displayName || "名無し",
@@ -933,27 +933,41 @@ if (messageText.startsWith("/you ")) {
   });
 
   try {
-    // "Yahoo News トップニュース" で検索して、Yahoo News に関する情報を取得
-    const searchResponse = await search_web("Yahoo News トップニュース");
+    // Bing Search API 用のサブスクリプションキーを設定する
+    const bingApiKey = 'YOUR_BING_API_KEY'; // ← ここに有効なキーを記入してください
 
-    if (!searchResponse || !searchResponse.WebPages || searchResponse.WebPages.length === 0) {
-      throw new Error("Yahoo News の情報が見つかりませんでした。");
+    // クエリとして "Yahoo News トップニュース" を指定
+    const query = "Yahoo News トップニュース";
+    const bingSearchUrl = `https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(query)}&mkt=ja-JP`;
+
+    // Bing Search API にGETリクエストを送信
+    const bingResponse = await fetch(bingSearchUrl, {
+      method: 'GET',
+      headers: {
+        "Ocp-Apim-Subscription-Key": bingApiKey,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!bingResponse.ok) {
+      throw new Error(`Bing Search API エラー: ${bingResponse.status}`);
     }
 
-    // 例として citationIndex===2 の結果を優先して採用。なければ最初の結果を利用
-    let topNewsResult = searchResponse.WebPages.find(item => item.citationIndex === 2);
-    if (!topNewsResult) {
-      topNewsResult = searchResponse.WebPages[0];
+    const searchData = await bingResponse.json();
+    // 結果は searchData.webPages.value 配列に格納される
+    if (!searchData.webPages || !searchData.webPages.value || searchData.webPages.value.length === 0) {
+      throw new Error("Yahoo News の結果が見つかりませんでした。");
     }
 
-    // Yahoo News のトップニュースの画像は取得が難しいため、Yahoo News のロゴ画像を代替として利用
+    // ここでは、最初の結果 (一番上位の記事) を利用する
+    const topNews = searchData.webPages.value[0];
+    const newsTitle = topNews.name; // Bing の結果のタイトルは 'name' プロパティに入る
+    const newsUrl = topNews.url;    // リンク先
+
+    // Yahoo News のトップニュースの画像が自動取得できない場合は、代替として Yahoo News のロゴ画像を使用
     const imageUrl = "https://s.yimg.com/cv/apiv2/default/NewsLogo.png";
 
-    // 検索結果からタイトルと URL を取り出す
-    const newsTitle = topNewsResult.Title;
-    const newsUrl = topNewsResult.Url;
-
-    // ニュース記事のタイトル、URL、画像を含む HTML を作成
+    // ニュース記事のタイトル、URL、画像を HTML 形式で整形
     const newsMessage = `
       <div>
         <a href="${newsUrl}" target="_blank">
@@ -964,7 +978,7 @@ if (messageText.startsWith("/you ")) {
       </div>
     `;
 
-    // システムからのニュース情報としてチャットに投稿
+    // システムユーザー（uid: "system"、name: "【News】"）としてチャットに投稿
     await addDoc(collection(db, "chat"), {
       text: newsMessage,
       name: "【News】",
@@ -978,6 +992,8 @@ if (messageText.startsWith("/you ")) {
   messageInput.value = "";
   return;
 }
+
+
 
     // ★ 既存コマンド /poker の修正版 ★
     if (messageText.startsWith("/poker")) {
