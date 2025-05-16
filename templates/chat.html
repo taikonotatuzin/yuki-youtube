@@ -894,6 +894,114 @@ if (messageText.startsWith("/you ")) {
         messageInput.value = "";
         return;
       }
+
+  // -----------------------
+  // Groq OpenAI API を呼び出す関数
+  // -----------------------
+      const OPENAI_TOKEN = "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"; // ここにあなたのトークンを設定
+  async function getGroqAIAnswer(question) {
+    const endpoint = "https://api.groq.com/openai/v1";
+    const payload = {
+      prompt: question,
+      max_tokens: 150  // 必要に応じて調整してください。temperature や top_p などのパラメータも追加可能です。
+    };
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_TOKEN}`  // API トークンをヘッダーにセット
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      throw new Error("OpenAI API の応答エラー: " + response.statusText);
+    }
+    const data = await response.json();
+    // ここではレスポンスが { result: "回答文" } の形と仮定しています。
+    return data.result;
+  }
+
+  // -----------------------
+  // 送信ボタン (sendButton) のクリックイベント
+  // -----------------------
+  sendButton.addEventListener("click", async () => {
+    const messageText = messageInput.value;
+    if (messageText.trim() === "") return;
+
+    const user = auth.currentUser;
+    if (!user) {
+      alert("まずログインしてください。");
+      return;
+    }
+
+    // /ai コマンドの処理
+    if (messageText.startsWith("/ai ")) {
+      // ① ユーザーが入力した "/ai 質問内容" をまずチャットに表示
+      await addDoc(collection(db, "chat"), {
+        text: messageText,
+        name: user.displayName || "名無し",
+        uid: user.uid,
+        timestamp: new Date()
+      });
+
+      // ② "/ai " 部分を除いた質問内容の抽出
+      const question = messageText.substring(4).trim();
+      if (question === "") {
+        alert("質問内容を入力してください。");
+        return;
+      }
+
+      // ③ Groq API を呼び出して回答を取得
+      let answerText = "";
+      try {
+        answerText = await getGroqAIAnswer(question);
+      } catch (error) {
+        answerText = "回答の取得に失敗しました: " + error.message;
+      }
+
+      // ④ 得られた回答をシステムメッセージとして投稿
+      try {
+        await addDoc(collection(db, "chat"), {
+          text: `【AI回答】 ${answerText}`,
+          name: "【AI回答】",
+          uid: "system",
+          timestamp: new Date()
+        });
+      } catch (error) {
+        alert("AI回答の送信エラー: " + error.message);
+      }
+
+      messageInput.value = "";
+      return;
+    }
+
+    // -----------------------
+    // 通常のメッセージ送信（/ai コマンド以外）
+    // -----------------------
+    try {
+      await addDoc(collection(db, "chat"), {
+        text: messageText,
+        name: user.displayName || "名無し",
+        uid: user.uid,
+        timestamp: new Date()
+      });
+      messageInput.value = "";
+    } catch (error) {
+      alert("メッセージ送信エラー: " + error.message);
+    }
+  });
+
+  // ※ 以下はログアウト処理やチャットのリアルタイム表示など、既存のコードの続きです。
+  logoutButton.addEventListener("click", async () => {
+    try {
+      await signOut(auth);
+      console.log("ログアウト成功");
+    } catch (error) {
+      alert("ログアウトエラー: " + error.message);
+    }
+  });
     
     // ★ 既存コマンド /omi の修正版 ★
     if (messageText.startsWith("/omi")) {
