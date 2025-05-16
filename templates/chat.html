@@ -924,7 +924,7 @@ if (messageText.startsWith("/you ")) {
       return;
     }
 if (messageText.startsWith("/news")) {
-  // まず、ユーザーが入力した /news コマンドそのものをチャットに投稿
+  // ユーザーが入力した /news コマンドをまずチャットに投稿
   await addDoc(collection(db, "chat"), {
     text: messageText,
     name: user.displayName || "名無し",
@@ -933,44 +933,35 @@ if (messageText.startsWith("/news")) {
   });
 
   try {
-    // Bing Search API 用のサブスクリプションキーを設定する
-    const bingApiKey = 'YOUR_BING_API_KEY'; // ← ここに有効なキーを記入してください
+    // Mediastack API 用のアクセストークンを設定（無料プランの場合のキー）
+    const mediastackApiKey = 'b037cd39eb522c5955524b45a248101a'; // ← ご自身の API キーに置き換えてください
 
-    // クエリとして "Yahoo News トップニュース" を指定
-    const query = "Yahoo News トップニュース";
-    const bingSearchUrl = `https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(query)}&mkt=ja-JP`;
+    // Yahoo News のみを対象とするため、sources パラメーターに "yahoo" を指定（limit=1 で最新記事1件を取得）
+    const mediastackUrl = `http://api.mediastack.com/v1/news?access_key=${mediastackApiKey}&sources=yahoo&limit=1`;
 
-    // Bing Search API にGETリクエストを送信
-    const bingResponse = await fetch(bingSearchUrl, {
-      method: 'GET',
-      headers: {
-        "Ocp-Apim-Subscription-Key": bingApiKey,
-        "Content-Type": "application/json"
-      }
-    });
-
-    if (!bingResponse.ok) {
-      throw new Error(`Bing Search API エラー: ${bingResponse.status}`);
+    // Mediastack API にリクエストを送信
+    const response = await fetch(mediastackUrl);
+    if (!response.ok) {
+      throw new Error(`Mediastack API エラー: ${response.status}`);
     }
 
-    const searchData = await bingResponse.json();
-    // 結果は searchData.webPages.value 配列に格納される
-    if (!searchData.webPages || !searchData.webPages.value || searchData.webPages.value.length === 0) {
-      throw new Error("Yahoo News の結果が見つかりませんでした。");
+    const newsData = await response.json();
+    // 取得データは newsData.data 配列に格納される
+    if (!newsData.data || newsData.data.length === 0) {
+      throw new Error("ニュースが見つかりませんでした。");
     }
+    const topNews = newsData.data[0];
 
-    // ここでは、最初の結果 (一番上位の記事) を利用する
-    const topNews = searchData.webPages.value[0];
-    const newsTitle = topNews.name; // Bing の結果のタイトルは 'name' プロパティに入る
-    const newsUrl = topNews.url;    // リンク先
+    // 取得した記事からタイトル、URL、画像を取り出す
+    const newsTitle = topNews.title;
+    const newsUrl = topNews.url;
+    // 画像情報がない場合は代替画像（Yahoo News のロゴ）を使用
+    const imageUrl = topNews.image ? topNews.image : "https://s.yimg.com/cv/apiv2/default/NewsLogo.png";
 
-    // Yahoo News のトップニュースの画像が自動取得できない場合は、代替として Yahoo News のロゴ画像を使用
-    const imageUrl = "https://s.yimg.com/cv/apiv2/default/NewsLogo.png";
-
-    // ニュース記事のタイトル、URL、画像を HTML 形式で整形
+    // HTML 形式のメッセージを生成（リンクと画像付き）
     const newsMessage = `
       <div>
-        <a href="${newsUrl}" target="_blank">
+        <a href="${newsUrl}" target="_blank" style="text-decoration:none; color:#000;">
           <strong>${newsTitle}</strong>
         </a>
         <br>
@@ -978,7 +969,7 @@ if (messageText.startsWith("/news")) {
       </div>
     `;
 
-    // システムユーザー（uid: "system"、name: "【News】"）としてチャットに投稿
+    // システムユーザーとしてニュース情報をチャットに投稿
     await addDoc(collection(db, "chat"), {
       text: newsMessage,
       name: "【News】",
