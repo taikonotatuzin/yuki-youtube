@@ -907,7 +907,7 @@ if (messageText.startsWith("/you ")) {
       const result = weightedRandom(fortuneOptions);
       try {
         await addDoc(collection(db, "chat"), {
-          text: `>${userBaseName}${messageText}/n【おみくじ】${userBaseName}さんの今日の運勢は…：${result}`,
+          text: `【おみくじ】${userBaseName}さんの今日の運勢は…：${result}`,
           name: "【おみくじ】",
           uid: "system",
           timestamp: new Date()
