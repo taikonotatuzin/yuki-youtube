@@ -923,7 +923,7 @@ if (messageText.startsWith("/you ")) {
       messageInput.value = "";
       return;
     }
-            const apiKey= "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"; 
+   const apiKey= "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"; 
     // 例: メッセージ送信時の処理の一部（既にmessageTextが定義されている前提）
 if (messageText.startsWith("/ai")) {
   // ユーザーの /ai コマンド自体（入力された内容）をまず表示
@@ -952,9 +952,7 @@ if (messageText.startsWith("/ai")) {
       body: JSON.stringify({
         model: "llama-3.1-70b-versatile",
         messages: [
-          { role: "system", content: "あなたはchatサイトのねむbotです。" },
-          { role: "assistant", content: "利用者に優しく解凍してください" },
-          { role: "assistant", content: "You never do markdown format, only text format." },
+          { role: "system", content: "あなたはねむbotというAIです。ユーザーの質問に対して、かわいい口調で簡潔に日本語で答えてください。" },
           { role: "user", content: aiQuestion }
         ],
         temperature: 0.9,
@@ -970,7 +968,7 @@ if (messageText.startsWith("/ai")) {
     const data = await response.json();
     const aiResponse = data.choices[0].message.content;
     // AIからの回答メッセージ（システムユーザーとして表示）
-    const aiMessage = `質問: ${aiQuestion}\n\nSandAIからの回答: ${aiResponse}`;
+    const aiMessage = `質問: ${aiQuestion}\n\nねむbotからの回答: ${aiResponse}`;
     await addDoc(collection(db, "chat"), {
       text: aiMessage,
       name: "ねむbot",
