@@ -113,10 +113,26 @@
     const hardBtn   = document.getElementById("hardBtn");
     const ultraBtn  = document.getElementById("ultraBtn");
 
-    // キー入力状態管理
+    // キー入力状態管理（PC操作用）
     const keys = {};
     window.addEventListener("keydown", e => { keys[e.code] = true; });
     window.addEventListener("keyup", e => { keys[e.code] = false; });
+
+    // タッチ操作対応：キャンバス上でタッチ移動した場合、タッチ位置に合わせてパドルを移動
+    canvas.addEventListener("touchmove", function(e) {
+      e.preventDefault();
+      if (!gameRunning) return;
+      const touch = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      // タッチ位置の相対的な x 座標
+      const touchX = touch.clientX - rect.left;
+      // パドルの中心をタッチ位置に合わせる
+      paddle.x = touchX - paddle.width / 2;
+      // 画面外に出ないように制限
+      if(paddle.x < 0) paddle.x = 0;
+      if(paddle.x + paddle.width > canvas.width) 
+        paddle.x = canvas.width - paddle.width;
+    }, {passive: false});
 
     // 難易度に応じたパラメータ
     let ballInitSpeed = 5;
@@ -164,10 +180,10 @@
       draw(ctx) {
         ctx.fillStyle = "#fff";
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
       }
-      getRect() { return { x: this.x - this.radius, y: this.y - this.radius, width: this.radius*2, height: this.radius*2 }; }
+      getRect() { return { x: this.x - this.radius, y: this.y - this.radius, width: this.radius * 2, height: this.radius * 2 }; }
     }
 
     class Block {
@@ -199,10 +215,10 @@
       draw(ctx) {
         ctx.fillStyle = "#ff0";
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
       }
-      getRect() { return { x: this.x - this.radius, y: this.y - this.radius, width: this.radius*2, height: this.radius*2 }; }
+      getRect() { return { x: this.x - this.radius, y: this.y - this.radius, width: this.radius * 2, height: this.radius * 2 }; }
     }
 
     // 矩形同士の衝突判定
@@ -236,10 +252,10 @@
     let lastBombSpawnTime = 0;
     let gameRunning = false;
 
-    // カウントダウン開始（難易度を引数で受け取り、3秒後にゲーム開始）
+    // カウントダウン開始（難易度選択後、3秒間カウントダウン→ゲーム開始）
     function startCountdown(difficulty) {
       let countdown = 3;
-      // カウントダウンの場合は Restart ボタンを非表示
+      // Restart ボタン非表示
       restartBtn.style.display = "none";
       messageText.textContent = countdown;
       messageDiv.style.display = "block";
@@ -258,7 +274,7 @@
 
     // ゲーム初期化と開始
     function startGame(difficulty) {
-      // パラメータの設定（難易度により変更）
+      // パラメータ設定（難易度による調整）
       if (difficulty === "easy") {
         ballInitSpeed = 5;
         bombInterval = null;
@@ -272,16 +288,16 @@
         ballInitSpeed = 12;
         bombInterval = 3000; // 3秒
       }
-      // オブジェクトの生成
+      // ゲームオブジェクト生成
       paddle = new Paddle();
-      let initialDX = (Math.random() < 0.5 ? -1 : 1) * ballInitSpeed;
-      let initialDY = -ballInitSpeed;
-      balls = [ new Ball(canvas.width/2, canvas.height/2, initialDX, initialDY) ];
+      const initialDX = (Math.random() < 0.5 ? -1 : 1) * ballInitSpeed;
+      const initialDY = -ballInitSpeed;
+      balls = [ new Ball(canvas.width / 2, canvas.height / 2, initialDX, initialDY) ];
       blocks = createBlocks();
       bombs = [];
       lastBombSpawnTime = performance.now();
       gameRunning = true;
-      // ゲーム画面表示、メニュー非表示
+      // ゲーム画面を表示、メニュー非表示
       menu.style.display = "none";
       canvas.style.display = "block";
       
@@ -307,7 +323,7 @@
         // パドルとの衝突
         if (rectIntersect(ball.getRect(), paddle.getRect())) {
           ball.dy = -Math.abs(ball.dy);
-          let offset = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+          const offset = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
           ball.dx = ballInitSpeed * offset;
         }
         // ブロックとの衝突
@@ -316,7 +332,7 @@
           if (rectIntersect(ball.getRect(), block.getRect())) {
             blocks.splice(i, 1);
             ball.dy = -ball.dy;
-            // 特殊ブロックなら追加の2球
+            // 特殊ブロックの場合、追加の2球を生成
             if (block.isSpecial) {
               balls.push(new Ball(ball.x, ball.y, ball.dx, -ball.dy));
               balls.push(new Ball(ball.x, ball.y, -ball.dx, ball.dy));
@@ -340,7 +356,7 @@
       
       // 爆弾自動落下（hard, ultraの場合）
       if (bombInterval && currentTime - lastBombSpawnTime >= bombInterval) {
-        let bombX = Math.random() * (canvas.width - 40) + 20;
+        const bombX = Math.random() * (canvas.width - 40) + 20;
         bombs.push(new Bomb(bombX, 0));
         lastBombSpawnTime = currentTime;
       }
@@ -352,7 +368,7 @@
       });
       bombs = bombs.filter(bomb => bomb.y - bomb.radius <= canvas.height);
       
-      // 全ブロックを破壊したら勝利
+      // 全ブロック破壊で勝利
       if (blocks.length === 0) {
         endGame("WIN!");
       }
@@ -370,12 +386,12 @@
     function endGame(text) {
       gameRunning = false;
       messageText.textContent = text;
-      // Restart ボタンは終了時のみ表示
+      // Restart ボタンを表示
       restartBtn.style.display = "block";
       messageDiv.style.display = "block";
     }
 
-    // Restart ボタン押下時は、ゲーム画面・メッセージを隠して難易度選択画面へ戻す
+    // Restart ボタン押下時、ゲーム画面・メッセージを隠し、難易度選択画面へ戻る
     restartBtn.addEventListener("click", () => {
       gameRunning = false;
       canvas.style.display = "none";
