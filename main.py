@@ -843,6 +843,10 @@ def list_page(response: Response, request: Request):
 @app.get("/chat", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("chat.html", {"request": request})
+@app.get("/ball", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("ball.html", {"request": request})
+
 @app.get("/bj", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("bj.html", {"request": request})
