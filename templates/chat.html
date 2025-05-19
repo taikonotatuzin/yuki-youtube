@@ -450,6 +450,29 @@ function extractVideoId(url) {
     
     const CLEAR_CHAT_PASSWORD = "RESET1234";
     
+    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
+    const messageInput = document.getElementById("messageInput");
+    const typingIndicator = document.getElementById("typing-indicator");
+    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
+    const messageInput = document.getElementById("messageInput");
+    const typingIndicator = document.getElementById("typing-indicator");
+    
+    let typingTimeout;  // タイマー用変数（直近の入力から一定時間経過後にクリアする）
+    
+    // 入力イベント監視
+    messageInput.addEventListener("input", () => {
+      // ユーザーが入力中ならすぐにインジケーターを表示
+      typingIndicator.textContent = "タイピング中…";
+      
+      // 前回設定していたタイマーがあればクリア
+      if (typingTimeout) clearTimeout(typingTimeout);
+      
+      // 入力が止まったら1秒後にインジケーター表示を消去
+      typingTimeout = setTimeout(() => {
+        typingIndicator.textContent = "";
+      }, 1000); // 1000ミリ秒＝1秒
+    });
+    
     const signupButton = document.getElementById("signupButton");
     const loginButton  = document.getElementById("loginButton");
     const logoutButton = document.getElementById("logoutButton");
@@ -671,28 +694,7 @@ function extractVideoId(url) {
     document.getElementById("online-users").innerText = "只今のオンラインユーザー: " + onlineNames.join(", ");
   });
 }
-    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
-    const messageInput = document.getElementById("messageInput");
-    const typingIndicator = document.getElementById("typing-indicator");
-    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
-    const messageInput = document.getElementById("messageInput");
-    const typingIndicator = document.getElementById("typing-indicator");
     
-    let typingTimeout;  // タイマー用変数（直近の入力から一定時間経過後にクリアする）
-    
-    // 入力イベント監視
-    messageInput.addEventListener("input", () => {
-      // ユーザーが入力中ならすぐにインジケーターを表示
-      typingIndicator.textContent = "タイピング中…";
-      
-      // 前回設定していたタイマーがあればクリア
-      if (typingTimeout) clearTimeout(typingTimeout);
-      
-      // 入力が止まったら1秒後にインジケーター表示を消去
-      typingTimeout = setTimeout(() => {
-        typingIndicator.textContent = "";
-      }, 1000); // 1000ミリ秒＝1秒
-    });
 
       // プロフィール更新処理（名前・パスワード・色・テーマの更新）
     updateProfileButton.addEventListener("click", async () => {
