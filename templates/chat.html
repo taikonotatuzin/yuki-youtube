@@ -413,6 +413,7 @@
       messagingSenderId: "465019906626",
       appId: "1:465019906626:web:1de95eec38a8bbf5c65bdb",
       measurementId: "G-HVV4XD4D6J"
+      databaseURL: "https://chat-chat-2518e-default-rtdb.asia-southeast1.firebasedatabase.app"
     };
     
     // 初期化
@@ -659,7 +660,7 @@ function extractVideoId(url) {
     }
     
     // 画面上のオンラインユーザー表示エリアに名前一覧を更新
-    document.getElementById("online-users").innerText = "オンラインのユーザー: " + onlineNames.join(", ");
+    document.getElementById("online-users").innerText = "只今のオンラインユーザー: " + onlineNames.join(", ");
   });
 }
 
