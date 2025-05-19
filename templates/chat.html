@@ -309,6 +309,8 @@
     <div id="chat-box"></div>
     
     <!-- ※ タイピングインジケーターは削除済 -->
+    <div id="online-users" style="padding: 10px; font-size: 16px; background: #e0f7fa; margin-bottom: 10px;">
+    <!-- ここにオンラインのユーザー名が動的に表示されます -->
     
     <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
     <button id="sendButton">送信</button>
@@ -572,16 +574,18 @@ function extractVideoId(url) {
     }
     
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById("user-auth").style.display = "none";
-        document.getElementById("chat-section").style.display = "block";
-        setupPresence(user);
-        setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 200);
-      } else {
-        document.getElementById("user-auth").style.display = "block";
-        document.getElementById("chat-section").style.display = "none";
-      }
-    });
+  if (user) {
+    document.getElementById("user-auth").style.display = "none";
+    document.getElementById("chat-section").style.display = "block";
+    setupPresence(user);
+    updateOnlineUsers(); // ログイン後にオンライン監視を開始
+    setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 200);
+  } else {
+    document.getElementById("user-auth").style.display = "block";
+    document.getElementById("chat-section").style.display = "none";
+  }
+});
+
     
     onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -629,6 +633,36 @@ function extractVideoId(url) {
       }
       return options[options.length - 1].name;
     }
+    function updateOnlineUsers() {
+  // Realtime Database の「status」ノードのリファレンスを取得
+  const onlineUsersRef = ref(dbRT, "status/");
+  onValue(onlineUsersRef, (snapshot) => {
+    let onlineNames = [];
+    
+    // 各ユーザーのステータスを確認
+    snapshot.forEach((childSnapshot) => {
+      const userData = childSnapshot.val();
+      if (userData && userData.status === "online") {
+        // displayName は"名前#ID|色"などの形式の場合があるので、先頭部分を抽出
+        let displayName = userData.displayName;
+        if (displayName.includes("|")) {
+          displayName = displayName.split("|")[0];
+        }
+        onlineNames.push(displayName);
+      }
+    });
+    
+    // オンラインユーザーが10人を超える場合は先頭10名のみ表示し、最後に「など…」を追加
+    if (onlineNames.length > 10) {
+      onlineNames = onlineNames.slice(0, 10);
+      onlineNames.push("など…");
+    }
+    
+    // 画面上のオンラインユーザー表示エリアに名前一覧を更新
+    document.getElementById("online-users").innerText = "オンラインのユーザー: " + onlineNames.join(", ");
+  });
+}
+
     
       // プロフィール更新処理（名前・パスワード・色・テーマの更新）
     updateProfileButton.addEventListener("click", async () => {
