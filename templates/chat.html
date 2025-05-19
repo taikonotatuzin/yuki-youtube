@@ -223,6 +223,13 @@
     .delete-button:hover {
       background-color: #c0392b;
     }
+      /* タイピングインジケーター */
+    #typing-indicator {
+      font-style: italic;
+      color: #888;
+      min-height: 20px;
+      margin-bottom: 10px;
+    }
     /* プロフィール更新フォーム */
     #profile-settings {
       margin: 20px 0;
@@ -311,7 +318,7 @@
     <!-- ※ タイピングインジケーターは削除済 -->
     <div id="online-users" style="padding: 10px; font-size: 16px; background: #e0f7fa; margin-bottom: 10px;"></div>
     <!-- ここにオンラインのユーザー名が動的に表示されます -->
-    
+      <div id="typing-indicator"></div>
     <textarea id="messageInput" placeholder="メッセージを入力"></textarea>
     <button id="sendButton">送信</button>
     <button id="logoutButton">ログアウト</button>
@@ -622,6 +629,7 @@ function extractVideoId(url) {
       { name: "凶", weight: 10 },
       { name: "大凶", weight: 5 }
     ];
+  
     
     function weightedRandom(options) {
       let totalWeight = options.reduce((sum, opt) => sum + opt.weight, 0);
@@ -663,7 +671,29 @@ function extractVideoId(url) {
     document.getElementById("online-users").innerText = "只今のオンラインユーザー: " + onlineNames.join(", ");
   });
 }
+    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
+    const messageInput = document.getElementById("messageInput");
+    const typingIndicator = document.getElementById("typing-indicator");
+    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
+    const messageInput = document.getElementById("messageInput");
+    const typingIndicator = document.getElementById("typing-indicator");
     
+    let typingTimeout;  // タイマー用変数（直近の入力から一定時間経過後にクリアする）
+    
+    // 入力イベント監視
+    messageInput.addEventListener("input", () => {
+      // ユーザーが入力中ならすぐにインジケーターを表示
+      typingIndicator.textContent = "タイピング中…";
+      
+      // 前回設定していたタイマーがあればクリア
+      if (typingTimeout) clearTimeout(typingTimeout);
+      
+      // 入力が止まったら1秒後にインジケーター表示を消去
+      typingTimeout = setTimeout(() => {
+        typingIndicator.textContent = "";
+      }, 1000); // 1000ミリ秒＝1秒
+    });
+
       // プロフィール更新処理（名前・パスワード・色・テーマの更新）
     updateProfileButton.addEventListener("click", async () => {
       const newName = document.getElementById("newName").value.trim();
