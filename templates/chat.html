@@ -436,25 +436,7 @@
         /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
     const messageInput = document.getElementById("messageInput");
     const typingIndicator = document.getElementById("typing-indicator");
-    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
-    const messageInput = document.getElementById("messageInput");
-    const typingIndicator = document.getElementById("typing-indicator");
-    
-    let typingTimeout;  // タイマー用変数（直近の入力から一定時間経過後にクリアする）
-    
-    // 入力イベント監視
-    messageInput.addEventListener("input", () => {
-      // ユーザーが入力中ならすぐにインジケーターを表示
-      typingIndicator.textContent = "タイピング中…";
-      
-      // 前回設定していたタイマーがあればクリア
-      if (typingTimeout) clearTimeout(typingTimeout);
-      
-      // 入力が止まったら1秒後にインジケーター表示を消去
-      typingTimeout = setTimeout(() => {
-        typingIndicator.textContent = "";
-      }, 1000); // 1000ミリ秒＝1秒
-    });
+
     
   // 例：既存の extractVideoId 関数（なければ下記を利用）
 function extractVideoId(url) {
