@@ -640,27 +640,49 @@ function extractVideoId(url) {
   onValue(onlineUsersRef, (snapshot) => {
     let onlineNames = [];
     
-    // 各ユーザーのステータスを確認
+   function updateOnlineUsers() {
+  // Realtime Database 内の「status」ノードの参照を取得
+  const onlineUsersRef = ref(dbRT, "status/");
+  
+  // onValue() で常時監視し、オンラインユーザーリストを更新する
+  onValue(onlineUsersRef, (snapshot) => {
+    let onlineNames = [];
+    
     snapshot.forEach((childSnapshot) => {
       const userData = childSnapshot.val();
       if (userData && userData.status === "online") {
-        // displayName は"名前#ID|色"などの形式の場合があるので、先頭部分を抽出
-        let displayName = userData.displayName;
+        // displayName は "名前#ID" や "名前#ID|色" の形式の場合があるので、先頭部分のみを抽出
+        let displayName = userData.displayName || "名無し";
         if (displayName.includes("|")) {
           displayName = displayName.split("|")[0];
         }
-        onlineNames.push(displayName);
+        // 重複しないように追加（必要に応じて）
+        if (!onlineNames.includes(displayName)) {
+          onlineNames.push(displayName);
+        }
       }
     });
     
-    // オンラインユーザーが10人を超える場合は先頭10名のみ表示し、最後に「など…」を追加
+    // 必要に応じてアルファベット順や他の基準でソート可能
+    onlineNames.sort();
+    
+    // オンラインユーザーが10人以上の場合は先頭10人のみ表示し、「など…」を追加
     if (onlineNames.length > 10) {
       onlineNames = onlineNames.slice(0, 10);
       onlineNames.push("など…");
     }
     
-    // 画面上のオンラインユーザー表示エリアに名前一覧を更新
-    document.getElementById("online-users").innerText = "只今のオンラインユーザー: " + onlineNames.join(", ");
+    // 画面上のオンラインユーザー表示エリアに反映
+    const onlineUsersDiv = document.getElementById("online-users");
+    onlineUsersDiv.innerHTML = ""; // 前回の内容をクリア
+    
+    // ユーザー名を span 要素として追加（スペースや余白を付与）
+    onlineNames.forEach((userName) => {
+      const userSpan = document.createElement("span");
+      userSpan.textContent = userName;
+      userSpan.style.marginRight = "10px"; // ユーザー間の間隔
+      onlineUsersDiv.appendChild(userSpan);
+    });
   });
 }
 
