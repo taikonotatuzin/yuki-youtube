@@ -432,25 +432,8 @@
     const MAX_MESSAGES = 50;
     let pseudoAdmins = new Set();
     let mutedUsers = {};
-    
-  // 例：既存の extractVideoId 関数（なければ下記を利用）
-function extractVideoId(url) {
-  const regExp = /^.*(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[1].length === 11) ? match[1] : null;
-}
-    
-    function generateEmailFromName(name) {
-      return name.trim().toLowerCase().replace(/\s+/g, "") + "@chatapp.local";
-    }
-    // 強制IDはサインアップ時に一度生成される
-    function generateForcedId() {
-      return Math.floor(1000 + Math.random() * 9000).toString();
-    }
-    
-    const CLEAR_CHAT_PASSWORD = "RESET1234";
-    
-    /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
+
+        /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
     const messageInput = document.getElementById("messageInput");
     const typingIndicator = document.getElementById("typing-indicator");
     /***** タイピングインジケーターの実装（保存などせず、ローカルで完結） *****/
@@ -472,6 +455,23 @@ function extractVideoId(url) {
         typingIndicator.textContent = "";
       }, 1000); // 1000ミリ秒＝1秒
     });
+    
+  // 例：既存の extractVideoId 関数（なければ下記を利用）
+function extractVideoId(url) {
+  const regExp = /^.*(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[1].length === 11) ? match[1] : null;
+}
+    
+    function generateEmailFromName(name) {
+      return name.trim().toLowerCase().replace(/\s+/g, "") + "@chatapp.local";
+    }
+    // 強制IDはサインアップ時に一度生成される
+    function generateForcedId() {
+      return Math.floor(1000 + Math.random() * 9000).toString();
+    }
+    
+    const CLEAR_CHAT_PASSWORD = "RESET1234";
     
     const signupButton = document.getElementById("signupButton");
     const loginButton  = document.getElementById("loginButton");
