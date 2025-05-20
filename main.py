@@ -343,7 +343,6 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Union
-from fastapi import Form
 
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -613,7 +612,23 @@ def thumbnail(v:str):
 def suggest(keyword:str):
     return [i[0] for i in json.loads(requests.get("http://www.google.com/complete/search?client=youtube&hl=ja&ds=yt&q=" + urllib.parse.quote(keyword), headers=getRandomUserAgent()).text[19:-1])[1]]
 
+@app.get("/setting", response_class=HTMLResponse)
+def settings(request: Request, response: Response, yuki: Union[str, None] = Cookie(None)):
+    if not checkCookie(yuki):
+         return redirect("/")
+    current_embed = request.cookies.get("ume_toggle", "false")
+    # settings.html には現在の埋め込み設定と切り替えボタンを表示する
+    return template("setting.html", {"request": request, "ume_toggle": current_embed})
 
+@app.post("/setting", response_class=HTMLResponse)
+def update_settings(request: Request, embed: str = Form(...), response: Response, yuki: Union[str, None] = Cookie(None)):
+    if not checkCookie(yuki):
+         return redirect("/")
+    if embed == "on":
+         response.set_cookie("ume_toggle", "true", max_age=7*24*60*60)
+    elif embed == "off":
+         response.set_cookie("ume_toggle", "false", max_age=7*24*60*60)
+    return redirect("/setting")
 
 
 
@@ -857,24 +872,6 @@ def list_page(response: Response, request: Request):
 @app.get("/re", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("re.html", {"request": request})
-  
-@app.get("/setting", response_class=HTMLResponse)
-def settings(request: Request, response: Response, yuki: Union[str, None] = Cookie(None)):
-    if not checkCookie(yuki):
-         return redirect("/")
-    current_embed = request.cookies.get("ume_toggle", "false")
-    # settings.html には現在の埋め込み設定と切り替えボタンを表示する
-    return template("setting.html", {"request": request, "ume_toggle": current_embed})
-
-@app.post("/setting", response_class=HTMLResponse)
-def update_settings(request: Request, embed: str = Form(...), response: Response, yuki: Union[str, None] = Cookie(None)):
-    if not checkCookie(yuki):
-         return redirect("/")
-    if embed == "on":
-         response.set_cookie("ume_toggle", "true", max_age=7*24*60*60)
-    elif embed == "off":
-         response.set_cookie("ume_toggle", "false", max_age=7*24*60*60)
-    return redirect("/setting")
 
 
 @app.exception_handler(500)
