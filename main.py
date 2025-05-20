@@ -334,7 +334,6 @@ def getVerifyCode():
         return None
 
 
-from fastapi import Form
 from fastapi import FastAPI, Depends
 from fastapi import Response, Cookie, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
@@ -343,6 +342,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Union
+from fastapi import Form
 
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -856,6 +856,7 @@ def list_page(response: Response, request: Request):
 @app.get("/re", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("re.html", {"request": request})
+  
 @app.get("/settings", response_class=HTMLResponse)
 def settings(request: Request, response: Response, yuki: Union[str, None] = Cookie(None)):
     if not checkCookie(yuki):
@@ -872,7 +873,7 @@ def update_settings(request: Request, embed: str = Form(...), response: Response
          response.set_cookie("ume_toggle", "true", max_age=7*24*60*60)
     elif embed == "off":
          response.set_cookie("ume_toggle", "false", max_age=7*24*60*60)
-    return redirect("/settings")
+    return redirect("/setting")
 
 
 @app.exception_handler(500)
