@@ -365,14 +365,15 @@ def home(response: Response, request: Request, yuki: Union[str] = Cookie(None)):
     return redirect("/genesis")
 
 @app.get('/watch', response_class=HTMLResponse)
-def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
-    # v: video_id
-    if not(checkCookie(yuki)):
+def video(v: str, response: Response, request: Request, yuki: Union[str, None] = Cookie(None), proxy: Union[str, None] = Cookie(None)):
+    if not checkCookie(yuki):
         return redirect("/")
-    response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
+    # 埋め込み再生がオンの場合は /ume にリダイレクト
+    if request.cookies.get("ume_toggle", "false") == "true":
+        return redirect(f"/ume?v={v}")
+    response.set_cookie("yuki", "True", max_age=7*24*60*60)
     video_data = getVideoData(v)
-    template_name = "ume.html" if request.cookies.get("ume_toggle", "false") == "true" else "video.html"
-    '''
+  '''
     return [
         {
             'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
@@ -399,7 +400,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
     ]
     '''
     response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
-    return template(template_name, {
+    return template('video.html', {
         "request": request,
         "videoid": v,
         "videourls": video_data[0]['video_urls'],
@@ -469,12 +470,11 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "recommended_videos": video_data[1],
         "proxy":proxy
     })
-@app.get('/ume', response_class=HTMLResponse)
-def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
-    # v: video_id
-    if not(checkCookie(yuki)):
+app.get('/ume', response_class=HTMLResponse)
+def ume_video(v: str, response: Response, request: Request, yuki: Union[str, None] = Cookie(None), proxy: Union[str, None] = Cookie(None)):
+    if not checkCookie(yuki):
         return redirect("/")
-    response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
+    response.set_cookie("yuki", "True", max_age=7*24*60*60)
     video_data = getVideoData(v)
     '''
     return [
