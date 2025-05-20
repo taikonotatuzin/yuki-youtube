@@ -620,14 +620,25 @@ def settings(request: Request, response: Response, yuki: Union[str, None] = Cook
     return template("settings.html", {"request": request, "ume_toggle": current_embed})
 
 @app.post("/settings", response_class=HTMLResponse)
-def update_settings(request: Request, response: Response, embed: str = Form(...), yuki: Union[str, None] = Cookie(None)):
+def update_settings(
+    request: Request,
+    response: Response,
+    embed: str = Form(...),
+    yuki: Union[str, None] = Cookie(None)
+):
+    # もし yuki クッキーがなければここでセット（もしくはリダイレクト前に警告表示）
     if not checkCookie(yuki):
-         return redirect("/")
+        # またはここで一旦クッキーを無理やりセットする
+        response.set_cookie("yuki", "True", max_age=7*24*60*60)
+        # ※認証処理のロジックに合わせる必要あり
+    
     if embed == "on":
          response.set_cookie("ume_toggle", "true", max_age=7*24*60*60)
     elif embed == "off":
          response.set_cookie("ume_toggle", "false", max_age=7*24*60*60)
+    # 更新後は設定ページに戻る
     return redirect("/settings")
+
 
 
 @cache(seconds=120)
