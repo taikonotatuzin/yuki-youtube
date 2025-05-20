@@ -8,7 +8,6 @@ import os
 import subprocess
 from cache import cache
 import ast
-from fastapi import Form
 
 # 3 => (3.0, 1.5) => (1.5, 1)
 max_api_wait_time = (1.5, 1)
@@ -343,7 +342,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Union
-
+from fastapi import Form
 
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/js", StaticFiles(directory="./statics/js"), name="static")
