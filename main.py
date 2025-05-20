@@ -334,7 +334,7 @@ def getVerifyCode():
         return None
 
 
-
+from fastapi import Form
 from fastapi import FastAPI, Depends
 from fastapi import Response, Cookie, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
@@ -856,6 +856,24 @@ def list_page(response: Response, request: Request):
 @app.get("/re", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("re.html", {"request": request})
+@app.get("/settings", response_class=HTMLResponse)
+def settings(request: Request, response: Response, yuki: Union[str, None] = Cookie(None)):
+    if not checkCookie(yuki):
+         return redirect("/")
+    current_embed = request.cookies.get("ume_toggle", "false")
+    # settings.html には現在の埋め込み設定と切り替えボタンを表示する
+    return template("setting.html", {"request": request, "ume_toggle": current_embed})
+
+@app.post("/settings", response_class=HTMLResponse)
+def update_settings(request: Request, embed: str = Form(...), response: Response, yuki: Union[str, None] = Cookie(None)):
+    if not checkCookie(yuki):
+         return redirect("/")
+    if embed == "on":
+         response.set_cookie("ume_toggle", "true", max_age=7*24*60*60)
+    elif embed == "off":
+         response.set_cookie("ume_toggle", "false", max_age=7*24*60*60)
+    return redirect("/settings")
+
 
 @app.exception_handler(500)
 def error500(request: Request, __):
