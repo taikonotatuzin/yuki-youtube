@@ -871,7 +871,9 @@ def list_page(response: Response, request: Request):
 @app.get("/ball", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("ball.html", {"request": request})
-
+@app.get("/history", response_class=HTMLResponse)
+def list_page(response: Response, request: Request):
+    return template("history.html", {"request": request})
 @app.get("/bj", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("bj.html", {"request": request})
