@@ -611,15 +611,15 @@ def thumbnail(v:str):
 def suggest(keyword:str):
     return [i[0] for i in json.loads(requests.get("http://www.google.com/complete/search?client=youtube&hl=ja&ds=yt&q=" + urllib.parse.quote(keyword), headers=getRandomUserAgent()).text[19:-1])[1]]
 
-@app.get("/setting", response_class=HTMLResponse)
+@app.get("/settings", response_class=HTMLResponse)
 def settings(request: Request, response: Response, yuki: Union[str, None] = Cookie(None)):
     if not checkCookie(yuki):
          return redirect("/")
     current_embed = request.cookies.get("ume_toggle", "false")
     # settings.html には現在の埋め込み設定と切り替えボタンを表示する
-    return template("setting.html", {"request": request, "ume_toggle": current_embed})
+    return template("settings.html", {"request": request, "ume_toggle": current_embed})
 
-@app.post("/setting", response_class=HTMLResponse)
+@app.post("/settings", response_class=HTMLResponse)
 def update_settings(request: Request, response: Response, embed: str = Form(...), yuki: Union[str, None] = Cookie(None)):
     if not checkCookie(yuki):
          return redirect("/")
@@ -627,7 +627,7 @@ def update_settings(request: Request, response: Response, embed: str = Form(...)
          response.set_cookie("ume_toggle", "true", max_age=7*24*60*60)
     elif embed == "off":
          response.set_cookie("ume_toggle", "false", max_age=7*24*60*60)
-    return redirect("/setting")
+    return redirect("/settings")
 
 
 @cache(seconds=120)
@@ -817,7 +817,7 @@ def list_page(response: Response, request: Request):
     return template("space.html", {"request": request})
 @app.get("/update", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
-    return template("settings.html", {"request": request})
+    return template("update.html", {"request": request})
 @app.get("/others", response_class=HTMLResponse)
 def list_page(response: Response, request: Request):
     return template("others.html", {"request": request})
