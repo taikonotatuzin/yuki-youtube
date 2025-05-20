@@ -265,6 +265,39 @@
       color: #3498db;
       text-decoration: none;
     }
+    /* アクションメニュー用のスタイル */
+.action-menu-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 5px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.action-menu {
+  position: absolute;
+  right: 5px;
+  top: 30px; /* ボタン下に展開 */
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 100;
+}
+
+.action-menu div {
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.action-menu div:hover {
+  background-color: #eee;
+}
+
   </style>
 </head>
 <body>
@@ -1100,167 +1133,188 @@ if (messageText.startsWith("/news")) {
         }
       }
       chatBox.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const msg = doc.data();
-        const messageContainer = document.createElement("div");
-        messageContainer.className = "message-container";
-        
-        // 送信者名の表示（IDも含む displayName をそのまま表示）
-        const nameDiv = document.createElement("div");
-        nameDiv.className = "message-name";
-        let displayName = msg.name || "名無し";
-        let namePart = displayName;
-        let colorCode = "";
-        if (displayName.includes("|")) {
-          [namePart, colorCode] = displayName.split("|");
-        }
-        const span = document.createElement("span");
-        if (namePart === "ねむい") {
-          span.className = "rainbow-name";
-          span.textContent = namePart;
-        } else {
-          span.textContent = namePart;
-          if (pseudoAdmins.has(namePart.split("#")[0])) {
-            span.textContent += " (擬似管理者)";
-          }
-          if (colorCode) {
-            span.style.color = colorCode;
-          }
-        }
-        nameDiv.appendChild(span);
-        messageContainer.appendChild(nameDiv);
-        
-  // 自分のメッセージの場合：削除ボタンと編集ボタンを追加
-        const currentUser = auth.currentUser;
-        if (currentUser && msg.uid === currentUser.uid) {
-          const deleteButton = document.createElement("button");
-          deleteButton.className = "delete-button";
-          deleteButton.textContent = "削除";
-          deleteButton.onclick = async function() {
-            if (confirm("このメッセージを削除してよろしいですか？")) {
-              try {
-                await deleteDoc(doc.ref);
-              } catch (err) {
-                console.error("メッセージ削除エラー:", err);
-              }
-            }
-          };
-          messageContainer.appendChild(deleteButton);
-          
-                   
-          const editButton = document.createElement("button");
-          editButton.className = "edit-button";
-          editButton.textContent = "編集";
-          // カスタム編集モーダルを使用
-          editButton.onclick = function() {
-            openEditModal(msg.text, async (newText) => {
-              if (newText && newText.trim() !== "" && newText !== msg.text) {
-                try {
-                  await updateDoc(doc.ref, {
-                    text: newText,
-                    edited: true,
-                    editedAt: new Date()
-                  });
-                } catch (error) {
-                  alert("メッセージ更新エラー: " + error.message);
-                }
-              }
-            });
-          };
-          messageContainer.appendChild(editButton);
-        }
-        
-        // 返信ボタンの設定（既存機能）
-        const replyButton = document.createElement("button");
-        replyButton.className = "reply-button";
-        replyButton.textContent = "返信";
-        replyButton.onclick = function() {
-          let lines = msg.text.split("\n");
-          if (lines.length && lines[0].trim().startsWith(">")) {
-            lines.shift();
-          }
-          if (lines.length === 1) {
-            messageInput.value = `> ${msg.name}: ${lines[0]}\n` + messageInput.value;
-          } else {
-            let quotedText = lines.map(line => "> " + line).join("\n");
-            messageInput.value = `> ${msg.name}:\n` + quotedText + "\n" + messageInput.value;
-          }
-          messageInput.focus();
-        };
-        messageContainer.appendChild(replyButton);
-        
-        // メッセージ本文の生成
-    const textDiv = document.createElement("div");
-    textDiv.className = "message-text";
-    // /you コマンドで送信されたシステムメッセージの場合は専用処理
-    if (msg.uid === "system" && msg.name === "【YouTube】") {
-      const link = document.createElement("a");
-      link.href = msg.text;       // 絶対URL（例: https://example.com/watch?v=動画ID）
-      link.textContent = msg.text;
-      link.style.cursor = "pointer";
-      // クリックで現在のページを置き換える（window.location.replace）
-      link.onclick = function(e) {
-        e.preventDefault();
-        window.location.replace(msg.text);
-      };
-      textDiv.appendChild(link);
-    } else {
-      // 既存の自動リンク化処理
-      const linesArr = msg.text.split("\n");
-      const urlRegex = /(https?:\/\/[^\s]+)/g;
-      linesArr.forEach((line) => {
-        const lineDiv = document.createElement("div");
-        if (line.trim().startsWith(">")) {
-          lineDiv.className = "quote";
-        }
-        if (urlRegex.test(line)) {
-          const parts = line.split(urlRegex);
-          parts.forEach((part) => {
-            if (urlRegex.test(part)) {
-              const anchor = document.createElement("a");
-              anchor.href = part;
-              anchor.textContent = part;
-              anchor.target = "_blank";
-              anchor.rel = "noopener noreferrer";
-              lineDiv.appendChild(anchor);
-            } else {
-              lineDiv.appendChild(document.createTextNode(part));
-            }
-          });
-        } else {
-          lineDiv.textContent = line;
-        }
-        textDiv.appendChild(lineDiv);
-      });
+      // 既存の snapshot.forEach 内で各メッセージの HTML を生成する部分
+snapshot.forEach((doc) => {
+  const msg = doc.data();
+  
+  // メッセージコンテナを生成（スタイル上、位置相対にしておく）
+  const messageContainer = document.createElement("div");
+  messageContainer.className = "message-container";
+  messageContainer.style.position = "relative"; // 後で絶対配置するアクションメニュー用
+  
+  // ----- 送信者名の表示等（既存コード） -----
+  const nameDiv = document.createElement("div");
+  nameDiv.className = "message-name";
+  let displayName = msg.name || "名無し";
+  let namePart = displayName;
+  let colorCode = "";
+  if (displayName.includes("|")) {
+    [namePart, colorCode] = displayName.split("|");
+  }
+  const span = document.createElement("span");
+  if (namePart === "ねむい") {
+    span.className = "rainbow-name";
+    span.textContent = namePart;
+  } else {
+    span.textContent = namePart;
+    if (pseudoAdmins.has(namePart.split("#")[0])) {
+      span.textContent += " (擬似管理者)";
     }
-    messageContainer.appendChild(textDiv);
-        
-        // タイムスタンプの表示
-        if (msg.timestamp) {
-          let dateObj;
-          if (typeof msg.timestamp.toDate === "function") {
-            dateObj = msg.timestamp.toDate();
-          } else {
-            dateObj = new Date(msg.timestamp);
-          }
-          const timeDiv = document.createElement("div");
-          timeDiv.className = "message-time";
-          timeDiv.textContent = dateObj.toLocaleString();
-          // 編集済みの場合は小さい文字で「(編集済み)」と表示
-          if (msg.edited) {
-            const editedSpan = document.createElement("span");
-            editedSpan.style.fontSize = "0.7em";
-            editedSpan.style.color = "gray";
-            editedSpan.style.marginLeft = "5px";
-            editedSpan.textContent = " (編集済み)";
-            timeDiv.appendChild(editedSpan);
-          }
-          messageContainer.appendChild(timeDiv);
+    if (colorCode) {
+      span.style.color = colorCode;
+    }
+  }
+  nameDiv.appendChild(span);
+  messageContainer.appendChild(nameDiv);
+  
+  // ----- ここから「アクションメニュー」の実装 -----
+  const currentUser = auth.currentUser;
+  
+  // メニュー用のハンバーガーアイコンボタン（3本線のアイコン）
+  const actionMenuButton = document.createElement("button");
+  actionMenuButton.className = "action-menu-button";
+  actionMenuButton.innerHTML = "&#9776;"; // ハンバーガーアイコン
+  // メッセージコンテナ右上に表示されるよう、上記CSSで absolute 配置
+  
+  // アクションメニューの本体（初期状態は非表示）
+  const actionMenu = document.createElement("div");
+  actionMenu.className = "action-menu";
+  actionMenu.style.display = "none";
+  
+  // 自分のメッセージの場合は「削除」と「編集」を追加
+  if (currentUser && msg.uid === currentUser.uid) {
+    // 削除オプション
+    const deleteOption = document.createElement("div");
+    deleteOption.textContent = "削除";
+    deleteOption.addEventListener("click", async function(e) {
+      e.stopPropagation();  // クリックのバブリング防止
+      if (confirm("このメッセージを削除してよろしいですか？")) {
+        try {
+          await deleteDoc(doc.ref);
+        } catch (err) {
+          console.error("メッセージ削除エラー:", err);
         }
-        chatBox.appendChild(messageContainer);
-      });
-      chatBox.scrollTop = chatBox.scrollHeight;
+      }
+      actionMenu.style.display = "none"; // 操作後はメニューを閉じる
     });
+    actionMenu.appendChild(deleteOption);
+    
+    // 編集オプション
+    const editOption = document.createElement("div");
+    editOption.textContent = "編集";
+    editOption.addEventListener("click", function(e) {
+      e.stopPropagation();
+      openEditModal(msg.text, async (newText) => {
+        if (newText && newText.trim() !== "" && newText !== msg.text) {
+          try {
+            await updateDoc(doc.ref, {
+              text: newText,
+              edited: true,
+              editedAt: new Date()
+            });
+          } catch (error) {
+            alert("メッセージ更新エラー: " + error.message);
+          }
+        }
+      });
+      actionMenu.style.display = "none";
+    });
+    actionMenu.appendChild(editOption);
+  }
+  
+  // どのメッセージでも利用できる「返信」オプション
+  const replyOption = document.createElement("div");
+  replyOption.textContent = "返信";
+  replyOption.addEventListener("click", function(e) {
+    e.stopPropagation();
+    let lines = msg.text.split("\n");
+    if (lines.length && lines[0].trim().startsWith(">")) {
+      lines.shift();
+    }
+    if (lines.length === 1) {
+      messageInput.value = `> ${msg.name}: ${lines[0]}\n` + messageInput.value;
+    } else {
+      let quotedText = lines.map(line => "> " + line).join("\n");
+      messageInput.value = `> ${msg.name}:\n` + quotedText + "\n" + messageInput.value;
+    }
+    messageInput.focus();
+    actionMenu.style.display = "none";
+  });
+  actionMenu.appendChild(replyOption);
+  
+  // メニューをトグル：ハンバーガーボタンをクリックすると表示／非表示を切り替える
+  actionMenuButton.addEventListener("click", function(e) {
+    e.stopPropagation();
+    actionMenu.style.display = (actionMenu.style.display === "none") ? "block" : "none";
+  });
+  
+  // メッセージコンテナにハンバーガーボタンとアクションメニューを追加
+  messageContainer.appendChild(actionMenuButton);
+  messageContainer.appendChild(actionMenu);
+  
+  // ドキュメント上のどこかをクリックしたらアクションメニューを閉じる
+  document.addEventListener("click", function() {
+    actionMenu.style.display = "none";
+  });
+  // ----- ここまでがアクションメニューの実装 -----
+  
+  // ----- 以下、メッセージ本文やタイムスタンプの既存処理 -----
+  const textDiv = document.createElement("div");
+  textDiv.className = "message-text";
+  // (ここは /you コマンドの処理や自動リンク化の既存処理をそのまま適用)
+  const linesArr = msg.text.split("\n");
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  linesArr.forEach((line) => {
+    const lineDiv = document.createElement("div");
+    if (line.trim().startsWith(">")) {
+      lineDiv.className = "quote";
+    }
+    if (urlRegex.test(line)) {
+      const parts = line.split(urlRegex);
+      parts.forEach((part) => {
+        if (urlRegex.test(part)) {
+          const anchor = document.createElement("a");
+          anchor.href = part;
+          anchor.textContent = part;
+          anchor.target = "_blank";
+          anchor.rel = "noopener noreferrer";
+          lineDiv.appendChild(anchor);
+        } else {
+          lineDiv.appendChild(document.createTextNode(part));
+        }
+      });
+    } else {
+      lineDiv.textContent = line;
+    }
+    textDiv.appendChild(lineDiv);
+  });
+  messageContainer.appendChild(textDiv);
+  
+  if (msg.timestamp) {
+    let dateObj;
+    if (typeof msg.timestamp.toDate === "function") {
+      dateObj = msg.timestamp.toDate();
+    } else {
+      dateObj = new Date(msg.timestamp);
+    }
+    const timeDiv = document.createElement("div");
+    timeDiv.className = "message-time";
+    timeDiv.textContent = dateObj.toLocaleString();
+    if (msg.edited) {
+      const editedSpan = document.createElement("span");
+      editedSpan.style.fontSize = "0.7em";
+      editedSpan.style.color = "gray";
+      editedSpan.style.marginLeft = "5px";
+      editedSpan.textContent = " (編集済み)";
+      timeDiv.appendChild(editedSpan);
+    }
+    messageContainer.appendChild(timeDiv);
+  }
+  
+  chatBox.appendChild(messageContainer);
+});
+chatBox.scrollTop = chatBox.scrollHeight;
+
   </script>
 </body>
 </html>
