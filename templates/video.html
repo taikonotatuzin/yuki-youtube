@@ -361,5 +361,44 @@
     }, 5000);
   });
 </script>    
+		    <!-- 動画視聴ページの適当な場所に追加 -->
+<script>
+function addToHistory() {
+  // サーバーサイドのテンプレートで動的に値を埋め込む
+  const videoData = {
+    video_id: "{{ videoid }}",  // 動画ID
+    // プロキシ有無に応じたサムネイルURL（テンプレートエンジンの構文例）
+    thumbnail: "{% if proxy == 'True' %}/thumbnail?v={{ videoid }}{% else %}https://img.youtube.com/vi/{{ videoid }}/0.jpg{% endif %}",
+    length: "{{ length_text }}",           // 動画の長さ（例："0:05:24"）
+    title: "{{ video_title }}",            // 動画タイトル
+    channel: "{{ author }}",               // チャンネル名
+    channel_id: "{{ author_id }}",         // チャンネルID
+    view_count: "{{ view_count }}",        // 再生回数（例："6M views"）
+    published: "{{ published_date }}"      // 公開期間（例："3 years ago"）
+  };
+
+  // localStorage から既存の履歴を取得（なければ空の配列）
+  let history = localStorage.getItem('watchHistory');
+  history = history ? JSON.parse(history) : [];
+
+  // 同じ動画がすでにあれば削除（最新の履歴を先頭に追加するため）
+  history = history.filter(item => item.video_id !== videoData.video_id);
+  
+  // 配列の先頭に追加（最新履歴を上に表示）
+  history.unshift(videoData);
+
+  // 保存件数に上限を設定（例：最新50件まで保存）
+  if (history.length > 50) {
+    history = history.slice(0, 50);
+  }
+
+  // JSON形式で localStorage に保存
+  localStorage.setItem('watchHistory', JSON.stringify(history));
+}
+
+// ページ読み込み時に履歴に登録
+window.addEventListener('load', addToHistory);
+</script>
+
 </body>
 </html>
