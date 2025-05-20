@@ -620,7 +620,7 @@ def settings(request: Request, response: Response, yuki: Union[str, None] = Cook
     return template("settings.html", {"request": request, "ume_toggle": current_embed})
 
 @app.post("/settings", response_class=HTMLResponse)
-def update_settings(request: Request, embed: str = Form(...), response: Response, yuki: Union[str, None] = Cookie(None)):
+def update_settings(request: Request, response: Response, embed: str = Form(...), yuki: Union[str, None] = Cookie(None)):
     if not checkCookie(yuki):
          return redirect("/")
     if embed == "on":
