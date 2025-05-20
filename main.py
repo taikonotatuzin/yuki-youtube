@@ -334,7 +334,7 @@ def getVerifyCode():
         return None
 
 
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Form
 from fastapi import Response, Cookie, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.responses import RedirectResponse as redirect
@@ -366,14 +366,14 @@ def home(response: Response, request: Request, yuki: Union[str] = Cookie(None)):
 
 @app.get('/watch', response_class=HTMLResponse)
 def video(v: str, response: Response, request: Request, yuki: Union[str, None] = Cookie(None), proxy: Union[str, None] = Cookie(None)):
-    if not checkCookie(yuki):
+    if not (checkCookie(yuki)):
         return redirect("/")
     # 埋め込み再生がオンの場合は /ume にリダイレクト
     if request.cookies.get("ume_toggle", "false") == "true":
         return redirect(f"/ume?v={v}")
     response.set_cookie("yuki", "True", max_age=7*24*60*60)
     video_data = getVideoData(v)
-  '''
+    '''
     return [
         {
             'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
@@ -620,7 +620,7 @@ def settings(request: Request, response: Response, yuki: Union[str, None] = Cook
     return template("setting.html", {"request": request, "ume_toggle": current_embed})
 
 @app.post("/setting", response_class=HTMLResponse)
-def update_settings(request: Request, embed: str = Form(...), response: Response, yuki: Union[str, None] = Cookie(None)):
+def update_settings(request: Request, response: Response, embed: str = Form(...), yuki: Union[str, None] = Cookie(None)):
     if not checkCookie(yuki):
          return redirect("/")
     if embed == "on":
@@ -628,7 +628,6 @@ def update_settings(request: Request, embed: str = Form(...), response: Response
     elif embed == "off":
          response.set_cookie("ume_toggle", "false", max_age=7*24*60*60)
     return redirect("/setting")
-
 
 
 @cache(seconds=120)
