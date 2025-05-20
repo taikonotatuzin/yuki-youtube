@@ -8,6 +8,7 @@ import os
 import subprocess
 from cache import cache
 import ast
+from fastapi import Form
 
 # 3 => (3.0, 1.5) => (1.5, 1)
 max_api_wait_time = (1.5, 1)
@@ -857,7 +858,7 @@ def list_page(response: Response, request: Request):
 def list_page(response: Response, request: Request):
     return template("re.html", {"request": request})
   
-@app.get("/settings", response_class=HTMLResponse)
+@app.get("/setting", response_class=HTMLResponse)
 def settings(request: Request, response: Response, yuki: Union[str, None] = Cookie(None)):
     if not checkCookie(yuki):
          return redirect("/")
@@ -865,7 +866,7 @@ def settings(request: Request, response: Response, yuki: Union[str, None] = Cook
     # settings.html には現在の埋め込み設定と切り替えボタンを表示する
     return template("setting.html", {"request": request, "ume_toggle": current_embed})
 
-@app.post("/settings", response_class=HTMLResponse)
+@app.post("/setting", response_class=HTMLResponse)
 def update_settings(request: Request, embed: str = Form(...), response: Response, yuki: Union[str, None] = Cookie(None)):
     if not checkCookie(yuki):
          return redirect("/")
