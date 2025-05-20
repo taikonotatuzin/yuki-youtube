@@ -629,7 +629,7 @@ def update_settings(
     # もし yuki クッキーがなければここでセット（もしくはリダイレクト前に警告表示）
     if not checkCookie(yuki):
         # またはここで一旦クッキーを無理やりセットする
-        response.set_cookie("yuki", "True", max_age=7*24*60*60)
+        response.set_cookie("yuki", "ture", max_age=7*24*60*60)
         # ※認証処理のロジックに合わせる必要あり
     
     if embed == "on":
