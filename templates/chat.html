@@ -277,11 +277,26 @@
   right: 5px;
 }
 
+/* ハンバーガーアイコン用のボタン */
+.action-menu-button {
+  background-color: #f0f0f0; /* 白背景に合う明るいグレー */
+  border: 1px solid #ccc;
+  color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 5px 8px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+/* アクションメニュー全体 */
 .action-menu {
   position: absolute;
   right: 5px;
   top: 30px; /* ボタン下に展開 */
-  background: #000000;
+  background: #fff;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -1133,16 +1148,15 @@ if (messageText.startsWith("/news")) {
         }
       }
       chatBox.innerHTML = "";
-      // 既存の snapshot.forEach 内で各メッセージの HTML を生成する部分
 snapshot.forEach((doc) => {
   const msg = doc.data();
-  
-  // メッセージコンテナを生成（スタイル上、位置相対にしておく）
+
+  // メッセージコンテナ：相対配置にしておく
   const messageContainer = document.createElement("div");
   messageContainer.className = "message-container";
-  messageContainer.style.position = "relative"; // 後で絶対配置するアクションメニュー用
-  
-  // ----- 送信者名の表示等（既存コード） -----
+  messageContainer.style.position = "relative";
+
+  // 送信者名の表示
   const nameDiv = document.createElement("div");
   nameDiv.className = "message-name";
   let displayName = msg.name || "名無し";
@@ -1166,28 +1180,29 @@ snapshot.forEach((doc) => {
   }
   nameDiv.appendChild(span);
   messageContainer.appendChild(nameDiv);
-  
-  // ----- ここから「アクションメニュー」の実装 -----
+
+  // --- アクションメニューの実装 ---
   const currentUser = auth.currentUser;
-  
-  // メニュー用のハンバーガーアイコンボタン（3本線のアイコン）
+  // ユーザーの基本名（例: "ねむい" もしくは "taro" など）
+  const userBaseName = currentUser ? (currentUser.displayName.split("|")[0]) : "";
+
+  // ハンバーガーアイコン（3本線のボタン）
   const actionMenuButton = document.createElement("button");
   actionMenuButton.className = "action-menu-button";
   actionMenuButton.innerHTML = "&#9776;"; // ハンバーガーアイコン
-  // メッセージコンテナ右上に表示されるよう、上記CSSで absolute 配置
-  
-  // アクションメニューの本体（初期状態は非表示）
+
+  // アクションメニュー本体（初期は非表示）
   const actionMenu = document.createElement("div");
   actionMenu.className = "action-menu";
   actionMenu.style.display = "none";
-  
-  // 自分のメッセージの場合は「削除」と「編集」を追加
+
+  // 自分のメッセージの場合のみ「削除」と「編集」を追加
   if (currentUser && msg.uid === currentUser.uid) {
     // 削除オプション
     const deleteOption = document.createElement("div");
     deleteOption.textContent = "削除";
     deleteOption.addEventListener("click", async function(e) {
-      e.stopPropagation();  // クリックのバブリング防止
+      e.stopPropagation();
       if (confirm("このメッセージを削除してよろしいですか？")) {
         try {
           await deleteDoc(doc.ref);
@@ -1195,10 +1210,10 @@ snapshot.forEach((doc) => {
           console.error("メッセージ削除エラー:", err);
         }
       }
-      actionMenu.style.display = "none"; // 操作後はメニューを閉じる
+      actionMenu.style.display = "none";
     });
     actionMenu.appendChild(deleteOption);
-    
+
     // 編集オプション
     const editOption = document.createElement("div");
     editOption.textContent = "編集";
@@ -1221,8 +1236,8 @@ snapshot.forEach((doc) => {
     });
     actionMenu.appendChild(editOption);
   }
-  
-  // どのメッセージでも利用できる「返信」オプション
+
+  // 全ユーザー共通：返信オプション
   const replyOption = document.createElement("div");
   replyOption.textContent = "返信";
   replyOption.addEventListener("click", function(e) {
@@ -1241,27 +1256,53 @@ snapshot.forEach((doc) => {
     actionMenu.style.display = "none";
   });
   actionMenu.appendChild(replyOption);
-  
-  // メニューをトグル：ハンバーガーボタンをクリックすると表示／非表示を切り替える
+
+  // ユーザーの基本名が「ねむい」の場合、全メッセージ一括削除用のオプションを追加する
+  if (currentUser && userBaseName.split("#")[0] === "ねむい") {
+    const clearAllOption = document.createElement("div");
+    clearAllOption.textContent = "全削除";
+    clearAllOption.addEventListener("click", async function(e) {
+      e.stopPropagation();
+      if (confirm("全てのメッセージを削除してよろしいですか？")) {
+        try {
+          const chatCollection = collection(db, "chat");
+          const snapshotAll = await getDocs(chatCollection);
+          snapshotAll.forEach(async (docSnap) => {
+            try {
+              await deleteDoc(docSnap.ref);
+            } catch (err) {
+              console.error("全削除エラー:", err);
+            }
+          });
+          console.log("全ての発言を削除しました。");
+        } catch (error) {
+          alert("全削除エラー: " + error.message);
+        }
+      }
+      actionMenu.style.display = "none";
+    });
+    actionMenu.appendChild(clearAllOption);
+  }
+
+  // ハンバーガーボタンのクリックで、アクションメニューの表示／非表示を切り替える
   actionMenuButton.addEventListener("click", function(e) {
     e.stopPropagation();
     actionMenu.style.display = (actionMenu.style.display === "none") ? "block" : "none";
   });
-  
-  // メッセージコンテナにハンバーガーボタンとアクションメニューを追加
+
+  // メッセージコンテナにボタンとメニューを追加
   messageContainer.appendChild(actionMenuButton);
   messageContainer.appendChild(actionMenu);
-  
-  // ドキュメント上のどこかをクリックしたらアクションメニューを閉じる
+
+  // ドキュメント上の他の場所をクリックしたら、メニューを閉じる
   document.addEventListener("click", function() {
     actionMenu.style.display = "none";
   });
-  // ----- ここまでがアクションメニューの実装 -----
-  
-  // ----- 以下、メッセージ本文やタイムスタンプの既存処理 -----
+  // --- ここまでがアクションメニューの実装 ---
+
+  // 既存のテキスト部分（自動リンク処理など）
   const textDiv = document.createElement("div");
   textDiv.className = "message-text";
-  // (ここは /you コマンドの処理や自動リンク化の既存処理をそのまま適用)
   const linesArr = msg.text.split("\n");
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   linesArr.forEach((line) => {
@@ -1289,7 +1330,8 @@ snapshot.forEach((doc) => {
     textDiv.appendChild(lineDiv);
   });
   messageContainer.appendChild(textDiv);
-  
+
+  // タイムスタンプの表示
   if (msg.timestamp) {
     let dateObj;
     if (typeof msg.timestamp.toDate === "function") {
@@ -1310,10 +1352,11 @@ snapshot.forEach((doc) => {
     }
     messageContainer.appendChild(timeDiv);
   }
-  
+
   chatBox.appendChild(messageContainer);
-      });
-      chatBox.scrollTop = chatBox.scrollHeight;
+});
+chatBox.scrollTop = chatBox.scrollHeight;
+
     });
   </script>
 </body>
