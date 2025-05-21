@@ -42,7 +42,7 @@ def getRandomUserAgent():
   # ここで、ランダムな待機を入れてからリクエストを行うためのラッパー関数を定義します。
 def fetch_url(url, headers=None, timeout=None, **kwargs):
     # 待機時間を0.5〜2.0秒の間でランダムに設定
-    wait_time = random.uniform(5.0 9.0)
+    wait_time = random.uniform(5, 9)
     print(f"Waiting for {wait_time:.2f} seconds before fetching: {url}")
     time.sleep(wait_time)
     return requests.get(url, headers=headers, timeout=timeout, **kwargs)
