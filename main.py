@@ -147,7 +147,7 @@ failed = "Load Failed"
 
 def getVideoData(videoid):
     # 5〜9秒のランダムな待機を挿入
-    wait_time = random.uniform(5, 9)
+    wait_time = random.uniform(5, 6)
     print(f"Waiting for {wait_time:.2f} seconds before retrieving video data for video ID: {videoid}")
     time.sleep(wait_time)
 
