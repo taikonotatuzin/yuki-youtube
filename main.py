@@ -146,6 +146,13 @@ def getInfo(request):
 failed = "Load Failed"
 
 def getVideoData(videoid):
+    # 5〜9秒のランダムな待機を挿入
+    wait_time = random.uniform(5, 9)
+    print(f"Waiting for {wait_time:.2f} seconds before retrieving video data for video ID: {videoid}")
+    time.sleep(wait_time)
+
+    # 動画情報を取得（内部で fetch_url や requestAPI を使用している場合は、
+    # それらも内部で待機時間が適用されます）
     t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
 
     # 推奨動画の情報（キー名の違いに対応）
@@ -179,7 +186,6 @@ def getVideoData(videoid):
                 highstream_url = stream.get("url")
                 break
 
-
     # 音声: container == 'm4a' かつ audioQuality == 'AUDIO_QUALITY_MEDIUM' のストリーム
     for stream in adaptiveFormats:
         if stream.get("container") == "m4a" and stream.get("audioQuality") == "AUDIO_QUALITY_MEDIUM":
@@ -195,11 +201,12 @@ def getVideoData(videoid):
         for stream in adaptive
         if stream.get('container') == 'webm' and stream.get('resolution')
     ]
+
     return [
       {
-        # 既存処理（ここでは formatStreams のURLを逆順にして上位2件を使用）
+        # 既存処理（formatStreams のURLを逆順にして上位2件を使用）
         'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
-        # 追加：高画質動画と音声のURL
+        # 追加情報：高画質動画と音声のURL
         'highstream_url': highstream_url,
         'audio_url': audio_url,
         'description_html': t["descriptionHtml"].replace("\n", "<br>"),
@@ -213,17 +220,16 @@ def getVideoData(videoid):
         'subscribers_count': t["subCountText"],
         'streamUrls': streamUrls
     },
-
-    [
-      {
-        "video_id": i["videoId"],
-        "title": i["title"],
-        "author_id": i["authorId"],
-        "author": i["author"],
-        "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
-        "view_count_text": i["viewCountText"]
-    } for i in recommended_videos]
-    
+      [
+        {
+          "video_id": i["videoId"],
+          "title": i["title"],
+          "author_id": i["authorId"],
+          "author": i["author"],
+          "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
+          "view_count_text": i["viewCountText"]
+      } for i in recommended_videos
+    ]
 ]
 
 def getSearchData(q, page):
