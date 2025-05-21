@@ -321,11 +321,8 @@ def getCommentsData(videoid):
     t = json.loads(requestAPI(f"/comments/{urllib.parse.quote(videoid)}?hl=jp", invidious_api.comments))["comments"]
     return [{"author": i["author"], "authoricon": i["authorThumbnails"][-1]["url"], "authorid": i["authorId"], "body": i["contentHtml"].replace("\n", "<br>")} for i in t]
 
-'''
-使われていないし戻り値も設定されていないためコメントアウト
 def get_replies(videoid, key):
     t = json.loads(requestAPI(f"/comments/{videoid}?hmac_key={key}&hl=jp&format=html", invidious_api.comments))["contentHtml"]
-'''
 
 
 def checkCookie(cookie):
