@@ -42,7 +42,7 @@ def getRandomUserAgent():
   # ここで、ランダムな待機を入れてからリクエストを行うためのラッパー関数を定義します。
 def fetch_url(url, headers=None, timeout=None, **kwargs):
     # 待機時間を0.5〜2.0秒の間でランダムに設定
-    wait_time = random.uniform(5, 9)
+    wait_time = random.uniform(4, 6)
     print(f"Waiting for {wait_time:.2f} seconds before fetching: {url}")
     time.sleep(wait_time)
     return requests.get(url, headers=headers, timeout=timeout, **kwargs)
@@ -147,7 +147,7 @@ failed = "Load Failed"
 
 def getVideoData(videoid):
     # 5〜9秒のランダムな待機を挿入
-    wait_time = random.uniform(5, 6)
+    wait_time = random.uniform(4, 6)
     print(f"Waiting for {wait_time:.2f} seconds before retrieving video data for video ID: {videoid}")
     time.sleep(wait_time)
 
