@@ -39,13 +39,6 @@ def getRandomUserAgent():
   return {
     'User-Agent': user_agent
   }
-  # ここで、ランダムな待機を入れてからリクエストを行うためのラッパー関数を定義します。
-def fetch_url(url, headers=None, timeout=None, **kwargs):
-    # 待機時間を0.5〜2.0秒の間でランダムに設定
-    wait_time = random.uniform(3, 5)
-    print(f"Waiting for {wait_time:.2f} seconds before fetching: {url}")
-    time.sleep(wait_time)
-    return requests.get(url, headers=headers, timeout=timeout, **kwargs)
 
 
 class InvidiousAPI:
@@ -146,10 +139,6 @@ def getInfo(request):
 failed = "Load Failed"
 
 def getVideoData(videoid):
-    # 5〜9秒のランダムな待機を挿入
-    wait_time = random.uniform(3, 5)
-    print(f"Waiting for {wait_time:.2f} seconds before retrieving video data for video ID: {videoid}")
-    time.sleep(wait_time)
 
     # 動画情報を取得（内部で fetch_url や requestAPI を使用している場合は、
     # それらも内部で待機時間が適用されます）
