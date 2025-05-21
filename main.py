@@ -8,6 +8,9 @@ import os
 import subprocess
 from cache import cache
 import ast
+import datetime
+import yt_dlp
+import urllib.parse
 
 # 3 => (3.0, 1.5) => (1.5, 1)
 max_api_wait_time = (1.5, 1)
@@ -145,17 +148,19 @@ def getInfo(request):
 
 failed = "Load Failed"
 
-def getVideoData(videoid):
-    # 5〜9秒のランダムな待機を挿入
-    wait_time = random.uniform(3, 7)
-    print(f"Waiting for {wait_time:.2f} seconds before retrieving video data for video ID: {videoid}")
-    time.sleep(wait_time)
+# ※ requestAPI や invidious_api, failed 変数、template, Response, Request などは既存の実装がある前提です。
 
-    # 動画情報を取得（内部で fetch_url や requestAPI を使用している場合は、
-    # それらも内部で待機時間が適用されます）
+# グローバルなメソッド切り替えフラグ
+# True の場合は Invidious を主要に、False の場合は yt-dlp を主要に利用する
+video_method_toggle = True
+
+def getVideoDataUsingInvidious(videoid):
+    # Invidious API を利用して動画情報を取得（既存の処理をそのまま使用）
     t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
-
-    # 推奨動画の情報（キー名の違いに対応）
+    if "formatStreams" not in t or not t["formatStreams"]:
+        raise Exception("Invidious API response is missing formatStreams")
+    
+    # 推奨動画情報の取得（キー名の違いに対応）
     if 'recommendedvideo' in t:
         recommended_videos = t["recommendedvideo"]
     elif 'recommendedVideos' in t:
@@ -169,13 +174,13 @@ def getVideoData(videoid):
             "lengthSeconds": 0,
             "viewCountText": "Load Failed"
         }]
-
-    # 【新規追加】adaptiveFormats から高画質動画と音声の URL を抽出する
+    
+    # adaptiveFormats から高画質動画および音声のURLを抽出
     adaptiveFormats = t.get("adaptiveFormats", [])
     highstream_url = None
     audio_url = None
 
-    # 高画質: container == 'webm' かつ resolution == '1080p' のストリーム
+    # 高画質動画：WebM 形式で1080p を優先、なければ720p
     for stream in adaptiveFormats:
         if stream.get("container") == "webm" and stream.get("resolution") == "1080p":
             highstream_url = stream.get("url")
@@ -186,7 +191,7 @@ def getVideoData(videoid):
                 highstream_url = stream.get("url")
                 break
 
-    # 音声: container == 'm4a' かつ audioQuality == 'AUDIO_QUALITY_MEDIUM' のストリーム
+    # 音声：m4a 形式で音声品質が中程度のもの
     for stream in adaptiveFormats:
         if stream.get("container") == "m4a" and stream.get("audioQuality") == "AUDIO_QUALITY_MEDIUM":
             audio_url = stream.get("url")
@@ -201,12 +206,9 @@ def getVideoData(videoid):
         for stream in adaptive
         if stream.get('container') == 'webm' and stream.get('resolution')
     ]
-
-    return [
-      {
-        # 既存処理（formatStreams のURLを逆順にして上位2件を使用）
+    
+    video_data = {
         'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
-        # 追加情報：高画質動画と音声のURL
         'highstream_url': highstream_url,
         'audio_url': audio_url,
         'description_html': t["descriptionHtml"].replace("\n", "<br>"),
@@ -219,18 +221,121 @@ def getVideoData(videoid):
         'like_count': t["likeCount"],
         'subscribers_count': t["subCountText"],
         'streamUrls': streamUrls
-    },
-      [
-        {
-          "video_id": i["videoId"],
-          "title": i["title"],
-          "author_id": i["authorId"],
-          "author": i["author"],
-          "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
-          "view_count_text": i["viewCountText"]
-      } for i in recommended_videos
-    ]
-]
+    }
+    
+    recommended_data = [{
+        "video_id": i["videoId"],
+        "title": i["title"],
+        "author_id": i["authorId"],
+        "author": i["author"],
+        "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
+        "view_count_text": i["viewCountText"]
+    } for i in recommended_videos]
+    
+    return [video_data, recommended_data]
+
+def getVideoDataUsingYTDLP(videoid):
+    video_url = f"https://www.youtube.com/watch?v={videoid}"
+    ydl_opts = {
+        'skip_download': True,
+        'quiet': True,
+        'no_warnings': True,
+        'format': 'bestvideo[ext=webm]+bestaudio[ext=m4a]/best'
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(video_url, download=False)
+    
+    webm_formats = [fmt for fmt in info.get("formats", []) if fmt.get("ext") == "webm" and fmt.get("url")]
+    webm_formats.sort(key=lambda fmt: fmt.get("height", 0), reverse=True)
+    video_urls = [fmt["url"] for fmt in webm_formats][:2]
+    
+    highstream_url = None
+    for fmt in webm_formats:
+        if fmt.get("height", 0) >= 1080:
+            highstream_url = fmt["url"]
+            break
+    if not highstream_url:
+        for fmt in webm_formats:
+            if fmt.get("height", 0) >= 720:
+                highstream_url = fmt["url"]
+                break
+    
+    audio_formats = [fmt for fmt in info.get("formats", []) 
+                     if fmt.get("acodec") != 'none' and fmt.get("vcodec") == 'none' and fmt.get("ext") == "m4a"]
+    audio_url = audio_formats[0]["url"] if audio_formats else None
+    
+    streamUrls = []
+    for fmt in webm_formats:
+        if fmt.get("height") is not None and fmt.get("url"):
+            streamUrls.append({
+                "url": fmt["url"],
+                "resolution": f"{fmt.get('height')}p"
+            })
+    
+    description_html = info.get("description", "").replace("\n", "<br>")
+    title = info.get("title", "")
+    length_text = str(datetime.timedelta(seconds=info.get("duration", 0)))
+    author = info.get("uploader", "")
+    author_id = info.get("channel_id", "")
+    author_thumbnails_url = info.get("uploader_thumbnail", "")
+    view_count = info.get("view_count", 0)
+    like_count = info.get("like_count", "N/A")
+    subscribers_count = info.get("subscribers", "N/A")
+    
+    video_data = {
+        "video_urls": video_urls,
+        "highstream_url": highstream_url,
+        "audio_url": audio_url,
+        "description_html": description_html,
+        "title": title,
+        "length_text": length_text,
+        "author_id": author_id,
+        "author": author,
+        "author_thumbnails_url": author_thumbnails_url,
+        "view_count": view_count,
+        "like_count": like_count,
+        "subscribers_count": subscribers_count,
+        "streamUrls": streamUrls
+    }
+    
+    # yt-dlp では推奨動画の情報が取得できないため、空リストを返す
+    recommended_videos = []
+    
+    return [video_data, recommended_videos]
+
+def getVideoData(videoid):
+    # 5〜9秒のランダムな待機
+    wait_time = random.uniform(5, 9)
+    print(f"Waiting for {wait_time:.2f} seconds before retrieving video data for video ID: {videoid}")
+    time.sleep(wait_time)
+    
+    global video_method_toggle
+    primary_method = "Invidious" if video_method_toggle else "yt-dlp"
+    print(f"Primary retrieval method: {primary_method}")
+    
+    try:
+        if video_method_toggle:
+            data = getVideoDataUsingInvidious(videoid)
+        else:
+            data = getVideoDataUsingYTDLP(videoid)
+    except Exception as e:
+        print(f"Primary method {primary_method} failed with error: {e}")
+        # フォールバックとして逆の方法を試行
+        try:
+            if video_method_toggle:
+                print("Falling back to yt-dlp.")
+                data = getVideoDataUsingYTDLP(videoid)
+            else:
+                print("Falling back to Invidious.")
+                data = getVideoDataUsingInvidious(videoid)
+        except Exception as e2:
+            print(f"Both methods failed: {e2}")
+            raise e2
+    
+    # 次回のためにメソッドを交互に切り替える
+    video_method_toggle = not video_method_toggle
+    return data
+
 
 def getSearchData(q, page):
 
@@ -376,18 +481,26 @@ def home(response: Response, request: Request, yuki: Union[str] = Cookie(None)):
     return redirect("/genesis")
 
 @app.get('/watch', response_class=HTMLResponse)
-def video(v: str, response: Response, request: Request, yuki: Union[str, None] = Cookie(None), proxy: Union[str, None] = Cookie(None)):
-    if not (checkCookie(yuki)):
+def watch(v: str, response: Response, request: Request, 
+          yuki: Union[str, None] = Cookie(None), 
+          proxy: Union[str, None] = Cookie(None)):
+    if not checkCookie(yuki):
         return redirect("/")
+    
     # 埋め込み再生がオンの場合は /ume にリダイレクト
     if request.cookies.get("ume_toggle", "false") == "true":
         return redirect(f"/ume?v={v}")
+    
     response.set_cookie("yuki", "True", max_age=7*24*60*60)
+    
+    # ここで Invidious と yt-dlp を交互に利用して動画情報を取得
     video_data = getVideoData(v)
-    '''
+     '''
     return [
         {
             'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
+            'highstream_url': highstream_url,
+            'audio_url': audio_url,
             'description_html': t["descriptionHtml"].replace("\n", "<br>"),
             'title': t["title"],
             'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"]))
@@ -410,8 +523,8 @@ def video(v: str, response: Response, request: Request, yuki: Union[str, None] =
         ]
     ]
     '''
-    response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
-    return template('video.html', {
+response.set_cookie("yuki", "True", max_age=60 * 60 * 24 * 7)
+    return template("video.html", {
         "request": request,
         "videoid": v,
         "videourls": video_data[0]['video_urls'],
@@ -425,8 +538,9 @@ def video(v: str, response: Response, request: Request, yuki: Union[str, None] =
         "like_count": video_data[0]['like_count'],
         "subscribers_count": video_data[0]['subscribers_count'],
         "recommended_videos": video_data[1],
-        "proxy":proxy
+        "proxy": proxy
     })
+
 @app.get('/w', response_class=HTMLResponse)
 def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
     # v: video_id
