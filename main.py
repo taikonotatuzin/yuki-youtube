@@ -138,7 +138,64 @@ def getInfo(request):
 failed = "Load Failed"
 
 def getVideoData(videoid):
-    t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
+    try:
+        # Invidious API を用いて通常の動画データを取得
+        t = json.loads(requestAPI(f"/videos/{urllib.parse.quote(videoid)}", invidious_api.video))
+    except APITimeoutError as e:
+        # Invidious API に失敗した場合、複数の fallback API を順次試す
+        fallback_api_list = [
+            'https://natural-voltaic-titanium.glitch.me/api/',
+            'https://wtserver3.glitch.me/api/',
+        'https://wtserver1.glitch.me/api/',
+        'https://wtserver2.glitch.me/api/',
+	'https://watawata8.glitch.me/api/',
+	'https://watawata7.glitch.me/api/',
+	'https://watawata37.glitch.me/api/'
+            # 必要に応じてさらに追加可能
+        ]
+        fallback_data = None
+        for base_url in fallback_api_list:
+            fallback_full_url = base_url + urllib.parse.quote(videoid)
+            print(f"Invidious API failed, falling back to {fallback_full_url}")
+            try:
+                r = requests.get(fallback_full_url, headers=getRandomUserAgent(), timeout=(3.0, 1))
+                if r.status_code == 200 and isJSON(r.text):
+                    data = json.loads(r.text)
+                    if data.get("stream_url"):
+                        fallback_data = data
+                        break
+                    else:
+                        print(f"Fallback API response at {fallback_full_url} is missing 'stream_url'.")
+                else:
+                    print(f"Fallback API {fallback_full_url} returned status: {r.status_code}")
+            except Exception as exc:
+                print(f"Error accessing fallback API {fallback_full_url}: {exc}")
+                continue
+
+        if fallback_data is not None:
+            # fallback API で再生用 stream_url と audioUrl を取得できた場合
+            # ただし【高画質URLは inv を用いる】ため、ここでは highstream_url は空文字にしておく
+            fallback_video = {
+                'video_urls': [fallback_data.get("stream_url")],
+                'highstream_url': "",  # 高画質URLは Invidious 経由でのみ取得
+                'audio_url': fallback_data.get("audioUrl", ""),
+                'description_html': "Load Failed",  # fallback API ではその他の情報は取得できない
+                'title': "Load Failed",
+                'length_text': "0:00:00",
+                'author_id': "Load Failed",
+                'author': "Load Failed",
+                'author_thumbnails_url': "",
+                'view_count': 0,
+                'like_count': 0,
+                'subscribers_count': "Load Failed",
+                'streamUrls': []  # 複数ストリームが取得できないため
+            }
+            # 推奨動画リストは空リストとして返す
+            return [fallback_video, []]
+
+        raise APITimeoutError("Both Invidious and fallback APIs failed")
+
+    # Invidious API の通常処理
 
     # 推奨動画の情報（キー名の違いに対応）
     if 'recommendedvideo' in t:
@@ -155,24 +212,24 @@ def getVideoData(videoid):
             "viewCountText": "Load Failed"
         }]
 
-    # 【新規追加】adaptiveFormats から高画質動画と音声の URL を抽出する
+    # adaptiveFormats から高画質動画と音声の URL を抽出
     adaptiveFormats = t.get("adaptiveFormats", [])
     highstream_url = None
     audio_url = None
 
-    # 高画質: container == 'webm' かつ resolution == '1080p' のストリーム
+    # 高画質 stream をまずは 1080p で探す
     for stream in adaptiveFormats:
         if stream.get("container") == "webm" and stream.get("resolution") == "1080p":
             highstream_url = stream.get("url")
             break
     if not highstream_url:
+        # 無ければ 720p を代替案として探す
         for stream in adaptiveFormats:
             if stream.get("container") == "webm" and stream.get("resolution") == "720p":
                 highstream_url = stream.get("url")
                 break
 
-
-    # 音声: container == 'm4a' かつ audioQuality == 'AUDIO_QUALITY_MEDIUM' のストリーム
+    # 音声 stream を抽出
     for stream in adaptiveFormats:
         if stream.get("container") == "m4a" and stream.get("audioQuality") == "AUDIO_QUALITY_MEDIUM":
             audio_url = stream.get("url")
@@ -187,36 +244,35 @@ def getVideoData(videoid):
         for stream in adaptive
         if stream.get('container') == 'webm' and stream.get('resolution')
     ]
-    return [
-      {
-        # 既存処理（ここでは formatStreams のURLを逆順にして上位2件を使用）
-        'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
-        # 追加：高画質動画と音声のURL
-        'highstream_url': highstream_url,
-        'audio_url': audio_url,
-        'description_html': t["descriptionHtml"].replace("\n", "<br>"),
-        'title': t["title"],
-        'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"])),
-        'author_id': t["authorId"],
-        'author': t["author"],
-        'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
-        'view_count': t["viewCount"],
-        'like_count': t["likeCount"],
-        'subscribers_count': t["subCountText"],
-        'streamUrls': streamUrls
-    },
 
-    [
-      {
-        "video_id": i["videoId"],
-        "title": i["title"],
-        "author_id": i["authorId"],
-        "author": i["author"],
-        "length_text": str(datetime.timedelta(seconds=i["lengthSeconds"])),
-        "view_count_text": i["viewCountText"]
-    } for i in recommended_videos]
-    
-]
+    return [
+        {
+            'video_urls': list(reversed([i["url"] for i in t["formatStreams"]]))[:2],
+            'highstream_url': highstream_url,
+            'audio_url': audio_url,
+            'description_html': t["descriptionHtml"].replace("\n", "<br>"),
+            'title': t["title"],
+            'length_text': str(datetime.timedelta(seconds=t["lengthSeconds"])),
+            'author_id': t["authorId"],
+            'author': t["author"],
+            'author_thumbnails_url': t["authorThumbnails"][-1]["url"],
+            'view_count': t["viewCount"],
+            'like_count': t["likeCount"],
+            'subscribers_count': t["subCountText"],
+            'streamUrls': streamUrls
+        },
+        [
+            {
+                "video_id": i.get("videoId", failed),
+                "title": i.get("title", failed),
+                "author_id": i.get("authorId", failed),
+                "author": i.get("author", failed),
+                "length_text": str(datetime.timedelta(seconds=i.get("lengthSeconds", 0))),
+                "view_count_text": i.get("viewCountText", "Load Failed")
+            } for i in recommended_videos
+        ]
+    ]
+
 
 def getSearchData(q, page):
 
