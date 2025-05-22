@@ -365,13 +365,11 @@ def home(response: Response, request: Request, yuki: Union[str] = Cookie(None)):
     return redirect("/genesis")
 
 @app.get('/watch', response_class=HTMLResponse)
-def video(v: str, response: Response, request: Request, yuki: Union[str, None] = Cookie(None), proxy: Union[str, None] = Cookie(None)):
-    if not (checkCookie(yuki)):
+def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
+    # v: video_id
+    if not(checkCookie(yuki)):
         return redirect("/")
-    # 埋め込み再生がオンの場合は /ume にリダイレクト
-    if request.cookies.get("ume_toggle", "false") == "true":
-        return redirect(f"/ume?v={v}")
-    response.set_cookie("yuki", "True", max_age=7*24*60*60)
+    response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
     video_data = getVideoData(v)
     '''
     return [
@@ -471,10 +469,11 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "proxy":proxy
     })
 app.get('/ume', response_class=HTMLResponse)
-def ume_video(v: str, response: Response, request: Request, yuki: Union[str, None] = Cookie(None), proxy: Union[str, None] = Cookie(None)):
-    if not checkCookie(yuki):
+def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie(None), proxy: Union[str] = Cookie(None)):
+    # v: video_id
+    if not(checkCookie(yuki)):
         return redirect("/")
-    response.set_cookie("yuki", "True", max_age=7*24*60*60)
+    response.set_cookie(key="yuki", value="True", max_age=7*24*60*60)
     video_data = getVideoData(v)
     '''
     return [
@@ -610,34 +609,6 @@ def thumbnail(v:str):
 @app.get("/suggest")
 def suggest(keyword:str):
     return [i[0] for i in json.loads(requests.get("http://www.google.com/complete/search?client=youtube&hl=ja&ds=yt&q=" + urllib.parse.quote(keyword), headers=getRandomUserAgent()).text[19:-1])[1]]
-
-@app.get("/settings", response_class=HTMLResponse)
-def settings(request: Request, response: Response, yuki: Union[str, None] = Cookie(None)):
-    if not checkCookie(yuki):
-         return redirect("/")
-    current_embed = request.cookies.get("ume_toggle", "false")
-    # settings.html には現在の埋め込み設定と切り替えボタンを表示する
-    return template("settings.html", {"request": request, "ume_toggle": current_embed})
-
-@app.post("/settings", response_class=HTMLResponse)
-def update_settings(
-    request: Request,
-    response: Response,
-    embed: str = Form(...),
-    yuki: Union[str, None] = Cookie(None)
-):
-    # もし yuki クッキーがなければここでセット（もしくはリダイレクト前に警告表示）
-    if not checkCookie(yuki):
-        # またはここで一旦クッキーを無理やりセットする
-        response.set_cookie("yuki", "ture", max_age=7*24*60*60)
-        # ※認証処理のロジックに合わせる必要あり
-    
-    if embed == "on":
-         response.set_cookie("ume_toggle", "true", max_age=7*24*60*60)
-    elif embed == "off":
-         response.set_cookie("ume_toggle", "false", max_age=7*24*60*60)
-    # 更新後は設定ページに戻る
-    return redirect("/settings")
 
 
 
