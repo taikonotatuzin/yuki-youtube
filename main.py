@@ -145,13 +145,15 @@ def getVideoData(videoid):
     
     # fallback API のリストをタプルにしてランダム化
     fallback_api_list = [
-        'https://natural-voltaic-titanium.glitch.me/api/',
-        'https://wtserver3.glitch.me/api/',
-        'https://wtserver1.glitch.me/api/',
-        'https://wtserver2.glitch.me/api/',
         'https://watawata8.glitch.me/api/',
-        'https://watawata7.glitch.me/api/',
-        'https://watawata37.glitch.me/api/'
+        'https://watawata37.glitch.me/api/',
+        'https://watawatawata.glitch.me/api/',
+        'https://manawa.glitch.me/api/',
+        'https://wakeupe.glitch.me/api/',
+        'https://hortensia.glitch.me/api/',
+        'https://wata27.glitch.me/api/',
+        'https://wakameme.glitch.me/api/',
+	'direct'
     ]
     fallback_apis = [("fallback", api) for api in fallback_api_list]
     random.shuffle(fallback_apis)
