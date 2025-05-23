@@ -322,8 +322,6 @@ def getVideoData(videoid):
                 "view_count_text": i.get("viewCountText", "Load Failed")
             } for i in recommended_videos]
         ]
-    else:
-        raise APITimeoutError("Both Invidious and fallback APIs failed")
 
 def getSearchData(q, page):
 
