@@ -470,7 +470,7 @@ def video(v:str, response: Response, request: Request, yuki: Union[str] = Cookie
         "recommended_videos": video_data[1],
         "proxy":proxy
     })
-app.get('/ume', response_class=HTMLResponse)
+@app.get('/ume', response_class=HTMLResponse)
 def ume_video(v: str, response: Response, request: Request, yuki: Union[str, None] = Cookie(None), proxy: Union[str, None] = Cookie(None)):
     if not checkCookie(yuki):
         return redirect("/")
