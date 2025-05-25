@@ -637,7 +637,7 @@ def update_settings(
     elif embed == "off":
          response.set_cookie("ume_toggle", "false", max_age=7*24*60*60)
     # 更新後は設定ページに戻る
-    return redirect("/settings")
+    return redirect("/")
 
 
 
