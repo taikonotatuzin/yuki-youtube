@@ -33,6 +33,32 @@
       0% { opacity: 0; transform: translateY(-20px); }
       100% { opacity: 1; transform: translateY(0); }
     }
+	    /* 検索ボックスを包むコンテナ */
+    .search-container {
+      flex-grow: 1;
+      margin: 0 20px;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .search-container form fieldset {
+      margin: 0;
+      padding: 0;
+      border: none;
+    }
+    
+    .search-container input[type="search"] {
+      width: 250px; /* 幅を大きく */
+      padding: 5px 10px;
+      border: 1px solid #ccc;
+      border-radius: 20px; /* 丸みを帯びた角 */
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+    
+    .search-container input[type="search"]:focus {
+      border-color: #007bff;
+    }
 	            
 
  /* トップバー全体 */
@@ -269,6 +295,13 @@
     <header id="top-bar">
     <div class="navbar-logo">
       <a href="/"><img src="/img/logo/th.png" alt="Logo"></a>
+    </div>
+	    <div class="search-container">
+      <form class="pure-form" action="/search" method="get">
+        <fieldset>
+          <input id="searchbox" name="q" type="search" placeholder="検索" title="検索" autocomplete="on" autocorrect="on" autocapitalize="none" spellcheck="false">
+        </fieldset>
+      </form>
     </div>
     <!-- モバイル用ハンバーガーアイコン -->
     <div id="hamburger">&#9776;</div>
