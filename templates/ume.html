@@ -36,9 +36,16 @@
   </script>
     </head>
     <body>
-       <header id="top-bar">
+         <header id="top-bar">
     <div class="navbar-logo">
       <a href="/"><img src="/img/logo/th.png" alt="Logo"></a>
+    </div>
+		 <div class="search-container">
+      <form class="pure-form" action="/search" method="get">
+        <fieldset>
+          <input id="searchbox" name="q" type="search" placeholder="検索" title="検索" autocomplete="on" autocorrect="on" autocapitalize="none" spellcheck="false">
+        </fieldset>
+      </form>
     </div>
     <!-- モバイル用ハンバーガーアイコン -->
     <div id="hamburger">&#9776;</div>
@@ -57,15 +64,6 @@
         <div class="pure-g">
             <div class="pure-u-1 pure-u-md-2-24"></div>
             <div id="contents" class="pure-u-1 pure-u-md-20-24">
-                <div class="pure-g navbar h-box">
-                    <div class="pure-u-1 pure-u-md-12-24 searchbar">
-                        <form class="pure-form" action="/search" method="get">
-                            <fieldset>
-                                <input id="searchbox" name="q" type="search" placeholder="検索" value="" title="検索" autocomplete="on" autocorrect="on" autocapitalize="none" spellcheck="false" >
-                            </fieldset>
-                        </form>
-                    </div>
-                </div>
                 <div class="umev">
                    <iframe width="100%" height="100%" src="https://www.youtube-nocookie.com/embed/{{ videoid }}" title="video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
                 </div>
