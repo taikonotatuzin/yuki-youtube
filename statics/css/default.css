@@ -361,25 +361,7 @@ img.thumbnail {
   display: inline;
 }
 
-.searchbar .pure-form fieldset { padding: 0; }
 
-.searchbar input[type="search"] {
-	width: 100%;
-	margin: 1px;
-
-	border: 1px solid;
-	border-color: #0000 #0000 #CCC #0000;
-	border-radius: 0;
-
-	box-shadow: none;
-	-webkit-appearance: none;
-}
-
-.searchbar input[type="search"]:focus {
-	margin: 0 0 0.5px 0;
-	border: 2px solid;
-	border-color: #0000 #0000 #FED #0000;
-}
 
 /* https://stackoverflow.com/a/55170420 */
 input[type="search"]::-webkit-search-cancel-button {
