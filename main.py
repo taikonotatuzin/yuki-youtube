@@ -56,59 +56,12 @@ class InvidiousAPI:
         self.comments = self.all['comments']
 
         self.check_video = False
-      def info(self):
+def info(self):
         return {
             'API': self.all,
             'checkVideo': self.check_video
         }
-def getHomeScreenVideos():
-    """
-    ホーム画面用に、日本人が見た動画（人気・トレンドの）情報を取得します。
-    Invidious API の /trending エンドポイントにパラメータを付与し、日本向けの動画情報のみ抽出します。
-    ※ 実際の環境では、requestAPI() 関数などを使いオンラインからデータ取得してください。
-    """
-    try:
-        # 例として Invidious API の /trending エンドポイントに 'region=JP' を指定
-        trending_response = requests.get("https://rust.oskamp.nl/api/v1/trending?region=JP")
-        trending_data = json.loads(trending_response.text)
-        
-        home_videos = []
-        for video in trending_data:
-            thumbnail = video.get("videoThumbnails", [{"url": f"https://img.youtube.com/vi/{video['videoId']}/hqdefault.jpg"}])[0]["url"]
-            
-            video_entry = {
-                "video_id": video["videoId"],
-                "thumbnail": thumbnail,
-                "title": video["title"],
-                "length_text": str(datetime.timedelta(seconds=video["lengthSeconds"])) if "lengthSeconds" in video else "",
-                "view_count_text": video.get("viewCountText", ""),
-                "author": video["author"],
-                "author_id": video.get("authorId", "")
-            }
-            home_videos.append(video_entry)
-        
-        # 表示件数は最大40件まで（必要に応じて調整）
-        return home_videos[:40]
-    except Exception as e:
-        print("ホーム画面用動画の取得に失敗しました:", e)
-        # エラー時はサンプルデータを返す
-        return [{
-            "video_id": "v6wMQ6Qa-D0",
-            "thumbnail": "https://img.youtube.com/vi/v6wMQ6Qa-D0/0.jpg",
-            "title": "【めめ村】命を懸けたデスゲーム開催！ロシアンルーレットで生き残れ【ゆっくり実況】【ライアーズバー / Liar's Bar】",
-            "length_text": "0:14:59",
-            "view_count_text": "581K回視聴",
-            "author": "めめんともり",
-            "author_id": ""
-        }]
-@app.route("/")
-def home():
-    # API から動画情報（日本限定の人気動画）を取得
-    videos = getHomeScreenVideos()
-    # 取得したデータを Home.html に videos という変数で渡す
-    return render_template("home.html", videos=videos)
-        
-invidious_api = InvidiousAPI()
+
 
 url = requests.get('https://raw.githubusercontent.com/LunaKamituki/Yuki-BBS-Server-URL/refs/heads/main/server.txt', headers=getRandomUserAgent()).text.rstrip()
 
