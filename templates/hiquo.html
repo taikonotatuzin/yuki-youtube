@@ -40,36 +40,35 @@
     </script>
   </head>
   <body>
-    <header id="top-bar">
-      <div class="navbar-logo">
-        <a href="/"><img src="/img/logo/th.png" alt="Logo"></a>
-      </div>
-      <!-- モバイル用ハンバーガーアイコン -->
-      <div id="hamburger">&#9776;</div>
-      <!-- ナビゲーション -->
-      <nav id="top-nav">
-        <a href="/bbs">掲示板</a>
-        <a href="/proxypage">Proxy</a>
-        <a href="/others">その他</a>
-        <a href="/sitsumon">回答よろ</a>
-        &emsp;
-      </nav>
-    </header>
-    <br>
+             <header id="top-bar">
+    <div class="navbar-logo">
+      <a href="/"><img src="/img/logo/th.png" alt="Logo"></a>
+    </div>
+		 <div class="search-container">
+      <form class="pure-form" action="/search" method="get">
+        <fieldset>
+          <input id="searchbox" name="q" type="search" placeholder="検索" title="検索" autocomplete="on" autocorrect="on" autocapitalize="none" spellcheck="false">
+        </fieldset>
+      </form>
+    </div>
+    <!-- モバイル用ハンバーガーアイコン -->
+    <div id="hamburger">&#9776;</div>
+    <!-- ナビゲーション -->
+    <nav id="top-nav">
+      <a href="/bbs">掲示板</a>
+      <a href="/proxypage">Proxy</a>
+      <a href="/others">その他</a>
+      <a href="/sitsumon">回答よろ</a>
+	&emsp;
+    </nav>
+  </header>
+	    <br>
     <div class="no-theme">
       <span id="dark_mode_pref" style="display:none"></span>
       <div class="pure-g">
         <div class="pure-u-1 pure-u-md-2-24"></div>
         <div id="contents" class="pure-u-1 pure-u-md-20-24">
-          <div class="pure-g navbar h-box">
-            <div class="pure-u-1 pure-u-md-12-24 searchbar">
-              <form class="pure-form" action="/search" method="get">
-                <fieldset>
-                  <input id="searchbox" name="q" type="search" placeholder="検索" value="" title="検索" autocomplete="on" autocorrect="on" autocapitalize="none" spellcheck="false">
-                </fieldset>
-              </form>
-            </div>
-          </div>
+   
           <div id="player-container" class="h-box">
             <video id="player" class="on-video_player video-js player-style-invidious" loadedmetadata="settime()" controls="" playsinline="" loop="" 
               style="outline:none;width:100%;background-color:#000;" 
