@@ -69,7 +69,7 @@ def getHomeScreenVideos():
     """
     try:
         # 例として Invidious API の /trending エンドポイントに 'region=JP' を指定
-        trending_response = requests.get("https://example.com/api/v1/trending?region=JP")
+        trending_response = requests.get("https://rust.oskamp.nl/api/v1/trending?region=JP")
         trending_data = json.loads(trending_response.text)
         
         home_videos = []
