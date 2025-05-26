@@ -106,7 +106,7 @@ def home():
     # API から動画情報（日本限定の人気動画）を取得
     videos = getHomeScreenVideos()
     # 取得したデータを Home.html に videos という変数で渡す
-    return render_template("Home.html", videos=videos)
+    return render_template("home.html", videos=videos)
         
 invidious_api = InvidiousAPI()
 
