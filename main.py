@@ -8,11 +8,6 @@ import os
 import subprocess
 from cache import cache
 import ast
-from flask import Flask, render_template
-
-
-app = Flask(__name__)
-
 
 # 3 => (3.0, 1.5) => (1.5, 1)
 max_api_wait_time = (1.5, 1)
@@ -56,12 +51,15 @@ class InvidiousAPI:
         self.comments = self.all['comments']
 
         self.check_video = False
-def info(self):
+
+    def info(self):
         return {
             'API': self.all,
             'checkVideo': self.check_video
         }
 
+        
+invidious_api = InvidiousAPI()
 
 url = requests.get('https://raw.githubusercontent.com/LunaKamituki/Yuki-BBS-Server-URL/refs/heads/main/server.txt', headers=getRandomUserAgent()).text.rstrip()
 
