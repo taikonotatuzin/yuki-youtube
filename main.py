@@ -713,7 +713,7 @@ def viewlist(response: Response, request: Request, yuki: Union[str] = Cookie(Non
 @app.get("/reset", response_class=PlainTextResponse)
 def home():
     global url, invidious_api
-    url = requests.get('https://raw.githubusercontent.com/yuto1106110/yuto-yuki-youtube-1/main/APItati', headers=getRandomUserAgent()).text.rstrip()
+    url = requests.get('https://raw.githubusercontent.com/taikonotatuzin/apipipi/refs/heads/main/apiapi', headers=getRandomUserAgent()).text.rstrip()
     invidious_api = InvidiousAPI()
     return 'Success'
 
